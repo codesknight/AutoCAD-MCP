@@ -124,3 +124,18 @@ MVP 跑通后，把下一阶段要做的事拆成 4 个新 Issue，开了新 mil
 - 用假的 `https://api.deepseek.example.com/v1` + `deepseek-v4-pro` 在浏览器里实测：请求确实带着指定的 base_url 和 model 送出去了（`mcp_client.list_tools()` 先正常跑通，说明 MCP 那一段没受影响），只是因为域名是假的最后报了 DNS 连接错误——证明这次的 fix 生效了，模型名传递链路没问题。前端"必填校验"也验证过：不填模型名点发送，请求根本不会发出去。
 
 **用户用真实 DeepSeek API Key 验证成功**：接入 DeepSeek（OpenAI 兼容模式）跑通了完整的 tool-calling 循环。至此 [#15](https://github.com/codesknight/AutoCAD-MCP/issues/15) 的 OpenAI 兼容分支部分已验证；真 OpenAI（`gpt-4o` 等）还没有实测过，issue 先不关。
+
+## 2026-07-10（续七）：网页 UI 支持上传图片让模型参考着画图
+
+用户想要"上传一张图片，让模型照着画"。做法：不用额外写图像处理管道，直接把图片作为多模态输入的一部分传给大模型（vision），模型看完图之后照样用已有的 `draw_*` 工具画——工具调用循环完全复用，只是"用户消息"这一步多了一个图片 content block。
+
+- `providers/base.py`：`LLMProvider` 加抽象方法 `build_user_message(text, image_base64, image_media_type)`。
+- `anthropic_provider.py`：图片按 Anthropic 的 `{"type": "image", "source": {"type": "base64", "media_type", "data"}}` 格式拼进 content 数组。
+- `openai_provider.py`：图片按 OpenAI 的 `{"type": "image_url", "image_url": {"url": "data:...;base64,..."}}` 格式拼。
+- `agent_loop.run_turn`：改成自己负责构造并 append 用户这一轮的消息（而不是像之前那样由 `app.py` 直接拼一个纯字符串），因为要按选中的 provider 决定用哪种图片格式。
+- `app.py`：`ChatRequest` 加 `image_base64`/`image_media_type` 两个可选字段。
+- 前端：加了文件上传控件，用 `FileReader.readAsDataURL` 转 base64，发送前有缩略图预览，发送后自动清空。没填文字但传了图的话，会用一个默认 prompt（"请根据这张图片，用现有工具在 AutoCAD 里画出对应的图形。"）。
+
+**端到端验证**：因为 preview 工具不支持模拟真实的文件选择对话框，用 `preview_eval` 直接注入了一张 1x1 测试 PNG 的 base64 数据（跳过了 `FileReader` 那段标准浏览器 API，风险很低），走完整的发送流程：请求体正确带上了 `image_base64`/`image_media_type`，后端 `agent_loop → AnthropicProvider.build_user_message` 构造出的多模态消息被 Anthropic API 接受到了认证检查这一步（拿到预期的 401，不是 400 格式错误），说明图片 content block 格式是对的。前端"发送后清空图片"的逻辑也验证正常。
+
+**尚未验证（需要真实 API Key 和真图片）**：模型看图之后能不能画出靠谱的东西（这本身是个近似任务，取决于模型能力，不是代码 bug 范畴）；OpenAI 分支的图片格式没有实测（DeepSeek 的文本模型 `deepseek-v4-pro` 大概率不支持 vision，需要专门的视觉模型）。开了 [#17](https://github.com/codesknight/AutoCAD-MCP/issues/17) 跟进，已加入看板。
