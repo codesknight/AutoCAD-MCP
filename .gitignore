@@ -6,5 +6,6 @@ dist/
 .pytest_cache/
 .vscode/
 .idea/
+.claude/
 *.dwg
 *.bak
