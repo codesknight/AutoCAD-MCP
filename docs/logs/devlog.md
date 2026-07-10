@@ -122,3 +122,5 @@ MVP 跑通后，把下一阶段要做的事拆成 4 个新 Issue，开了新 mil
 - 网页前端加了「模型名称」输入框，`openai_compatible` 模式下前端+后端双重校验必填（不同厂商模型名完全不一样，没法给合理默认值）。
 - `ChatRequest`/`run_turn`/`AnthropicProvider`/`OpenAIProvider` 都加了可选 `model` 参数，一路透传下去；Anthropic 模式留空时仍用默认的 `claude-opus-4-8`。
 - 用假的 `https://api.deepseek.example.com/v1` + `deepseek-v4-pro` 在浏览器里实测：请求确实带着指定的 base_url 和 model 送出去了（`mcp_client.list_tools()` 先正常跑通，说明 MCP 那一段没受影响），只是因为域名是假的最后报了 DNS 连接错误——证明这次的 fix 生效了，模型名传递链路没问题。前端"必填校验"也验证过：不填模型名点发送，请求根本不会发出去。
+
+**用户用真实 DeepSeek API Key 验证成功**：接入 DeepSeek（OpenAI 兼容模式）跑通了完整的 tool-calling 循环。至此 [#15](https://github.com/codesknight/AutoCAD-MCP/issues/15) 的 OpenAI 兼容分支部分已验证；真 OpenAI（`gpt-4o` 等）还没有实测过，issue 先不关。
