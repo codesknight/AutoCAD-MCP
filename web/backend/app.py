@@ -19,6 +19,8 @@ class ChatRequest(BaseModel):
     base_url: str | None = None
     model: str | None = None
     message: str
+    image_base64: str | None = None  # raw base64 payload, no "data:...;base64," prefix
+    image_media_type: str | None = None  # e.g. "image/png"
 
 
 class ChatResponse(BaseModel):
@@ -28,11 +30,19 @@ class ChatResponse(BaseModel):
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(req: ChatRequest) -> ChatResponse:
     messages = conversation_store.get(req.conversation_id)
-    messages.append({"role": "user", "content": req.message})
-    # api_key is used for this call only -- never logged, persisted, or
-    # stored in conversation_store.
+    # api_key and the image payload are used for this call only -- never
+    # logged, persisted, or stored beyond conversation_store's message history.
     try:
-        reply = await run_turn(messages, req.provider, req.api_key, req.base_url, req.model)
+        reply = await run_turn(
+            messages,
+            req.provider,
+            req.api_key,
+            req.message,
+            req.base_url,
+            req.model,
+            req.image_base64,
+            req.image_media_type,
+        )
     except Exception as exc:  # noqa: BLE001 - surface any provider/network error to the chat UI
         return ChatResponse(reply=f"出错了：{exc}")
     return ChatResponse(reply=reply)

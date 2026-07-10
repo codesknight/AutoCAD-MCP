@@ -17,16 +17,22 @@ async def run_turn(
     messages: list[dict],
     provider: str,
     api_key: str,
+    message: str,
     base_url: str | None = None,
     model: str | None = None,
+    image_base64: str | None = None,
+    image_media_type: str | None = None,
 ) -> str:
-    """Send the user's latest message (already appended to `messages` by the
-    caller) through the LLM, executing any AutoCAD MCP tool calls it makes
-    via the real MCP protocol, until it produces a final text reply."""
+    """Build and append the user's latest turn (text, optionally with an
+    image for vision input), then run it through the LLM, executing any
+    AutoCAD MCP tool calls it makes via the real MCP protocol, until it
+    produces a final text reply."""
     if provider == "openai_compatible" and not model:
         return "使用 OpenAI 兼容模式时必须填写模型名称（比如 deepseek-v4-pro）"
 
     llm, to_provider_tools = _build_provider(provider, model)
+    messages.append(llm.build_user_message(message, image_base64, image_media_type))
+
     mcp_tools = await mcp_client.list_tools()
     provider_tools = to_provider_tools(mcp_tools)
 

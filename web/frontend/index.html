@@ -15,6 +15,7 @@
   #compose { display: flex; gap: 0.5rem; }
   #compose input { flex: 1; padding: 0.5rem; }
   #base_url_row { display: none; }
+  #image_preview { max-width: 120px; max-height: 120px; display: none; margin-bottom: 0.5rem; border-radius: 4px; }
 </style>
 </head>
 <body>
@@ -43,7 +44,9 @@
 
   <div id="log"></div>
 
+  <img id="image_preview" alt="待发送的图片预览">
   <div id="compose">
+    <input id="image" type="file" accept="image/*" title="上传一张图片，让模型参考着画图">
     <input id="message" type="text" placeholder="用自然语言描述你想在 AutoCAD 里做什么...">
     <button id="send">发送</button>
   </div>

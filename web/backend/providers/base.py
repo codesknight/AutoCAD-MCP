@@ -32,3 +32,10 @@ class LLMProvider:
         """Build the provider-specific message representing a tool's output,
         to append to the running message history before the next chat() call."""
         raise NotImplementedError
+
+    def build_user_message(
+        self, text: str, image_base64: str | None = None, image_media_type: str | None = None
+    ) -> dict:
+        """Build the provider-specific user message, optionally with an image
+        (vision input) alongside the text."""
+        raise NotImplementedError

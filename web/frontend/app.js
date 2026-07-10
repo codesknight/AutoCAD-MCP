@@ -8,9 +8,31 @@ const modelInput = document.getElementById("model");
 const log = document.getElementById("log");
 const messageInput = document.getElementById("message");
 const sendButton = document.getElementById("send");
+const imageInput = document.getElementById("image");
+const imagePreview = document.getElementById("image_preview");
+
+let pendingImage = null; // { base64, mediaType } | null
 
 providerSelect.addEventListener("change", () => {
   baseUrlRow.style.display = providerSelect.value === "openai_compatible" ? "flex" : "none";
+});
+
+imageInput.addEventListener("change", () => {
+  const file = imageInput.files[0];
+  if (!file) {
+    pendingImage = null;
+    imagePreview.style.display = "none";
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const dataUrl = reader.result; // "data:image/png;base64,AAAA..."
+    const [, mediaType, base64] = dataUrl.match(/^data:(.+);base64,(.*)$/);
+    pendingImage = { base64, mediaType };
+    imagePreview.src = dataUrl;
+    imagePreview.style.display = "block";
+  };
+  reader.readAsDataURL(file);
 });
 
 function appendMessage(role, text) {
@@ -23,7 +45,7 @@ function appendMessage(role, text) {
 
 async function sendMessage() {
   const message = messageInput.value.trim();
-  if (!message) return;
+  if (!message && !pendingImage) return;
   const apiKey = apiKeyInput.value.trim();
   if (!apiKey) {
     alert("请先填写 API Key");
@@ -35,8 +57,11 @@ async function sendMessage() {
     return;
   }
 
-  appendMessage("user", message);
+  const effectiveMessage = message || "请根据这张图片，用现有工具在 AutoCAD 里画出对应的图形。";
+  appendMessage("user", effectiveMessage + (pendingImage ? "（附带图片）" : ""));
   messageInput.value = "";
+  const imageToSend = pendingImage;
+  clearPendingImage();
   sendButton.disabled = true;
 
   try {
@@ -49,7 +74,9 @@ async function sendMessage() {
         api_key: apiKey,
         base_url: providerSelect.value === "openai_compatible" ? baseUrlInput.value.trim() : null,
         model: model || null,
-        message,
+        message: effectiveMessage,
+        image_base64: imageToSend ? imageToSend.base64 : null,
+        image_media_type: imageToSend ? imageToSend.mediaType : null,
       }),
     });
     if (!resp.ok) {
@@ -64,6 +91,12 @@ async function sendMessage() {
   } finally {
     sendButton.disabled = false;
   }
+}
+
+function clearPendingImage() {
+  pendingImage = null;
+  imageInput.value = "";
+  imagePreview.style.display = "none";
 }
 
 sendButton.addEventListener("click", sendMessage);

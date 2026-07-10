@@ -52,3 +52,23 @@ class AnthropicProvider(LLMProvider):
                 {"type": "tool_result", "tool_use_id": tool_call.id, "content": result_text}
             ],
         }
+
+    def build_user_message(
+        self, text: str, image_base64: str | None = None, image_media_type: str | None = None
+    ) -> dict:
+        if not image_base64:
+            return {"role": "user", "content": text}
+        return {
+            "role": "user",
+            "content": [
+                {
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": image_media_type or "image/png",
+                        "data": image_base64,
+                    },
+                },
+                {"type": "text", "text": text},
+            ],
+        }

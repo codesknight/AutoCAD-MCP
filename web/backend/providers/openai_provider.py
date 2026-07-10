@@ -69,3 +69,17 @@ class OpenAIProvider(LLMProvider):
 
     def format_tool_result(self, tool_call: ToolCall, result_text: str) -> dict:
         return {"role": "tool", "tool_call_id": tool_call.id, "content": result_text}
+
+    def build_user_message(
+        self, text: str, image_base64: str | None = None, image_media_type: str | None = None
+    ) -> dict:
+        if not image_base64:
+            return {"role": "user", "content": text}
+        data_url = f"data:{image_media_type or 'image/png'};base64,{image_base64}"
+        return {
+            "role": "user",
+            "content": [
+                {"type": "image_url", "image_url": {"url": data_url}},
+                {"type": "text", "text": text},
+            ],
+        }
