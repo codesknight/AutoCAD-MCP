@@ -17,6 +17,7 @@ class ChatRequest(BaseModel):
     provider: str  # "anthropic" | "openai" | "openai_compatible"
     api_key: str
     base_url: str | None = None
+    model: str | None = None
     message: str
 
 
@@ -31,7 +32,7 @@ async def chat(req: ChatRequest) -> ChatResponse:
     # api_key is used for this call only -- never logged, persisted, or
     # stored in conversation_store.
     try:
-        reply = await run_turn(messages, req.provider, req.api_key, req.base_url)
+        reply = await run_turn(messages, req.provider, req.api_key, req.base_url, req.model)
     except Exception as exc:  # noqa: BLE001 - surface any provider/network error to the chat UI
         return ChatResponse(reply=f"出错了：{exc}")
     return ChatResponse(reply=reply)

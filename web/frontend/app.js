@@ -4,6 +4,7 @@ const providerSelect = document.getElementById("provider");
 const baseUrlRow = document.getElementById("base_url_row");
 const apiKeyInput = document.getElementById("api_key");
 const baseUrlInput = document.getElementById("base_url");
+const modelInput = document.getElementById("model");
 const log = document.getElementById("log");
 const messageInput = document.getElementById("message");
 const sendButton = document.getElementById("send");
@@ -28,6 +29,11 @@ async function sendMessage() {
     alert("请先填写 API Key");
     return;
   }
+  const model = modelInput.value.trim();
+  if (providerSelect.value === "openai_compatible" && !model) {
+    alert("使用 OpenAI 兼容模式时必须填写模型名称");
+    return;
+  }
 
   appendMessage("user", message);
   messageInput.value = "";
@@ -42,6 +48,7 @@ async function sendMessage() {
         provider: providerSelect.value,
         api_key: apiKey,
         base_url: providerSelect.value === "openai_compatible" ? baseUrlInput.value.trim() : null,
+        model: model || null,
         message,
       }),
     });

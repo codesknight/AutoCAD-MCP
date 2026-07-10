@@ -3,7 +3,7 @@ from mcp.types import Tool as MCPTool
 
 from web.backend.providers.base import LLMProvider, ProviderResult, ToolCall
 
-MODEL = "claude-opus-4-8"
+DEFAULT_MODEL = "claude-opus-4-8"
 
 
 def to_anthropic_tools(mcp_tools: list[MCPTool]) -> list[dict]:
@@ -14,6 +14,9 @@ def to_anthropic_tools(mcp_tools: list[MCPTool]) -> list[dict]:
 
 
 class AnthropicProvider(LLMProvider):
+    def __init__(self, model: str = DEFAULT_MODEL):
+        self.model = model
+
     async def chat(
         self,
         messages: list[dict],
@@ -23,7 +26,7 @@ class AnthropicProvider(LLMProvider):
     ) -> ProviderResult:
         client = anthropic.AsyncAnthropic(api_key=api_key)
         response = await client.messages.create(
-            model=MODEL,
+            model=self.model,
             max_tokens=4096,
             tools=tools,
             messages=messages,

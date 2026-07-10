@@ -5,11 +5,11 @@ from web.backend.providers.openai_provider import OpenAIProvider, to_openai_tool
 MAX_TOOL_ITERATIONS = 8
 
 
-def _build_provider(provider: str):
+def _build_provider(provider: str, model: str | None):
     if provider == "anthropic":
-        return AnthropicProvider(), to_anthropic_tools
+        return (AnthropicProvider(model) if model else AnthropicProvider()), to_anthropic_tools
     if provider in ("openai", "openai_compatible"):
-        return OpenAIProvider(), to_openai_tools
+        return (OpenAIProvider(model) if model else OpenAIProvider()), to_openai_tools
     raise ValueError(f"unknown provider: {provider}")
 
 
@@ -18,11 +18,15 @@ async def run_turn(
     provider: str,
     api_key: str,
     base_url: str | None = None,
+    model: str | None = None,
 ) -> str:
     """Send the user's latest message (already appended to `messages` by the
     caller) through the LLM, executing any AutoCAD MCP tool calls it makes
     via the real MCP protocol, until it produces a final text reply."""
-    llm, to_provider_tools = _build_provider(provider)
+    if provider == "openai_compatible" and not model:
+        return "使用 OpenAI 兼容模式时必须填写模型名称（比如 deepseek-v4-pro）"
+
+    llm, to_provider_tools = _build_provider(provider, model)
     mcp_tools = await mcp_client.list_tools()
     provider_tools = to_provider_tools(mcp_tools)
 
