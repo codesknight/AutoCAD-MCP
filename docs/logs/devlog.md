@@ -114,3 +114,11 @@ MVP 跑通后，把下一阶段要做的事拆成 4 个新 Issue，开了新 mil
 开了新 milestone「Phase 3: 网页 UI 完整验证与增强」（#3），补了 3 个 Issue 到看板：[#14](https://github.com/codesknight/AutoCAD-MCP/issues/14) 用真实 API Key 完整验证 Claude tool-calling 循环、[#15](https://github.com/codesknight/AutoCAD-MCP/issues/15) 验证 OpenAI/OpenAI 兼容模型分支、[#16](https://github.com/codesknight/AutoCAD-MCP/issues/16) 网页聊天支持流式响应。
 
 （顺手踩了个小坑：复制命令时手滑多建了一个叫「temp」的空 Project 看板，发现后立刻 `gh project delete` 删掉了，不影响正式看板 #2。）
+
+## 2026-07-10（续六）：修 bug——OpenAI 兼容模式模型名写死
+
+用户实测时选了 DeepSeek 的 OpenAI 兼容接口，画一个圆圈报错：`The supported API model names are deepseek-v4-pro or deepseek-v4-flash, but you passed gpt-4o.`——原因是 `openai_provider.py` 里 `DEFAULT_MODEL` 写死成了 `"gpt-4o"`，没给用户填模型名的地方。
+
+- 网页前端加了「模型名称」输入框，`openai_compatible` 模式下前端+后端双重校验必填（不同厂商模型名完全不一样，没法给合理默认值）。
+- `ChatRequest`/`run_turn`/`AnthropicProvider`/`OpenAIProvider` 都加了可选 `model` 参数，一路透传下去；Anthropic 模式留空时仍用默认的 `claude-opus-4-8`。
+- 用假的 `https://api.deepseek.example.com/v1` + `deepseek-v4-pro` 在浏览器里实测：请求确实带着指定的 base_url 和 model 送出去了（`mcp_client.list_tools()` 先正常跑通，说明 MCP 那一段没受影响），只是因为域名是假的最后报了 DNS 连接错误——证明这次的 fix 生效了，模型名传递链路没问题。前端"必填校验"也验证过：不填模型名点发送，请求根本不会发出去。
