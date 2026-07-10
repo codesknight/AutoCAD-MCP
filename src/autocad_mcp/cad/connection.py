@@ -62,17 +62,27 @@ class CADConnection:
                 self.document = self.app.ActiveDocument
                 self.model_space = self.document.ModelSpace
                 return
-            except pythoncom.com_error:
+            except (pythoncom.com_error, AttributeError):
+                # A freshly created document's COM object isn't always ready
+                # for attribute access immediately (dynamic dispatch can
+                # return a not-yet-resolved "<unknown>" wrapper) — retry.
                 time.sleep(0.5)
         raise CADConnectionError("等待 AutoCAD 文档就绪超时")
 
     def new_document(self, template: str | None = None) -> None:
         """Create a brand-new drawing and switch to it, instead of reusing
-        whatever document happened to be active when we connected."""
-        doc = self.app.Documents.Add(template) if template else self.app.Documents.Add()
-        doc.Activate()
-        self.document = doc
-        self.model_space = doc.ModelSpace
+        whatever document happened to be active when we connected.
+
+        The direct return value of Documents.Add() is an unreliable COM
+        reference under pywin32's dynamic dispatch, so we re-fetch via
+        ActiveDocument (with retry via _wait_for_document) instead of
+        trusting the return value.
+        """
+        if template:
+            self.app.Documents.Add(template)
+        else:
+            self.app.Documents.Add()
+        self._wait_for_document(self.config.connect_timeout)
 
     def is_connected(self) -> bool:
         if self.app is None:

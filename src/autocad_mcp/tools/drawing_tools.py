@@ -27,11 +27,11 @@ def register(mcp: FastMCP) -> None:
         center_x: float, center_y: float, center_z: float, radius: float,
         start_angle: float, end_angle: float, layer: str = "",
     ) -> str:
-        """画一段圆弧（TODO：下一阶段实现）。"""
-        get_controller().draw_arc(
+        """画一段圆弧，起止角度单位为度（从 X 轴正方向逆时针计），返回新实体的 ObjectID。"""
+        object_id = get_controller().draw_arc(
             (center_x, center_y, center_z), radius, start_angle, end_angle, layer or None
         )
-        return "not implemented yet"
+        return f"draw_arc ok, object_id={object_id}"
 
     @mcp.tool()
     def draw_rectangle(
@@ -39,14 +39,43 @@ def register(mcp: FastMCP) -> None:
         corner2_x: float, corner2_y: float, corner2_z: float,
         layer: str = "",
     ) -> str:
-        """画一个矩形（TODO：下一阶段实现）。"""
-        get_controller().draw_rectangle(
+        """画一个矩形（对角两点确定），返回新实体的 ObjectID。"""
+        object_id = get_controller().draw_rectangle(
             (corner1_x, corner1_y, corner1_z), (corner2_x, corner2_y, corner2_z), layer or None
         )
-        return "not implemented yet"
+        return f"draw_rectangle ok, object_id={object_id}"
 
     @mcp.tool()
-    def draw_text(position_x: float, position_y: float, position_z: float, text: str, height: float, layer: str = "") -> str:
-        """插入文字（TODO：下一阶段实现）。"""
-        get_controller().draw_text((position_x, position_y, position_z), text, height, layer or None)
-        return "not implemented yet"
+    def draw_text(
+        position_x: float, position_y: float, position_z: float,
+        text: str, height: float, layer: str = "", rotation: float = 0.0,
+    ) -> str:
+        """在指定位置插入文字（rotation 单位为度），返回新实体的 ObjectID。"""
+        object_id = get_controller().draw_text(
+            (position_x, position_y, position_z), text, height, layer or None, rotation
+        )
+        return f"draw_text ok, object_id={object_id}"
+
+    @mcp.tool()
+    def draw_polyline(points: list[list[float]], closed: bool = False, layer: str = "") -> str:
+        """画一条多段线，points 是 [x,y,z] 坐标点的列表，返回新实体的 ObjectID。"""
+        object_id = get_controller().draw_polyline([tuple(p) for p in points], closed, layer or None)
+        return f"draw_polyline ok, object_id={object_id}"
+
+    @mcp.tool()
+    def draw_hatch(points: list[list[float]], pattern_name: str = "SOLID", layer: str = "") -> str:
+        """对 points 围成的闭合边界填充图案（默认 SOLID 实体填充），返回新实体的 ObjectID。"""
+        object_id = get_controller().draw_hatch([tuple(p) for p in points], pattern_name, layer or None)
+        return f"draw_hatch ok, object_id={object_id}"
+
+    @mcp.tool()
+    def add_dimension(
+        start_x: float, start_y: float, start_z: float,
+        end_x: float, end_y: float, end_z: float,
+        text_x: float, text_y: float, text_z: float,
+    ) -> str:
+        """添加一个对齐标注（起点、终点、标注文字位置），返回新实体的 ObjectID。"""
+        object_id = get_controller().add_dimension(
+            (start_x, start_y, start_z), (end_x, end_y, end_z), (text_x, text_y, text_z)
+        )
+        return f"add_dimension ok, object_id={object_id}"
