@@ -89,3 +89,26 @@ MVP 跑通后，把下一阶段要做的事拆成 4 个新 Issue，开了新 mil
 - `command` 直接指向 `C:\Users\LiuYanhong\.conda\envs\autocad-mcp\python.exe`，`args: ["-m", "autocad_mcp.server"]`——不用 `conda run`，避免客户端拉起子进程时环境变量不全 / Windows 控制台编码的问题（README 里的示例也同步改了）。
 - **协议级验证**：没有直接调用 Python 函数走捷径，而是用 `mcp` 官方客户端 SDK（`mcp.client.stdio.stdio_client` + `ClientSession`）按配置里完全一致的命令拉起 `server.py` 子进程，走真正的 MCP stdio 协议 `list_tools`/`call_tool`：13 个工具全部可见，`draw_circle` 调用成功。验证脚本里按 CLAUDE.md 的安全规则，先检查了 `ActiveDocument` 确实是我们自己建的无路径 `Drawing7.dwg` 空白测试文件，才允许继续执行写操作（Claude Code 的 auto-mode 权限分类器一开始就因为脚本没做这个检查直接拦截了，加上检查后才放行——说明这条安全规则已经在生效）。
 - **还没做（需要用户在真实客户端里操作，我没法代劳）**：重启客户端让配置生效，然后在新对话里用自然语言实际触发这 13 个工具，看看哪些工具的参数描述/命名对 AI 不够清晰（比如角度单位、暂时没做的颜色参数），以及真实报错信息是否对用户友好。Issue #12 先不关，等用户反馈。
+
+## 2026-07-10（续五）：新增网页 UI + 多大模型接入（保留 MCP 协议）
+
+用户想换一种交互方式：自己做网页界面，自己填大模型 API Key（Claude / OpenAI / 国产 OpenAI 兼容模型都要支持且可切换），但明确要求**保留 MCP 协议**——网页后端要当一个自建的 MCP client 连接现有 `server.py`，不能绕开 MCP 直接把 `cad/` 函数包成 tool schema。
+
+**新增内容**：
+- `src/autocad_mcp/server.py`：加了 `--http` 启动方式（`mcp.run(transport="streamable-http")`，端口 8931），默认 stdio 行为不变，Claude Desktop 配置不受影响，两条集成路径共存。
+- `web/backend/mcp_client.py`：真正的 MCP client（`mcp.client.streamable_http`），连 `http://127.0.0.1:8931/mcp`，不是直接 import `autocad_mcp.cad`/`tools`。
+- `web/backend/providers/`：多模型适配层。`base.py` 定义统一接口；`anthropic_provider.py`（官方 `anthropic` SDK，模型 `claude-opus-4-8`，MCP 的 `Tool.inputSchema` 几乎直接就是 Anthropic 的 `input_schema`）；`openai_provider.py`（官方 `openai` SDK，`base_url` 可传，同时覆盖真 OpenAI 和国产 OpenAI 兼容模型如通义千问/DeepSeek/智谱）。
+- `web/backend/agent_loop.py`：手写 agentic loop（不用 SDK 自带的 tool_runner，因为工具执行要走 `mcp_client` 而不是本地函数），上限 8 轮工具调用防止死循环。
+- `web/backend/conversation_store.py`：进程内内存存会话历史，不落盘（已知限制，写进 README）。
+- `web/backend/app.py`：FastAPI，`POST /api/chat`，API Key 只在单次请求里用，不记日志不落盘；挂载 `web/frontend/` 静态文件。
+- `web/frontend/`：纯静态 `index.html` + `app.js`（无构建步骤），模型下拉框 + API Key 输入框（`type=password`，只存浏览器内存）+ base_url 输入框（选 OpenAI 兼容时才显示）+ 聊天记录。
+- `pyproject.toml` 加 `[project.optional-dependencies] web`（`anthropic`/`openai`/`fastapi`/`uvicorn[standard]`），装进已有的 `autocad-mcp` 环境。
+
+**端到端验证**（没有真实大模型 API Key，只测了不需要 key 的部分 + 用假 key 验证到认证边界为止）：
+- `mcp_client.py` 通过真实 streamable-http 协议连上 `server.py --http`：13 个工具全部可见，`draw_line` 调用成功画出线（验证脚本按 CLAUDE.md 规则先确认了活动文档是自己建的空白 `Drawing7.dwg`）。
+- FastAPI 后端起来后，用浏览器（preview 工具）填假 API Key 发消息，请求链路走到了 `agent_loop → mcp_client.list_tools() → AnthropicProvider.chat() → 真实 Anthropic API`，拿到了预期的 `401 invalid x-api-key` 认证错误——证明整条链路在真正调用外部大模型这一步之前全部正确，只是没有真 key 没法测完整的 tool-calling 循环。
+- 顺手把 `/api/chat` 的异常处理改成把大模型调用失败包成正常聊天回复（`出错了：...`），而不是裸 500，验证过修复后表现正常。
+
+**尚未验证（需要用户拿真实 API Key 自己测）**：完整的 tool-calling 循环（大模型真的读懂工具描述、生成正确参数、`agent_loop` 正确执行并把结果喂回去、最终产出合理的文字回复）；OpenAI/国产 OpenAI 兼容模型那条分支目前只做了代码走查，没有实际调用测试过。
+
+**尚未做（后续可选，不在本次范围）**：给这次的工作在 GitHub 上补 milestone/issue 记录（仿照 Phase 2 的流程，做完之后补记录）；流式响应（当前是等大模型完全说完才一次性返回）。

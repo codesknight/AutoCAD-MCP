@@ -11,6 +11,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest"]
+web = ["anthropic", "openai", "fastapi", "uvicorn[standard]"]
 
 [build-system]
 requires = ["setuptools>=68"]

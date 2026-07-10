@@ -42,27 +42,42 @@ AutoCAD.Application (COM, ProgID: AutoCAD.Application.25.1)
 | 查询/修改能力 | 无 | `cad/query.py`（图层/实体查询，规划中） |
 | 分层 | server + controller 两层 | server + tools + cad 三层，职责更清晰 |
 
-## 工具清单（规划）
+## 工具清单
 
-| 工具 | 状态 | 说明 |
-|---|---|---|
-| `draw_line` | ✅ 已实现 | 端到端打通，验证脚手架可用 |
-| `draw_circle` | 🚧 骨架 | TODO |
-| `draw_arc` | 🚧 骨架 | TODO |
-| `draw_rectangle` | 🚧 骨架 | TODO |
-| `draw_text` | 🚧 骨架 | TODO |
-| `draw_polyline` | 🚧 骨架（cad 层已建方法，工具未注册） | TODO |
-| `draw_hatch` | 🚧 骨架（cad 层已建方法，工具未注册） | TODO |
-| `add_dimension` | 🚧 骨架（cad 层已建方法，工具未注册） | TODO |
-| `save_drawing` | 🚧 骨架 | TODO |
-| `list_layers` | 🚧 骨架 | 创新点：参考项目没有 |
-| `query_entities` | 🚧 骨架 | 创新点：参考项目没有 |
+全部 13 个工具均已实现并在真实 AutoCAD 2026 上端到端验证通过：`draw_line`/`draw_circle`/`draw_arc`/`draw_rectangle`/`draw_text`/`draw_polyline`/`draw_hatch`/`add_dimension`/`save_drawing`/`list_layers`/`query_entities`/`get_entity`/`delete_entity`（后四个是相对参考项目 CAD-MCP 的创新点，见 [cad-mcp-analysis.md](../references/cad-mcp-analysis.md)）。详细实现记录见 [devlog.md](../logs/devlog.md)。
 
 ## 环境信息
 
 - AutoCAD 2026，安装路径 `D:\LiuYanhong\Apps\AutoCAD2026\AutoCAD 2026`。
 - COM ProgID：`AutoCAD.Application.25.1`（注册表确认，注意通用 `AutoCAD.Application` 未注册）。
 - conda 环境：`autocad-mcp`，Python 3.11，依赖 `pywin32` / `mcp[cli]` / `pydantic`。
+
+## 网页 UI 集成路径（多大模型接入，仍保留 MCP 协议）
+
+除了 Claude Desktop（stdio），项目还提供 `web/` 下的自建网页 UI + 后端，走一条独立的 MCP 集成路径：
+
+```
+浏览器            web/backend/app.py (FastAPI)
+   │ POST /api/chat        │
+   └──────────────────────▶│
+                            ▼
+                    agent_loop.py（编排循环）
+                     │                │
+                     ▼                ▼
+              providers/*        mcp_client.py（MCP client，streamable-http）
+           （多模型适配：Anthropic/          │
+            OpenAI/OpenAI 兼容）             ▼
+                                  server.py --http（新增的 HTTP 启动方式）
+                                       │
+                                       ▼
+                                  cad/ 层（不变）→ AutoCAD
+```
+
+关键点：
+- `server.py` 默认行为（stdio）完全不变，`--http` 只是多加的一种启动方式，两条路径（Claude Desktop / 网页 UI）可以同时跑，互不干扰，都复用同一套 `cad/`/`tools/`。
+- 网页后端**不**直接 `import autocad_mcp` 的 `cad`/`tools` 模块，而是通过 `mcp` 官方 SDK 的 `streamable_http` client 连接 `server.py --http`，走真正的 MCP 协议——这是用户明确要求的设计（保留 MCP，而不是把 `cad/` 函数直接包成 tool schema 塞给大模型）。
+- `providers/` 是多模型适配层：`base.py` 定义统一的 `LLMProvider.chat()` 接口，`anthropic_provider.py`/`openai_provider.py` 各自把 MCP 的 `Tool.inputSchema` 转成对应厂商的 tool schema 格式（Anthropic 几乎不用转，OpenAI 需要包一层 `{"type": "function", "function": {...}}`）。`openai_provider.py` 同时覆盖真 OpenAI 和国产 OpenAI 兼容模型（通义千问/DeepSeek/智谱等），靠 `base_url` 参数区分。
+- 已知限制（记录在 README）：会话历史存进程内存、不落盘，没有鉴权，只适合本机单用户场景，不是生产方案。
 
 ## 开放问题 / 后续迭代方向
 
