@@ -82,3 +82,10 @@ MVP 跑通后，把下一阶段要做的事拆成 4 个新 Issue，开了新 mil
 - [#13](https://github.com/codesknight/AutoCAD-MCP/issues/13) `save_drawing` 校验目标路径，避免误覆盖用户真实文件
 
 新增 label：`testing`、`performance`。
+
+## 2026-07-10（续四）：[#12] 接入 Claude Desktop（配置 + 协议级验证已完成，等用户做自然语言实测）
+
+- 发现本机安装的桌面客户端配置文件在 `%APPDATA%\Claude\claude_desktop_config.json`，是一个统一了经典 Claude 对话 + Cowork/Claude Code 的新版客户端（原文件里已经有 `coworkUserFilesPath`/`preferences` 等键，没有 `mcpServers`）。编辑前先备份了一份（`claude_desktop_config.json.bak-<时间戳>`），然后新增 `mcpServers.autocad-mcp` 这个顶层键，其余原有内容原样保留。
+- `command` 直接指向 `C:\Users\LiuYanhong\.conda\envs\autocad-mcp\python.exe`，`args: ["-m", "autocad_mcp.server"]`——不用 `conda run`，避免客户端拉起子进程时环境变量不全 / Windows 控制台编码的问题（README 里的示例也同步改了）。
+- **协议级验证**：没有直接调用 Python 函数走捷径，而是用 `mcp` 官方客户端 SDK（`mcp.client.stdio.stdio_client` + `ClientSession`）按配置里完全一致的命令拉起 `server.py` 子进程，走真正的 MCP stdio 协议 `list_tools`/`call_tool`：13 个工具全部可见，`draw_circle` 调用成功。验证脚本里按 CLAUDE.md 的安全规则，先检查了 `ActiveDocument` 确实是我们自己建的无路径 `Drawing7.dwg` 空白测试文件，才允许继续执行写操作（Claude Code 的 auto-mode 权限分类器一开始就因为脚本没做这个检查直接拦截了，加上检查后才放行——说明这条安全规则已经在生效）。
+- **还没做（需要用户在真实客户端里操作，我没法代劳）**：重启客户端让配置生效，然后在新对话里用自然语言实际触发这 13 个工具，看看哪些工具的参数描述/命名对 AI 不够清晰（比如角度单位、暂时没做的颜色参数），以及真实报错信息是否对用户友好。Issue #12 先不关，等用户反馈。
