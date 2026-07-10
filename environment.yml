@@ -1,0 +1,11 @@
+name: autocad-mcp
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - pywin32
+      - mcp[cli]
+      - pydantic
+      - pytest

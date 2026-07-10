@@ -1,0 +1,7 @@
+{
+  "cad_type": "AutoCAD",
+  "prog_id": "AutoCAD.Application.25.1",
+  "prog_id_fallbacks": ["AutoCAD.Application.25", "AutoCAD.Application"],
+  "connect_timeout": 15,
+  "visible": true
+}
