@@ -111,4 +111,6 @@ MVP 跑通后，把下一阶段要做的事拆成 4 个新 Issue，开了新 mil
 
 **尚未验证（需要用户拿真实 API Key 自己测）**：完整的 tool-calling 循环（大模型真的读懂工具描述、生成正确参数、`agent_loop` 正确执行并把结果喂回去、最终产出合理的文字回复）；OpenAI/国产 OpenAI 兼容模型那条分支目前只做了代码走查，没有实际调用测试过。
 
-**尚未做（后续可选，不在本次范围）**：给这次的工作在 GitHub 上补 milestone/issue 记录（仿照 Phase 2 的流程，做完之后补记录）；流式响应（当前是等大模型完全说完才一次性返回）。
+开了新 milestone「Phase 3: 网页 UI 完整验证与增强」（#3），补了 3 个 Issue 到看板：[#14](https://github.com/codesknight/AutoCAD-MCP/issues/14) 用真实 API Key 完整验证 Claude tool-calling 循环、[#15](https://github.com/codesknight/AutoCAD-MCP/issues/15) 验证 OpenAI/OpenAI 兼容模型分支、[#16](https://github.com/codesknight/AutoCAD-MCP/issues/16) 网页聊天支持流式响应。
+
+（顺手踩了个小坑：复制命令时手滑多建了一个叫「temp」的空 Project 看板，发现后立刻 `gh project delete` 删掉了，不影响正式看板 #2。）
