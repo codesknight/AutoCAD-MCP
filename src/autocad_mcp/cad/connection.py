@@ -50,7 +50,10 @@ class CADConnection:
             )
 
         self.app.Visible = self.config.visible
-        self._wait_for_document(self.config.connect_timeout)
+        if self.app.Documents.Count == 0:
+            self.new_document()
+        else:
+            self._wait_for_document(self.config.connect_timeout)
 
     def _wait_for_document(self, timeout: int) -> None:
         deadline = time.time() + timeout
@@ -62,6 +65,14 @@ class CADConnection:
             except pythoncom.com_error:
                 time.sleep(0.5)
         raise CADConnectionError("等待 AutoCAD 文档就绪超时")
+
+    def new_document(self, template: str | None = None) -> None:
+        """Create a brand-new drawing and switch to it, instead of reusing
+        whatever document happened to be active when we connected."""
+        doc = self.app.Documents.Add(template) if template else self.app.Documents.Add()
+        doc.Activate()
+        self.document = doc
+        self.model_space = doc.ModelSpace
 
     def is_connected(self) -> bool:
         if self.app is None:

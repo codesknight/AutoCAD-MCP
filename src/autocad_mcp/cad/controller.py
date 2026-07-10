@@ -21,7 +21,12 @@ class CADController:
         return line.ObjectID
 
     def draw_circle(self, center: Point, radius: float, layer: str | None = None) -> int:
-        raise NotImplementedError("TODO: 下一阶段实现")
+        """Draw a circle and return the new entity's ObjectID handle."""
+        model_space = self.connection.model_space
+        circle = model_space.AddCircle(to_variant_point(*center), radius)
+        if layer:
+            circle.Layer = layer
+        return circle.ObjectID
 
     def draw_arc(
         self, center: Point, radius: float, start_angle: float, end_angle: float,

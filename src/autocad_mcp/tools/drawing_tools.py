@@ -18,9 +18,9 @@ def register(mcp: FastMCP) -> None:
 
     @mcp.tool()
     def draw_circle(center_x: float, center_y: float, center_z: float, radius: float, layer: str = "") -> str:
-        """画一个圆（TODO：下一阶段实现）。"""
-        get_controller().draw_circle((center_x, center_y, center_z), radius, layer or None)
-        return "not implemented yet"
+        """在当前图纸中画一个圆，返回新实体的 ObjectID。"""
+        object_id = get_controller().draw_circle((center_x, center_y, center_z), radius, layer or None)
+        return f"draw_circle ok, object_id={object_id}"
 
     @mcp.tool()
     def draw_arc(
