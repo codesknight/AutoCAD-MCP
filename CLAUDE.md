@@ -18,5 +18,13 @@
 
 ## 环境
 
-- conda 环境名：`autocad-mcp`（Python 3.11）。运行/测试命令统一用 `conda run -n autocad-mcp ...`。
+- conda 环境名：`autocad-mcp`（Python 3.11）。命令行直接调用建议用 `"/c/Users/LiuYanhong/.conda/envs/autocad-mcp/python.exe" script.py`（Windows 上 `conda run` 在遇到中文/非 ASCII 输出时会因为控制台 GBK 编码而报 `UnicodeEncodeError`，用 env 内的 python.exe 直连可绕开）。
 - 集成测试（`tests/test_connection.py` 等）需要真实打开的 AutoCAD 实例，连不上时应 `pytest.skip` 而不是报错失败。
+
+## ⚠️ 安全注意事项
+
+用户的 AutoCAD 里经常开着**真实的工程图纸**（不是空白测试文件）。`GetActiveObject` 连接的是当前活动实例的**当前活动文档**——任何写操作（画线、保存等）都会直接作用在用户正在编辑的真实图纸上。
+
+- 写操作类的手动验证脚本，跑之前先打印 `conn.document.Name` 确认（或者要求用户新建一个空白图纸再测试），不要默认往当前活动文档里写测试数据。
+- 如果不小心在真实图纸上执行了测试性质的绘制，立刻用 `document.SendCommand("_.undo\n1\n")` 撤销，并明确告知用户改了什么、已撤销。
+- 涉及 `save_drawing`（另存为/覆盖保存）等不可逆操作时，默认写到新文件路径，不要覆盖用户原文件，除非用户明确要求。
