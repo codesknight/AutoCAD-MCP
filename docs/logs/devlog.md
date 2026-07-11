@@ -202,3 +202,17 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 前端 Base URL 提示行加了一句：本地自己部署的服务（如 `http://127.0.0.1:8000/v1`）也可以直接填，通常不需要真实 API Key。
 
 **端到端验证**：起真实 MCP HTTP server + 网页后端，选"OpenAI 兼容"、Base URL 填一个没有服务监听的假本地地址（`http://127.0.0.1:9999/v1`）、**API Key 留空**发消息：请求没有被前端拦截，正常发出，`mcp_client.list_tools()` 正常跑完，最后因为目标端口没有服务而报连接错误（预期行为，证明请求确实是不带真实 key 打过去的，不是在验证阶段就被挡住）。
+
+## 2026-07-11（续三）：新增 `export_current_view`，打通"直接问当前打开的图纸"闭环
+
+补上一直缺的一环：把当前 AutoCAD 视图导出成 PNG，喂给 `ask_drawing_vqa`，不用再手动指定一张已存在的图片路径。
+
+**实现**：`cad/controller.py` 新增 `export_current_view(file_path=None, timeout=30.0)`，用 AutoCAD 自带的 `PublishToWeb PNG.pc3` 光栅打印驱动导出全图。`file_path` 不填会在系统临时目录（`%TEMP%/autocad_mcp_exports/`）自动生成一个。注册为 MCP 工具 `export_current_view`（`tools/document_tools.py`）。
+
+**踩坑（3 个，都是 AutoCAD 打印自动化的经典坑，逐个调试解决的）**：
+1. **`PlotToFile` 是异步的**：调用后立刻返回，文件在后台慢慢写，函数返回时文件可能还不存在。第一次测试 `file exists: False`。修复：加 `_wait_for_stable_file()`，轮询等文件出现且大小连续两次不变才算写完，带超时。
+2. **换打印驱动后纸张/介质没跟着刷新，打印任务默默失败**：只设 `layout.ConfigName = "PublishToWeb PNG.pc3"` 不够，必须显式调用 `layout.RefreshPlotDeviceInfo()`。一开始还以为要手动指定介质名 `"MaxSize"`，结果报"参数无效"——查了 `layout.GetCanonicalMediaNames()` 才发现这个驱动的介质名是按分辨率命名的（如 `FHD_(1920.00_x_1080.00_Pixels)`），根本没有 `MaxSize` 这个选项；`RefreshPlotDeviceInfo()` 本身就会自动选一个合理默认值（如 `Sun_Hi-Res_(1600.00_x_1280.00_Pixels)`），不用手动指定。
+3. **全新图纸的 `layout.ConfigName`/`CanonicalMediaName` 初始是空字符串**：导出完想把配置改回原样，直接把空字符串赋值回去会报"参数无效"（COM 不接受把打印设备设成"无"）。修复：只有原来确实配置过打印设备（非空）才恢复。
+4. **导出的图默认转了 90 度**：`RefreshPlotDeviceInfo()` 默认把 `PlotRotation` 设成 1（90°），是 AutoCAD 为了让图纸长宽比更贴合纸张比例做的"最佳适配旋转"，但会导致图纸文字全部躺倒，对 VQA 模型读图不友好。修复：显式设 `layout.PlotRotation = 0`，强制不旋转。
+
+**端到端验证**：用真实 MCP 协议依次调用 `export_current_view`（不传路径，自动生成）→ `ask_drawing_vqa`（把导出的图片路径传进去，问"这张图里有几个图形？"），VQA 模型真实回答"一共有2个图形，一个是圆形，一个是斜线"——跟测试图纸内容（一个圆+一条斜线+文字，文字被合理排除在"图形"之外）完全对得上，肉眼核对导出的 PNG 图片也确认无误（不再是 90 度躺倒的）。至此"用自然语言问当前打开的 AutoCAD 图纸"这个体验完整打通，不需要用户手动导出图片。
