@@ -247,3 +247,17 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 **尚未做（记入 architecture.md 的"开放问题"，作为下一步 roadmap）**：按区域批量选择/查询（`query_entities` 目前仍是全表扫描）；电力工程标准图块符号库（现在还得自己找 .dwg 文件当图块用）；图块属性批量填报/校核。
 
 **GitHub 项目管理**：开了新 milestone「Phase 4: 复杂图纸支持（图块/变换/图层）」（#4），本次做完的 4 项（[#21](https://github.com/codesknight/AutoCAD-MCP/issues/21) 图块、[#22](https://github.com/codesknight/AutoCAD-MCP/issues/22) 变换、[#23](https://github.com/codesknight/AutoCAD-MCP/issues/23) 图层+MTEXT、[#24](https://github.com/codesknight/AutoCAD-MCP/issues/24) 图块查询扩展）已关闭；剩下的 3 项 roadmap（[#25](https://github.com/codesknight/AutoCAD-MCP/issues/25) 按区域批量选择、[#26](https://github.com/codesknight/AutoCAD-MCP/issues/26) 标准图块符号库、[#27](https://github.com/codesknight/AutoCAD-MCP/issues/27) 图块属性批量填报）开着，都加进了[看板](https://github.com/users/codesknight/projects/2)。
+
+## 2026-07-11（续六）：[#26] 用户提供的真实数据集直接解决了标准图块符号库这个缺口
+
+用户指了两个本地数据集目录：
+1. `UnderstandingCircuitDiagrams-VQA/origin-data`——国家电网 110kV 变电站通用设计 PDF+CAD 原始资料（227 个 dwg + 221 个 pdf，按图纸编号如 110-A1-1 组织，含图纸+说明），大概率是之前给 VQA 模型微调用的原始素材，先记录下来，这次没有直接动它。
+2. `UnderstandingCircuitDiagrams-206Origin/源数据`——一个巨大的电气 CAD 图纸集合（**38908 个 dwg 文件**），里面有个子文件夹「电力设计一次元件带属性的块集合」，正好是一组独立的标准电力设备符号（断路器/隔离开关/各类变压器/避雷器/电压互感器等 19 个文件，每个文件就是一个符号）。
+
+**验证**：用真实文件测了 `insert_block`——`CIRCUIT BREAKER.dwg`/`DISCONNECTOR.dwg`/`TRANSFORMER TWO WINDING GENERAL.dwg` 插入后导出截图肉眼确认，画出来的正是标准的断路器（带×标记）、隔离开关（带接地符号的折线）、双绕组变压器（两个相切圆）单线图符号——**说明 `insert_block` 不用改代码就能直接用这套真实的国标电气符号库**，之前 #26 想要的东西缺的不是代码，是真实符号数据，现在有了。
+
+**实现**：新增 `symbol_library.json`（19 个符号的中英文名 -> 相对文件名目录，`base_dir` 存本机绝对路径）+ `cad/symbol_library.py`（解析出绝对路径列表，数据集不在本机时老实返回空数组而不是报错）+ MCP 工具 `list_symbol_library`（现在总共 29 个工具）。**符号本体（.dwg 文件）不提交进仓库**——这是用户自己收集的外部数据集，来源不明确能否自由再分发，仓库里只存路径目录。
+
+**端到端验证**：真实 MCP 协议依次调 `list_symbol_library` → 按中文名"避雷器"在返回的目录里找到对应文件 → `insert_block` 用解析出的路径插入，全程成功。
+
+**后续**：`UnderstandingCircuitDiagrams-VQA` 那批真实 110kV 变电站图纸，以及 206Origin 里其他海量的 CAD 图纸（比如「国家标准图集-电气图例」「电气符号库GB4728」等目录），都还有进一步利用空间（更多真实图纸样例、更全的符号库），先记在这里，作为后续如果需要可以再深挖的方向，这次没有全部处理。
