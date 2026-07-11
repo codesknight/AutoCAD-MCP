@@ -245,3 +245,5 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 **端到端验证**：这次很少见地一次性全部通过，没踩到新的 COM 坑（大概是因为 Move/Rotate/Copy/ScaleEntity/Mirror 这类"标准实体方法"比之前折腾的打印/图块自动定义相关 API 成熟很多）。用 AutoCAD 自带的 `Express/brkline.dwg` 当外部图块测试插入，`list_blocks` 确认自动定义成功；画一条线做移动(5,5,0)→旋转90°→复制偏移(20,0,0)→以端点为基点缩放2倍→镜像，每一步返回的坐标都手算验证过完全正确。之后又用真实 MCP streamable-http 协议重新跑了一遍全部新工具，确认协议层（JSON schema 参数）也没问题。
 
 **尚未做（记入 architecture.md 的"开放问题"，作为下一步 roadmap）**：按区域批量选择/查询（`query_entities` 目前仍是全表扫描）；电力工程标准图块符号库（现在还得自己找 .dwg 文件当图块用）；图块属性批量填报/校核。
+
+**GitHub 项目管理**：开了新 milestone「Phase 4: 复杂图纸支持（图块/变换/图层）」（#4），本次做完的 4 项（[#21](https://github.com/codesknight/AutoCAD-MCP/issues/21) 图块、[#22](https://github.com/codesknight/AutoCAD-MCP/issues/22) 变换、[#23](https://github.com/codesknight/AutoCAD-MCP/issues/23) 图层+MTEXT、[#24](https://github.com/codesknight/AutoCAD-MCP/issues/24) 图块查询扩展）已关闭；剩下的 3 项 roadmap（[#25](https://github.com/codesknight/AutoCAD-MCP/issues/25) 按区域批量选择、[#26](https://github.com/codesknight/AutoCAD-MCP/issues/26) 标准图块符号库、[#27](https://github.com/codesknight/AutoCAD-MCP/issues/27) 图块属性批量填报）开着，都加进了[看板](https://github.com/users/codesknight/projects/2)。
