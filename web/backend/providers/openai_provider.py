@@ -43,7 +43,12 @@ class OpenAIProvider(LLMProvider):
         self.model = model
 
     def _build_client(self, api_key: str, base_url: str | None):
-        return openai.AsyncOpenAI(api_key=api_key, base_url=_normalize_base_url(base_url))
+        # Locally-deployed servers (openai_compatible pointed at localhost)
+        # commonly don't check the Authorization header at all -- the SDK
+        # itself refuses to construct a client with an empty key, so fall
+        # back to a placeholder that satisfies the SDK but is never a real
+        # credential.
+        return openai.AsyncOpenAI(api_key=api_key or "not-needed", base_url=_normalize_base_url(base_url))
 
     async def chat(
         self,

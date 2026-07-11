@@ -161,3 +161,42 @@ MVP 跑通后，把下一阶段要做的事拆成 4 个新 Issue，开了新 mil
 - 前端加了"豆包 (Doubao / 火山方舟 Ark)"选项，复用 Base URL 提示行（留空会用默认值）。
 
 **端到端验证**：起真实 MCP HTTP server + 网页后端，选豆包、填假 API Key + 假 endpoint ID 发消息：请求先正常走完 `mcp_client.list_tools()`，然后真的打到了火山方舟的 Ark API，拿到服务端返回的 `401 AuthenticationError: API key format is incorrect`——证明整条链路（MCP 工具列表 → DoubaoProvider → AsyncArk → 真实 Ark 服务端）是通的，只是假 key 格式不对。
+
+## 2026-07-11（续）：新增 `ask_drawing_vqa` 工具，接入另一个毕设项目（电力工程图纸 VQA 微调模型）
+
+把另一个毕设项目（`D:\LiuYanhong\Projects\BISHE\data`，InternVL3-8B + LoRA 微调的 110kV 变电站图纸理解模型，LLM-judge 29.24%）接进来，作为 MCP 工具暴露给 AI 客户端调用。
+
+**架构决策：模型不进本项目进程，走独立 HTTP 服务**：
+- 模型依赖（torch/transformers/peft/bitsandbytes）体积大，和本项目环境（`pywin32` + `mcp[cli]`）没有交集，混进来会让两边依赖互相拖累。
+- 本机只有 8GB 显存，模型要 4bit 量化才能装下，加载耗时 ~20s，单题推理 90~130s——每次工具调用都重新加载模型不现实，必须常驻单独进程。
+- 于是新增 `D:\LiuYanhong\Projects\BISHE\data\Models\vqa_api_server.py`（FastAPI，跑在 `power_vqa` conda 环境，监听 `127.0.0.1:8933`），模型只加载一次；本项目这边只加一个薄薄的 HTTP client 转发层，符合本项目自己的分层约定（`tools/` 层只做参数校验+转发）。
+
+**改动**：
+- 新增 `src/autocad_mcp/tools/vqa_tools.py`：`ask_drawing_vqa(image_path, question)` 转发到本地 VQA API；`vqa_service_status()` 查服务是否就绪；服务没起来时给出人话提示（附带启动命令），不是裸抛连接异常。
+- `server.py` 注册新工具；`pyproject.toml` 核心依赖加 `httpx`（其实 `mcp[cli]` 已经传递依赖了 `httpx`，但既然本项目直接 import 用它，显式声明更清楚）。
+
+**踩坑**：`vqa_api_server.py` 顶部文档字符串里直接写了 Windows 路径（`"C:\Users\...`），触发了 `\U` 被当成 8 位十六进制 Unicode 转义符导致 `SyntaxError: (unicode error) 'unicodeescape' codec can't decode bytes`——docstring 里带反斜杠路径必须用 `r"""..."""` 或把反斜杠转义成 `\\`。
+
+**端到端验证**：先起 `vqa_api_server.py`（4bit量化加载模型，显存占用5.68GB），`curl /health` 确认就绪；再直接调用 `ask_drawing_vqa` 工具函数（不经过完整 MCP 协议，直接从 `server.mcp._tool_manager._tools` 里取出函数调用，等价于验证核心逻辑）：传入本地一张评估集图纸 + "图中标注了几台主变压器？"，正确返回"1台"；换一张图问母线配置，正确返回"该变电站采用单母线分段接线，共设置两段母线，分别为I段和II段"。两次请求耗时都在 90~120s 区间，符合本机硬件预期。
+
+**使用方式**：这两个服务都要手动起，都是长期驻留进程：
+```bash
+# 1. 先起VQA API服务（power_vqa环境）
+cd D:\LiuYanhong\Projects\BISHE\data\Models
+"C:\Users\LiuYanhong\.conda\envs\power_vqa\python.exe" -m uvicorn vqa_api_server:app --host 127.0.0.1 --port 8933
+
+# 2. 再起MCP server（autocad-mcp环境，跟以前一样）
+```
+
+**尚未验证**：没有走完整 MCP 协议（stdio/streamable-http）从 Claude Desktop 或网页 UI 里实际调用这个新工具，只验证了工具函数本身的逻辑。也没有做"先截图/导出当前 AutoCAD 图纸再喂给 VQA 模型"这一步——目前 `image_path` 需要调用方（AI客户端）自己提供一张已存在的图片路径，本项目暂时没有"导出当前视图为PNG"的工具，如果要打通"直接问当前打开的AutoCAD图纸"这个体验，还需要补一个截图/导出工具。
+
+## 2026-07-11（续二）：网页 UI 支持本地自己部署的模型服务
+
+用户想让网页 UI 能接自己写的本地模型 API 服务（类似 `vqa_api_server.py` 那种自建服务，走 OpenAI 兼容协议但不做真实鉴权）。现有的"OpenAI 兼容"选项理论上已经支持任意 base_url，唯一的障碍是前端强制要求填 API Key。
+
+- 前端去掉了"未填 API Key 就 alert 拦截"的校验，改成允许留空。
+- `app.py` 的 `ChatRequest.api_key` 默认值改成 `""`（本来就是 `str` 类型，Pydantic 没拦，只是前端拦了）。
+- `openai_provider.py` 的 `_build_client()`：如果 `api_key` 是空字符串，用占位符 `"not-needed"` 兜底——因为 `openai` SDK 在构造 client 时如果 `api_key` 为空/None 会直接报错（`Missing credentials`），不管目标服务器实际要不要鉴权都得先满足 SDK 自己的这道检查。
+- 前端 Base URL 提示行加了一句：本地自己部署的服务（如 `http://127.0.0.1:8000/v1`）也可以直接填，通常不需要真实 API Key。
+
+**端到端验证**：起真实 MCP HTTP server + 网页后端，选"OpenAI 兼容"、Base URL 填一个没有服务监听的假本地地址（`http://127.0.0.1:9999/v1`）、**API Key 留空**发消息：请求没有被前端拦截，正常发出，`mcp_client.list_tools()` 正常跑完，最后因为目标端口没有服务而报连接错误（预期行为，证明请求确实是不带真实 key 打过去的，不是在验证阶段就被挡住）。

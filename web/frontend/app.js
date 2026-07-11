@@ -55,10 +55,9 @@ async function sendMessage() {
   const message = messageInput.value.trim();
   if (!message && !pendingImage) return;
   const apiKey = apiKeyInput.value.trim();
-  if (!apiKey) {
-    alert("请先填写 API Key");
-    return;
-  }
+  // API Key is optional -- some locally-deployed OpenAI-compatible servers
+  // don't check auth at all. Cloud providers will simply fail with their
+  // own auth error if left blank.
   const model = modelInput.value.trim();
   if (BASE_URL_AND_MODEL_REQUIRED_PROVIDERS.includes(providerSelect.value) && !model) {
     alert("使用 OpenAI 兼容 / 豆包模式时必须填写模型名称");

@@ -32,7 +32,7 @@
   </div>
   <div class="row">
     <label for="api_key">API Key</label>
-    <input id="api_key" type="password" placeholder="只在本次会话中使用，不会保存">
+    <input id="api_key" type="password" placeholder="只在本次会话中使用，不会保存；本地部署的服务不需要真实鉴权可以留空">
   </div>
   <div class="row" id="base_url_row">
     <label for="base_url">Base URL</label>
@@ -45,7 +45,8 @@
       通义千问 <code>https://dashscope.aliyuncs.com/compatible-mode/v1</code>、
       DeepSeek <code>https://api.deepseek.com/v1</code>、
       智谱 GLM <code>https://open.bigmodel.cn/api/paas/v4/</code>、
-      豆包/火山方舟 <code>https://ark.cn-beijing.volces.com/api/v3</code>（留空也会用这个默认值）
+      豆包/火山方舟 <code>https://ark.cn-beijing.volces.com/api/v3</code>（留空也会用这个默认值）。
+      本地自己部署的服务（比如 <code>http://127.0.0.1:8000/v1</code>）也可以填，通常不需要真实 API Key。
     </small>
   </div>
   <div class="row">

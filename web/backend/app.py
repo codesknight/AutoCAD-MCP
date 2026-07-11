@@ -15,7 +15,7 @@ FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 class ChatRequest(BaseModel):
     conversation_id: str
     provider: str  # "anthropic" | "openai" | "openai_compatible" | "doubao"
-    api_key: str
+    api_key: str = ""  # optional for local deployments that don't check auth
     base_url: str | None = None
     model: str | None = None
     message: str
