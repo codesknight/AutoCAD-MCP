@@ -286,3 +286,14 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 **验证**：用真实 AutoCAD 连接测试，`draw_mtext` 写入"10kV 进线测试"后 `get_entity` 读回确认样式生效、文字正确；对已有的断路器/变压器图块和连接线跑 `get_entity`，确认 `bounding_box` 字段返回的真实坐标和前面手工核对的一致。`pytest` 全量跑过，无回归。
 
 **尚未解决**：`bounding_box` 只是给了数据，图块之间的自动对齐/连线仍然要靠 LLM 自己算（或者未来再加一层"自动布线"辅助工具）；旋转角度让符号朝向匹配连接方向、图块内部"接线端子"位置（不是包围盒边缘，而是符号定义里预留的电气连接点）目前也还没有专门支持——这些记为后续可能要做的方向，这次先解决"数据缺失"和"字体缺失"这两个更直接、更能立刻验证对错的问题。
+
+## 2026-07-11（续九）：[#13] `save_drawing` 加保护，避免误覆盖用户真实图纸
+
+用户反馈中文和布局问题有改善后，让我"继续开发，完善项目"。查了一下开放 issue 列表，`#13` 是 CLAUDE.md「安全注意事项」里明确点名过的隐患：`save_drawing` 之前是裸调用 `document.SaveAs(file_path)`，没有任何保护——如果 AI 传的 `file_path` 恰好和用户当前文档的原始路径相同，会直接覆盖用户正在编辑的真实图纸，之前完全没有拦截。
+
+**修复**（`cad/controller.py::save_drawing`）：
+- 校验扩展名在 AutoCAD SaveAs 支持的格式内（`.dwg`/`.dxf`/`.dwt`/`.dws`），否则报友好错误而不是等 COM 层抛一个晦涩的报错。
+- 校验目标目录存在。
+- 新增 `overwrite: bool = False` 参数：如果 `file_path` 和 `document.FullName`（当前文档原始路径，大小写不敏感比较）相同且 `overwrite=False`，直接拒绝并报错说明原因；确实要覆盖原文件时显式传 `overwrite=True`。`tools/document_tools.py` 的 `save_drawing` 工具签名同步更新。
+
+**验证**：用真实 AutoCAD 连接测试了 5 种情况——错误扩展名拒绝、目标目录不存在拒绝、正常另存成功、二次存到同一路径不加 overwrite 被拒绝、加 overwrite=True 后成功覆盖——全部符合预期。中途踩了个环境坑：临时测试文件放在 Windows 短文件名路径（`LIUYAN~1`）下时 `SaveAs` 会报错，换成普通路径（`C:\Temp\`）后正常——这是本机临时目录短路径命名的固有怪癖，和这次改的代码无关，记录一下避免以后重复排查。`pytest` 全量跑过，无回归。GitHub `#13` 已关闭。

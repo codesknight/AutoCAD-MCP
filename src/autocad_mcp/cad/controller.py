@@ -10,6 +10,7 @@ from autocad_mcp.cad.geometry import Point, to_variant_double_array, to_variant_
 
 
 _CJK_TEXT_STYLE = "MCP_CJK"
+_SAVE_DRAWING_EXTENSIONS = {".dwg", ".dxf", ".dwt", ".dws"}
 
 
 class CADController:
@@ -154,7 +155,27 @@ class CADController:
         )
         return dim.ObjectID
 
-    def save_drawing(self, file_path: str) -> None:
+    def save_drawing(self, file_path: str, overwrite: bool = False) -> None:
+        """另存为指定路径。默认不允许目标路径和当前文档原始路径相同——避免不小心
+        覆盖用户正在编辑的真实图纸；确实要覆盖原文件时需要显式传 overwrite=True。
+        """
+        ext = os.path.splitext(file_path)[1].lower()
+        if ext not in _SAVE_DRAWING_EXTENSIONS:
+            raise ValueError(
+                f"不支持的文件格式 {ext!r}，AutoCAD SaveAs 支持的格式: {sorted(_SAVE_DRAWING_EXTENSIONS)}"
+            )
+        target_dir = os.path.dirname(file_path) or "."
+        if not os.path.isdir(target_dir):
+            raise ValueError(f"目标目录不存在: {target_dir!r}")
+
+        current_path = self.connection.document.FullName
+        if current_path and not overwrite:
+            same_file = os.path.normcase(os.path.abspath(file_path)) == os.path.normcase(os.path.abspath(current_path))
+            if same_file:
+                raise ValueError(
+                    f"目标路径和当前文档的原始文件路径相同（{current_path!r}），"
+                    "这会覆盖用户正在编辑的真实图纸。如果确实要覆盖原文件，请显式传 overwrite=True。"
+                )
         self.connection.document.SaveAs(file_path)
 
     def export_current_view(self, file_path: str | None = None, timeout: float = 30.0) -> str:

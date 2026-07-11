@@ -14,9 +14,11 @@ def register(mcp: FastMCP) -> None:
         return state.new_document()
 
     @mcp.tool()
-    def save_drawing(file_path: str) -> str:
-        """将当前图纸另存为指定路径。"""
-        get_controller().save_drawing(file_path)
+    def save_drawing(file_path: str, overwrite: bool = False) -> str:
+        """将当前图纸另存为指定路径。默认不允许 file_path 和当前文档的原始路径相同
+        （避免覆盖用户正在编辑的真实图纸）；确实要覆盖原文件时传 overwrite=True。
+        """
+        get_controller().save_drawing(file_path, overwrite=overwrite)
         return f"saved to {file_path}"
 
     @mcp.tool()
