@@ -8,6 +8,19 @@ from web.backend.providers.base import LLMProvider, ProviderResult, ToolCall
 DEFAULT_MODEL = "gpt-4o"
 
 
+def _normalize_base_url(base_url: str | None) -> str | None:
+    """The openai SDK appends '/chat/completions' itself -- base_url must be
+    the API root (e.g. 'https://open.bigmodel.cn/api/paas/v4/'), not the full
+    endpoint. Strip a trailing '/chat/completions' if the user pasted the
+    full endpoint URL by mistake, to avoid a doubled path -> 404."""
+    if not base_url:
+        return base_url
+    stripped = base_url.rstrip("/")
+    if stripped.endswith("/chat/completions"):
+        stripped = stripped[: -len("/chat/completions")]
+    return stripped
+
+
 def to_openai_tools(mcp_tools: list[MCPTool]) -> list[dict]:
     return [
         {
@@ -29,6 +42,9 @@ class OpenAIProvider(LLMProvider):
     def __init__(self, model: str = DEFAULT_MODEL):
         self.model = model
 
+    def _build_client(self, api_key: str, base_url: str | None):
+        return openai.AsyncOpenAI(api_key=api_key, base_url=_normalize_base_url(base_url))
+
     async def chat(
         self,
         messages: list[dict],
@@ -36,7 +52,7 @@ class OpenAIProvider(LLMProvider):
         api_key: str,
         base_url: str | None = None,
     ) -> ProviderResult:
-        client = openai.AsyncOpenAI(api_key=api_key, base_url=base_url)
+        client = self._build_client(api_key, base_url)
         response = await client.chat.completions.create(
             model=self.model,
             tools=tools,

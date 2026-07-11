@@ -27,6 +27,7 @@
       <option value="anthropic">Claude (Anthropic)</option>
       <option value="openai">OpenAI</option>
       <option value="openai_compatible">OpenAI 兼容(通义千问/DeepSeek/智谱...)</option>
+      <option value="doubao">豆包 (Doubao / 火山方舟 Ark)</option>
     </select>
   </div>
   <div class="row">
@@ -37,9 +38,19 @@
     <label for="base_url">Base URL</label>
     <input id="base_url" type="text" placeholder="例如 https://dashscope.aliyuncs.com/compatible-mode/v1">
   </div>
+  <div class="row" id="base_url_hint_row" style="display: none;">
+    <label></label>
+    <small style="color: #888;">
+      填 API 根路径，<b>不要</b>带 <code>/chat/completions</code>（会导致 404 路径重复）。常见示例：
+      通义千问 <code>https://dashscope.aliyuncs.com/compatible-mode/v1</code>、
+      DeepSeek <code>https://api.deepseek.com/v1</code>、
+      智谱 GLM <code>https://open.bigmodel.cn/api/paas/v4/</code>、
+      豆包/火山方舟 <code>https://ark.cn-beijing.volces.com/api/v3</code>（留空也会用这个默认值）
+    </small>
+  </div>
   <div class="row">
     <label for="model">模型名称</label>
-    <input id="model" type="text" placeholder="留空则用默认值，OpenAI 兼容模式必填，例如 deepseek-v4-pro">
+    <input id="model" type="text" placeholder="OpenAI 兼容/豆包模式必填；豆包填推理接入点 ID，例如 ep-xxxxxxxx-xxxxx">
   </div>
 
   <div id="log"></div>

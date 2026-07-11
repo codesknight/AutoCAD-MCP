@@ -11,7 +11,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest"]
-web = ["anthropic", "openai", "fastapi", "uvicorn[standard]"]
+web = ["anthropic", "openai", "fastapi", "uvicorn[standard]", "volcengine-python-sdk[ark]"]
 
 [build-system]
 requires = ["setuptools>=68"]

@@ -14,7 +14,7 @@ FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 
 class ChatRequest(BaseModel):
     conversation_id: str
-    provider: str  # "anthropic" | "openai" | "openai_compatible"
+    provider: str  # "anthropic" | "openai" | "openai_compatible" | "doubao"
     api_key: str
     base_url: str | None = None
     model: str | None = None
@@ -44,7 +44,13 @@ async def chat(req: ChatRequest) -> ChatResponse:
             req.image_media_type,
         )
     except Exception as exc:  # noqa: BLE001 - surface any provider/network error to the chat UI
-        return ChatResponse(reply=f"出错了：{exc}")
+        exc_text = str(exc)
+        if "image_url" in exc_text and req.image_base64:
+            return ChatResponse(
+                reply="出错了：当前选的模型不支持图片输入（vision），换一个支持看图的模型再试。"
+                f"\n原始报错：{exc_text}"
+            )
+        return ChatResponse(reply=f"出错了：{exc_text}")
     return ChatResponse(reply=reply)
 
 

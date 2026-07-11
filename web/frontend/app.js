@@ -2,6 +2,7 @@ const conversationId = crypto.randomUUID();
 
 const providerSelect = document.getElementById("provider");
 const baseUrlRow = document.getElementById("base_url_row");
+const baseUrlHintRow = document.getElementById("base_url_hint_row");
 const apiKeyInput = document.getElementById("api_key");
 const baseUrlInput = document.getElementById("base_url");
 const modelInput = document.getElementById("model");
@@ -13,8 +14,15 @@ const imagePreview = document.getElementById("image_preview");
 
 let pendingImage = null; // { base64, mediaType } | null
 
+// Providers with no sane default base_url/model (arbitrary compatible
+// endpoint, or an Ark inference endpoint ID) -- must match agent_loop.py's
+// MODEL_REQUIRED_PROVIDERS.
+const BASE_URL_AND_MODEL_REQUIRED_PROVIDERS = ["openai_compatible", "doubao"];
+
 providerSelect.addEventListener("change", () => {
-  baseUrlRow.style.display = providerSelect.value === "openai_compatible" ? "flex" : "none";
+  const showBaseUrl = BASE_URL_AND_MODEL_REQUIRED_PROVIDERS.includes(providerSelect.value);
+  baseUrlRow.style.display = showBaseUrl ? "flex" : "none";
+  baseUrlHintRow.style.display = showBaseUrl ? "flex" : "none";
 });
 
 imageInput.addEventListener("change", () => {
@@ -52,8 +60,8 @@ async function sendMessage() {
     return;
   }
   const model = modelInput.value.trim();
-  if (providerSelect.value === "openai_compatible" && !model) {
-    alert("使用 OpenAI 兼容模式时必须填写模型名称");
+  if (BASE_URL_AND_MODEL_REQUIRED_PROVIDERS.includes(providerSelect.value) && !model) {
+    alert("使用 OpenAI 兼容 / 豆包模式时必须填写模型名称");
     return;
   }
 
@@ -72,7 +80,9 @@ async function sendMessage() {
         conversation_id: conversationId,
         provider: providerSelect.value,
         api_key: apiKey,
-        base_url: providerSelect.value === "openai_compatible" ? baseUrlInput.value.trim() : null,
+        base_url: BASE_URL_AND_MODEL_REQUIRED_PROVIDERS.includes(providerSelect.value)
+          ? baseUrlInput.value.trim() || null
+          : null,
         model: model || null,
         message: effectiveMessage,
         image_base64: imageToSend ? imageToSend.base64 : null,
