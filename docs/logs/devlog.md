@@ -261,3 +261,11 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 **端到端验证**：真实 MCP 协议依次调 `list_symbol_library` → 按中文名"避雷器"在返回的目录里找到对应文件 → `insert_block` 用解析出的路径插入，全程成功。
 
 **后续**：`UnderstandingCircuitDiagrams-VQA` 那批真实 110kV 变电站图纸，以及 206Origin 里其他海量的 CAD 图纸（比如「国家标准图集-电气图例」「电气符号库GB4728」等目录），都还有进一步利用空间（更多真实图纸样例、更全的符号库），先记在这里，作为后续如果需要可以再深挖的方向，这次没有全部处理。
+
+## 2026-07-11（续七）：补 `new_drawing` 工具——补上一个安全缺口
+
+用户想要一份"现在能测什么"的功能清单和提示词，好在网页 UI 里试。给之前发现一个安全缺口：之前所有写操作工具都是直接作用在"当前活动文档"上，但 AI 大脑自己没有工具能主动新建一张空白图纸——之前每次做实验性验证都是我自己手动写脚本检查 `document.Name`，现在真要把提示词交给用户去随便试，得让 AI 自己就能做这个安全检查，而不是全靠用户记得先手动新建文件。
+
+**实现**：`state.py` 新增 `new_document()`（复用已有的 `CADConnection.new_document()`），`tools/document_tools.py` 新增 `new_drawing` MCP 工具，描述里写明"做实验性绘图操作前建议先调用这个"。现在总共 **30 个工具**。
+
+**验证**：`asyncio.run(mcp.list_tools())` 确认工具已注册且总数变为 30；直接调用 `state.new_document()` 确认能正常切到新文档（`Drawing19.dwg`）。
