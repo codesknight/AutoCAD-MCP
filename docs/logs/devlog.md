@@ -190,6 +190,8 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 
 **尚未验证**：没有走完整 MCP 协议（stdio/streamable-http）从 Claude Desktop 或网页 UI 里实际调用这个新工具，只验证了工具函数本身的逻辑。也没有做"先截图/导出当前 AutoCAD 图纸再喂给 VQA 模型"这一步——目前 `image_path` 需要调用方（AI客户端）自己提供一张已存在的图片路径，本项目暂时没有"导出当前视图为PNG"的工具，如果要打通"直接问当前打开的AutoCAD图纸"这个体验，还需要补一个截图/导出工具。
 
+**补充验证（2026-07-11）**：用真实 MCP 协议（`web/backend/mcp_client.py` 的 streamable-http client，跟网页 UI 走的是同一条路径）调用 `ask_drawing_vqa`，`vqa_api_server.py` 真实跑着（`power_vqa` 环境，InternVL3-8B + LoRA），传入评估集图片 `test_001.png` + "图中标注了几台主变压器？"，模型真实回答"2台，分别为1号主变和2号主变"。`list_tools()` 显示 15 个工具（13 个原有 + `ask_drawing_vqa`/`vqa_service_status`）。**结论：`vqa_tools.py` 注册进 `server.py` 之后，天然就是网页 UI（或 Claude Desktop）里任意一个"大脑"LLM 都能调用的工具，不需要为这个本地模型单独写接入代码**——这就是分层 MCP 架构的意义：新工具只要注册进 `server.py`，所有 MCP client 自动可见。真正缺的还是"先截图/导出当前 AutoCAD 视图"这一步，`image_path` 目前得指向一张已经存在的图片文件。
+
 ## 2026-07-11（续二）：网页 UI 支持本地自己部署的模型服务
 
 用户想让网页 UI 能接自己写的本地模型 API 服务（类似 `vqa_api_server.py` 那种自建服务，走 OpenAI 兼容协议但不做真实鉴权）。现有的"OpenAI 兼容"选项理论上已经支持任意 base_url，唯一的障碍是前端强制要求填 API Key。
