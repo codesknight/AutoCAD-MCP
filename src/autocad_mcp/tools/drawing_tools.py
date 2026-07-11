@@ -79,3 +79,44 @@ def register(mcp: FastMCP) -> None:
             (start_x, start_y, start_z), (end_x, end_y, end_z), (text_x, text_y, text_z)
         )
         return f"add_dimension ok, object_id={object_id}"
+
+    @mcp.tool()
+    def draw_mtext(
+        position_x: float, position_y: float, position_z: float,
+        text: str, width: float = 100.0, height: float = 2.5, layer: str = "",
+    ) -> str:
+        """插入多行富文本（支持 \\n 换行，超出 width 会自动换行），返回新实体的 ObjectID。"""
+        object_id = get_controller().draw_mtext(
+            (position_x, position_y, position_z), text, width, height, layer or None
+        )
+        return f"draw_mtext ok, object_id={object_id}"
+
+    @mcp.tool()
+    def insert_block(
+        block_name: str, position_x: float, position_y: float, position_z: float,
+        scale: float = 1.0, rotation: float = 0.0, layer: str = "",
+    ) -> str:
+        """插入一个图块引用（比如标准电力设备符号），返回新实体的 ObjectID。
+        block_name 可以是当前图纸已有的图块名（用 list_blocks 查），也可以是一个 .dwg 文件的
+        完整路径（AutoCAD 会自动把它定义成同名图块）。rotation 单位为度。
+        """
+        object_id = get_controller().insert_block(
+            block_name, (position_x, position_y, position_z), scale, rotation, layer or None
+        )
+        return f"insert_block ok, object_id={object_id}"
+
+    @mcp.tool()
+    def create_layer(name: str, color: int | None = None) -> str:
+        """新建图层。color 是 AutoCAD 颜色索引（ACI，1=红 2=黄 3=绿 4=青 5=蓝 6=洋红 7=白/黑），
+        不填用默认颜色。"""
+        get_controller().create_layer(name, color)
+        return f"create_layer ok, name={name}"
+
+    @mcp.tool()
+    def set_layer_properties(
+        name: str, color: int | None = None, locked: bool | None = None,
+        frozen: bool | None = None, visible: bool | None = None,
+    ) -> str:
+        """修改已有图层的颜色/锁定/冻结/可见性，不填的参数保持不变。"""
+        get_controller().set_layer_properties(name, color, locked, frozen, visible)
+        return f"set_layer_properties ok, name={name}"

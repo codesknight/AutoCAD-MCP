@@ -70,6 +70,54 @@ class CADController:
             text_obj.Layer = layer
         return text_obj.ObjectID
 
+    def draw_mtext(self, position: Point, text: str, width: float = 100.0, height: float = 2.5, layer: str | None = None) -> int:
+        """多行富文本。width 是文本框宽度（超出会自动换行），height 是字高。"""
+        model_space = self.connection.model_space
+        mtext = model_space.AddMText(to_variant_point(*position), width, text)
+        mtext.Height = height
+        if layer:
+            mtext.Layer = layer
+        return mtext.ObjectID
+
+    def list_blocks(self) -> list[str]:
+        """列出当前图纸里已有的、可插入的图块定义名（排除模型/图纸空间等内部匿名块）。"""
+        return [b.Name for b in self.connection.document.Blocks if not b.Name.startswith("*")]
+
+    def insert_block(
+        self, block_name: str, position: Point, scale: float = 1.0, rotation: float = 0.0,
+        layer: str | None = None,
+    ) -> int:
+        """插入一个图块引用，返回新实体的 ObjectID。block_name 可以是当前图纸已有的图块名，
+        也可以是一个 .dwg 文件的完整路径（AutoCAD 会自动把它定义成同名图块）。rotation 单位为度。
+        """
+        model_space = self.connection.model_space
+        block_ref = model_space.InsertBlock(
+            to_variant_point(*position), block_name, scale, scale, scale, math.radians(rotation)
+        )
+        if layer:
+            block_ref.Layer = layer
+        return block_ref.ObjectID
+
+    def create_layer(self, name: str, color: int | None = None) -> None:
+        """color 是 AutoCAD 颜色索引（ACI），常用：1=红 2=黄 3=绿 4=青 5=蓝 6=洋红 7=白/黑。"""
+        layer = self.connection.document.Layers.Add(name)
+        if color is not None:
+            layer.Color = color
+
+    def set_layer_properties(
+        self, name: str, color: int | None = None, locked: bool | None = None,
+        frozen: bool | None = None, visible: bool | None = None,
+    ) -> None:
+        layer = self.connection.document.Layers.Item(name)
+        if color is not None:
+            layer.Color = color
+        if locked is not None:
+            layer.Lock = locked
+        if frozen is not None:
+            layer.Freeze = frozen
+        if visible is not None:
+            layer.LayerOn = visible
+
     def draw_hatch(self, points: list[Point], pattern_name: str = "SOLID", layer: str | None = None) -> int:
         """用 points 围成的闭合多段线作为边界填充图案（1 = acHatchPatternTypePreDefined）。"""
         model_space = self.connection.model_space
