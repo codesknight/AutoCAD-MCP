@@ -71,6 +71,21 @@ async function sendMessage() {
   clearPendingImage();
   sendButton.disabled = true;
 
+  // Some tools (e.g. VQA over a locally-hosted model) can legitimately take
+  // 1-2+ minutes -- without visible progress this looks identical to the
+  // page being stuck, so show an elapsed-time indicator while waiting.
+  const thinkingDiv = document.createElement("div");
+  thinkingDiv.className = "msg assistant";
+  const startTime = Date.now();
+  const updateThinking = () => {
+    const secs = Math.round((Date.now() - startTime) / 1000);
+    thinkingDiv.textContent = `助手：思考中...（已等待 ${secs} 秒，复杂任务可能需要 1-2 分钟）`;
+  };
+  updateThinking();
+  log.appendChild(thinkingDiv);
+  log.scrollTop = log.scrollHeight;
+  const thinkingTimer = setInterval(updateThinking, 1000);
+
   try {
     const resp = await fetch("/api/chat", {
       method: "POST",
@@ -90,14 +105,18 @@ async function sendMessage() {
     });
     if (!resp.ok) {
       const errText = await resp.text();
+      thinkingDiv.remove();
       appendMessage("assistant", `请求失败：${resp.status} ${errText}`);
       return;
     }
     const data = await resp.json();
+    thinkingDiv.remove();
     appendMessage("assistant", data.reply);
   } catch (err) {
+    thinkingDiv.remove();
     appendMessage("assistant", `网络错误：${err}`);
   } finally {
+    clearInterval(thinkingTimer);
     sendButton.disabled = false;
   }
 }
