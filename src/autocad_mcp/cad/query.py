@@ -33,6 +33,11 @@ def _entity_summary(entity) -> dict:
     except Exception:
         pass
     try:
+        min_point, max_point = entity.GetBoundingBox()
+        summary["bounding_box"] = {"min": list(min_point), "max": list(max_point)}
+    except Exception:
+        pass
+    try:
         if entity.ObjectName == "AcDbBlockReference":
             summary["block_name"] = entity.EffectiveName
             summary["insertion_point"] = list(entity.InsertionPoint)

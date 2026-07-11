@@ -269,3 +269,20 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 **实现**：`state.py` 新增 `new_document()`（复用已有的 `CADConnection.new_document()`），`tools/document_tools.py` 新增 `new_drawing` MCP 工具，描述里写明"做实验性绘图操作前建议先调用这个"。现在总共 **30 个工具**。
 
 **验证**：`asyncio.run(mcp.list_tools())` 确认工具已注册且总数变为 30；直接调用 `state.new_document()` 确认能正常切到新文档（`Drawing19.dwg`）。
+
+## 2026-07-11（续八）：排查用户反馈的"复杂图纸质量差"——中文标注变问号 + 图块拼接没有对齐依据
+
+用户用续七的测试提示词跑了「综合场景」那条（断路器+变压器+连接线+"10kV 进线"标注），截图显示标注文字变成了"10kV ??"，图块和连接线之间也明显没对上（连接线两端悬空，没有真正碰到图块的边缘）。
+
+**排查过程**（没有直接猜，逐层实测排除）：
+1. 先怀疑是 MCP/LLM 那层的编码问题（本项目之前踩过 conda run 在 GBK 控制台下的 `UnicodeEncodeError`），直接绕开 LLM/MCP，用 Python 脚本调 `cad/controller.py` 里的 `draw_text` 传中文字符串，读回 `TextString` ——**排除**：把结果写到 UTF-8 文件里读回（不经过控制台 print，避免二次踩同一个控制台编码坑），确认 `TextString` 存的就是完整正确的"10kV 进线测试"，数据链路（COM BSTR 编解码）没有问题。
+2. 真正原因：`draw_text`/`draw_mtext` 之前都没指定 `TextStyle`，走的是 AutoCAD 默认的 "Standard" 样式——查了一下这个样式的字体文件是 `txt.shx`，这是一个只有 ASCII 字形的老式 SHX 形文件字体，没有中文字形，AutoCAD 渲染时遇到它不认识的字形就画成问号占位符。文字数据本身没坏，只是选错字体，视图里自然显示成"10kV ??"。
+3. 图块/连接线对不上：`query.py` 之前完全没有暴露任何"实体边界框"信息，`insert_block`/`draw_line` 的调用方（不管是我还是上层 LLM）只能凭插入点瞎猜图块实际占多大、边缘在哪，写连接线坐标全靠拍脑袋——用真实场景验证：断路器图块的真实包围盒是 x∈[-3.65,1.5]，变压器是 x∈[193.25,206.75]，之前画的连接线是 (50,0)→(150,0)，两头分别悬空约 48 和 43 个单位，完全对不上图块边缘。这是缺一个"查询实体真实占用空间"的工具导致的，不是坐标计算错了，是根本没数据可算。
+
+**修复**：
+- `cad/controller.py` 新增 `_ensure_cjk_text_style()`：get-or-create 一个叫 `MCP_CJK` 的文字样式，`TextStyle.SetFont("SimSun", False, False, 134, 0)`（134=GB2312 字符集），`draw_text`/`draw_mtext` 现在都默认用这个样式，中英文混排都能正常显示，不用调用方关心字体。
+- `cad/query.py` 的 `_entity_summary()` 新增 `bounding_box`（`entity.GetBoundingBox()` 的 min/max 点），所有实体类型（图块引用/线/文字等）的 `get_entity`/`query_entities` 现在都会带上真实包围盒，之后画连接线前可以先查一下图块的边界框再算坐标，不用再瞎猜。
+
+**验证**：用真实 AutoCAD 连接测试，`draw_mtext` 写入"10kV 进线测试"后 `get_entity` 读回确认样式生效、文字正确；对已有的断路器/变压器图块和连接线跑 `get_entity`，确认 `bounding_box` 字段返回的真实坐标和前面手工核对的一致。`pytest` 全量跑过，无回归。
+
+**尚未解决**：`bounding_box` 只是给了数据，图块之间的自动对齐/连线仍然要靠 LLM 自己算（或者未来再加一层"自动布线"辅助工具）；旋转角度让符号朝向匹配连接方向、图块内部"接线端子"位置（不是包围盒边缘，而是符号定义里预留的电气连接点）目前也还没有专门支持——这些记为后续可能要做的方向，这次先解决"数据缺失"和"字体缺失"这两个更直接、更能立刻验证对错的问题。

@@ -9,9 +9,25 @@ from autocad_mcp.cad.connection import CADConnection
 from autocad_mcp.cad.geometry import Point, to_variant_double_array, to_variant_object_array, to_variant_point
 
 
+_CJK_TEXT_STYLE = "MCP_CJK"
+
+
 class CADController:
     def __init__(self, connection: CADConnection):
         self.connection = connection
+
+    def _ensure_cjk_text_style(self) -> str:
+        """AutoCAD 的默认文字样式 "Standard" 用 txt.shx，这个 SHX 字体没有中文字形，
+        中文会在视图里显示成一堆问号。这里 get-or-create 一个用 SimSun（支持 GB2312）
+        的样式，draw_text/draw_mtext 默认都用它，避免每次画中文标注都变成 "??"。
+        """
+        styles = self.connection.document.TextStyles
+        try:
+            styles.Item(_CJK_TEXT_STYLE)
+        except Exception:
+            style = styles.Add(_CJK_TEXT_STYLE)
+            style.SetFont("SimSun", False, False, 134, 0)
+        return _CJK_TEXT_STYLE
 
     def draw_line(self, start: Point, end: Point, layer: str | None = None) -> int:
         """Draw a line and return the new entity's ObjectID handle."""
@@ -64,6 +80,7 @@ class CADController:
         """rotation 单位为度。"""
         model_space = self.connection.model_space
         text_obj = model_space.AddText(text, to_variant_point(*position), height)
+        text_obj.StyleName = self._ensure_cjk_text_style()
         if rotation:
             text_obj.Rotation = math.radians(rotation)
         if layer:
@@ -74,6 +91,7 @@ class CADController:
         """多行富文本。width 是文本框宽度（超出会自动换行），height 是字高。"""
         model_space = self.connection.model_space
         mtext = model_space.AddMText(to_variant_point(*position), width, text)
+        mtext.StyleName = self._ensure_cjk_text_style()
         mtext.Height = height
         if layer:
             mtext.Layer = layer
