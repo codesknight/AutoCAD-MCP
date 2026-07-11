@@ -297,3 +297,16 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 新增 `overwrite: bool = False` 参数：如果 `file_path` 和 `document.FullName`（当前文档原始路径，大小写不敏感比较）相同且 `overwrite=False`，直接拒绝并报错说明原因；确实要覆盖原文件时显式传 `overwrite=True`。`tools/document_tools.py` 的 `save_drawing` 工具签名同步更新。
 
 **验证**：用真实 AutoCAD 连接测试了 5 种情况——错误扩展名拒绝、目标目录不存在拒绝、正常另存成功、二次存到同一路径不加 overwrite 被拒绝、加 overwrite=True 后成功覆盖——全部符合预期。中途踩了个环境坑：临时测试文件放在 Windows 短文件名路径（`LIUYAN~1`）下时 `SaveAs` 会报错，换成普通路径（`C:\Temp\`）后正常——这是本机临时目录短路径命名的固有怪癖，和这次改的代码无关，记录一下避免以后重复排查。`pytest` 全量跑过，无回归。GitHub `#13` 已关闭。
+
+## 2026-07-11（续十）：[#25] 按区域查询实体（`query_entities_in_region`），过程中揪出一个 COM 层的"首次调用"坑
+
+继续做 `#25`：`query_entities` 一直是全表扫描 ModelSpace，复杂图纸实体一多，"查一下这个区域里有什么"只能靠遍历全部实体自己算相不相交，效率低也麻烦。AutoCAD COM 自带 `Document.SelectionSets` + `SelectionSet.Select(Mode, Point1, Point2)` 正好是做这件事的原生 API，之前没用过。
+
+**踩坑排查（`AcSelect` 枚举值没有官方文档能直接查到确切数字，全靠实测）**：
+1. 拿三条已知位置关系的线（完全在框内/框边界穿过/完全在框外）实测 `Select` 的 `Mode` 参数 0~7，配合 WebSearch 找到的 Autodesk 文档片段（`Fence=2`/`WindowPolygon=6`/`CrossingPolygon=7`，这三个传单点对坐标会报"参数 Mode 无效"，和实测报错的 mode 2/6/7 完全对上），反推出 `Window=0`、`Crossing=1`（`Mode=1` 在所有测试里都精确匹配"完全在框内 + 边界相交"的预期行为）。
+2. 意外发现一个更麻烦的问题：不管 `Window` 还是 `Crossing`，**一个 SelectionSet 对象的第一次 `Select()` 调用有概率错误返回空集合**（连续跑 10 次同样的调用，第 1 次返回 0，第 2~10 次全部正确）——不是坐标算错，是 COM 层某种一次性的初始化时序问题（这个项目里已经不是第一次遇到"刚创建的 COM 对象/刚建立的状态第一次访问会出错"这类坑了，参见 `connection.py` 里 `_wait_for_document` 的类似问题）。用真实 MCP 协议跑的验证脚本也复现了同样的现象。
+3. **规避方法（已验证 8 次全部通过）**：在同一个 SelectionSet 上把 `Select()` 调用两遍，只用第二次的结果——不知道底层具体机制，但这个规避方式在反复测试里 100% 稳定。
+
+**实现**：`cad/query.py` 新增 `query_entities_in_region(corner1, corner2, mode="crossing", entity_type=None)`，`tools/query_tools.py` 注册同名 MCP 工具（现在总共 **31 个**工具）。`architecture.md` 工具清单和"开放问题"章节同步更新（`#25`、`#26` 两条 roadmap 划掉）。
+
+**验证**：真实 MCP 协议全量跑通（小窗口只选中框内的线，大窗口选中全部线，按 `entity_type` 过滤正常），`pytest` 无回归。GitHub `#25` 已关闭。

@@ -78,6 +78,43 @@ class CADQuery:
             results.append(_entity_summary(entity))
         return results
 
+    def query_entities_in_region(
+        self, corner1: Point, corner2: Point, mode: str = "crossing", entity_type: str | None = None,
+    ) -> list[dict]:
+        """按矩形区域查询实体，用 AutoCAD 的 SelectionSet.Select 实现（O(1) 交给
+        AutoCAD 内部空间索引，不是自己算包围盒相交），复杂图纸场景比全表扫描的
+        query_entities 快得多，也能真正做到"只看这个区域里有什么"。
+
+        mode="crossing"（默认）：区域内或和边界相交的实体都算，对应 AutoCAD 默认框选行为。
+        mode="window"：只有完全被区域包住的实体才算。
+        """
+        mode_map = {"window": 0, "crossing": 1}
+        if mode not in mode_map:
+            raise ValueError(f"不支持的 mode={mode!r}，可选 'window' 或 'crossing'")
+
+        document = self.connection.document
+        sel_set_name = "_MCP_REGION_QUERY"
+        try:
+            document.SelectionSets.Item(sel_set_name).Delete()
+        except Exception:
+            pass
+        sel_set = document.SelectionSets.Add(sel_set_name)
+        try:
+            # 实测发现：一个 SelectionSet 对象的*第一次* Select() 调用偶发性地会
+            # 错误返回空集合（不管 mode、不管区域里实际有没有实体），同一个 set 上
+            # 紧接着再 Select 一次就总是对的——这是 COM 层某种一次性的初始化时序问题，
+            # 不是坐标或参数错误。这里丢弃第一次调用的结果，只用第二次的，规避掉。
+            sel_set.Select(mode_map[mode], to_variant_point(*corner1), to_variant_point(*corner2))
+            sel_set.Select(mode_map[mode], to_variant_point(*corner1), to_variant_point(*corner2))
+            results = []
+            for entity in sel_set:
+                if entity_type and entity.ObjectName != entity_type:
+                    continue
+                results.append(_entity_summary(entity))
+            return results
+        finally:
+            sel_set.Delete()
+
     def get_entity(self, object_id: int) -> dict:
         return _entity_summary(self._find_entity(object_id))
 

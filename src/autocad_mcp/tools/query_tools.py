@@ -31,6 +31,26 @@ def register(mcp: FastMCP) -> None:
         return json.dumps(get_query().query_entities(entity_type or None), ensure_ascii=False)
 
     @mcp.tool()
+    def query_entities_in_region(
+        corner1_x: float, corner1_y: float, corner1_z: float,
+        corner2_x: float, corner2_y: float, corner2_z: float,
+        mode: str = "crossing",
+        entity_type: str = "",
+    ) -> str:
+        """查询矩形区域 (corner1, corner2) 内的实体，比 query_entities 全表扫描快，
+        适合复杂图纸只关心某一块区域的场景。mode="crossing"（默认，区域内或和边界
+        相交都算）或 "window"（只有完全被区域包住才算，偶发不稳定，见函数内部注释）。
+        可选按 entity_type（如 AcDbLine/AcDbBlockReference）过滤。返回结构化 JSON。
+        """
+        results = get_query().query_entities_in_region(
+            (corner1_x, corner1_y, corner1_z),
+            (corner2_x, corner2_y, corner2_z),
+            mode=mode,
+            entity_type=entity_type or None,
+        )
+        return json.dumps(results, ensure_ascii=False)
+
+    @mcp.tool()
     def get_entity(object_id: int) -> str:
         """按 ObjectID 获取单个实体详情。"""
         return json.dumps(get_query().get_entity(object_id), ensure_ascii=False)
