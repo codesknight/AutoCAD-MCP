@@ -29,3 +29,16 @@ def get_query() -> CADQuery:
             _connection.connect()
         _query = CADQuery(_connection)
     return _query
+
+
+def new_document() -> str:
+    """Force-switch to a brand-new blank drawing (not whatever the user
+    currently has open) -- exposed as the new_drawing MCP tool so a human or
+    AI can explicitly ask for a safe scratch document before running
+    write-op tests, per the project's safety rule in CLAUDE.md."""
+    global _connection
+    if _connection is None:
+        _connection = CADConnection()
+        _connection.connect()
+    _connection.new_document()
+    return _connection.document.Name
