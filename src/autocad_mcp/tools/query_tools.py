@@ -2,6 +2,7 @@ import json
 
 from mcp.server.fastmcp import FastMCP
 
+from autocad_mcp.cad import symbol_library
 from autocad_mcp.state import get_controller, get_query
 
 
@@ -15,6 +16,14 @@ def register(mcp: FastMCP) -> None:
     def list_blocks() -> str:
         """列出当前图纸里已有的、可插入的图块定义名（JSON 数组）。"""
         return json.dumps(get_controller().list_blocks(), ensure_ascii=False)
+
+    @mcp.tool()
+    def list_symbol_library() -> str:
+        """列出本机可用的标准电力单线图符号库（断路器/隔离开关/变压器/避雷器等），
+        返回 [{"name_cn", "name_en", "file"}, ...]。file 是可以直接传给 insert_block
+        的 .dwg 文件路径。这份库不在本机时返回空数组。
+        """
+        return json.dumps(symbol_library.list_symbols(), ensure_ascii=False)
 
     @mcp.tool()
     def query_entities(entity_type: str = "") -> str:

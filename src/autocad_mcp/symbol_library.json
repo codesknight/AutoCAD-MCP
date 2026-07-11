@@ -1,0 +1,25 @@
+{
+  "_comment": "电力单线图标准符号库目录。file 是本机绝对路径（不随项目分发，因为原始数据集不在仓库里，且来源不明确是否可自由再分发）。insert_block 工具直接支持传 .dwg 文件路径，不需要额外代码。",
+  "base_dir": "D:\\LiuYanhong\\Projects\\BISHE\\data\\UnderstandingCircuitDiagrams-206Origin\\源数据\\14-配电房设计CAD施工图2510（train2）\\1、电气图例\\电力设计一次元件带属性的块集合",
+  "symbols": [
+    {"name_cn": "断路器", "name_en": "CIRCUIT BREAKER", "file": "CIRCUIT BREAKER.dwg"},
+    {"name_cn": "隔离开关", "name_en": "DISCONNECTOR", "file": "DISCONNECTOR.dwg"},
+    {"name_cn": "隔离开关(RCP型)", "name_en": "RCP DISCONNECTOR", "file": "RCP DISCONNECTOR.dwg"},
+    {"name_cn": "接地开关", "name_en": "EARTH SWITCH", "file": "EARTH SWITCH.dwg"},
+    {"name_cn": "接地符号(单线图)", "name_en": "SLD EARTH", "file": "SLD EARTH.dwg"},
+    {"name_cn": "接地变压器", "name_en": "EARTHING TRANSFORMER", "file": "EARTHING TRANSFORMER.dwg"},
+    {"name_cn": "中性点接地电阻", "name_en": "NEUTRAL EARTHING RESISTOR", "file": "NEUTRAL EARTHING RESISTOR.dwg"},
+    {"name_cn": "避雷器", "name_en": "SURGE ARRESTER", "file": "SURGE ARRESTER.dwg"},
+    {"name_cn": "并联电抗器", "name_en": "SHUNT REACTOR", "file": "SHUNT REACTOR.dwg"},
+    {"name_cn": "电缆终端头", "name_en": "CABLE SEALING END", "file": "CABLE SEALING END.dwg"},
+    {"name_cn": "自耦变压器", "name_en": "AUTO TRANSFORMER", "file": "AUTO TRANSFORMER.dwg"},
+    {"name_cn": "双绕组变压器(通用)", "name_en": "TRANSFORMER TWO WINDING GENERAL", "file": "TRANSFORMER TWO WINDING GENERAL.dwg"},
+    {"name_cn": "星-三角接线变压器", "name_en": "STAR-DELTA TRANSFORMER", "file": "STAR-DELTA TRANSFORMER.dwg"},
+    {"name_cn": "三角-星接线变压器", "name_en": "DELTA-STAR TRANSFORMER", "file": "DELTA-STAR TRANSFORMER.dwg"},
+    {"name_cn": "三相星-三角接线变压器", "name_en": "3-PH STAR-DELTA TRANSFORMER", "file": "3-PH STAR-DELTA TRANSFORMER.dwg"},
+    {"name_cn": "星-星接线变压器", "name_en": "STAR-STAR TRANSFORMER", "file": "STAR-STAR TRANSFORMER.dwg"},
+    {"name_cn": "星-星-星接线变压器(三绕组)", "name_en": "STAR-STAR-STAR TRANSFORMER", "file": "STAR-STAR-STAR TRANSFORMER.dwg"},
+    {"name_cn": "单相绕组式电压互感器", "name_en": "VT-1PH WOUND", "file": "VT-1PH WOUND.dwg"},
+    {"name_cn": "三相绕组式电压互感器", "name_en": "VT-3PH WOUND", "file": "VT-3PH WOUND.dwg"}
+  ]
+}
