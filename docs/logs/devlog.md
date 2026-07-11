@@ -139,3 +139,25 @@ MVP 跑通后，把下一阶段要做的事拆成 4 个新 Issue，开了新 mil
 **端到端验证**：因为 preview 工具不支持模拟真实的文件选择对话框，用 `preview_eval` 直接注入了一张 1x1 测试 PNG 的 base64 数据（跳过了 `FileReader` 那段标准浏览器 API，风险很低），走完整的发送流程：请求体正确带上了 `image_base64`/`image_media_type`，后端 `agent_loop → AnthropicProvider.build_user_message` 构造出的多模态消息被 Anthropic API 接受到了认证检查这一步（拿到预期的 401，不是 400 格式错误），说明图片 content block 格式是对的。前端"发送后清空图片"的逻辑也验证正常。
 
 **尚未验证（需要真实 API Key 和真图片）**：模型看图之后能不能画出靠谱的东西（这本身是个近似任务，取决于模型能力，不是代码 bug 范畴）；OpenAI 分支的图片格式没有实测（DeepSeek 的文本模型 `deepseek-v4-pro` 大概率不支持 vision，需要专门的视觉模型）。开了 [#17](https://github.com/codesknight/AutoCAD-MCP/issues/17) 跟进，已加入看板。
+
+## 2026-07-11：修 DeepSeek/智谱 base_url 报错 + 新增豆包原生 SDK 接入
+
+**先纠正一个问题**：上一次跟用户说"DeepSeek/智谱的 base_url 修复已提交推送"，实际上当时只改了代码没有真的 `git commit`——这次一起补提交了（1a67265），以后每次改完代码要记得实际跑 `git commit`/`push`，不能只是说了但没做。
+
+**用户反馈的两个真实报错**：
+1. DeepSeek：`unknown variant \`image_url\`, expected \`text\`` —— DeepSeek 的 `deepseek-v4-pro`/`deepseek-v4-flash` 这类模型压根没有 vision 能力，消息格式里不认 `image_url`，不是我们代码的问题。
+2. 智谱：`404 .../v4/chat/completions/chat/completions` —— 用户把 Base URL 填成了带 `/chat/completions` 的完整端点，而 OpenAI SDK 会自动在 base_url 后面拼 `/chat/completions`，导致路径重复。正确的智谱 Base URL 应该是 `https://open.bigmodel.cn/api/paas/v4/`（[官方文档](https://docs.bigmodel.cn/cn/guide/develop/openai/introduction)）。
+
+**修复**：
+- `openai_provider.py` 加 `_normalize_base_url()`，自动去掉用户误填的末尾 `/chat/completions`，防止路径重复。
+- `app.py` 遇到"模型不支持图片输入"这类报错时，先给一句人话提示，再附原始报错。
+- 前端 Base URL 输入框下面加了正确示例提示（通义千问/DeepSeek/智谱各自的根路径）。
+
+**新增：豆包（Doubao）原生 SDK 接入**：用户明确要的是接火山引擎的原生 Ark SDK（而不是复用现有的"OpenAI 兼容"选项，虽然理论上后者也能用，因为豆包/火山方舟本身就是 OpenAI 协议兼容的）。
+
+- 装了 `volcengine-python-sdk[ark]`（模块名 `volcenginesdkarkruntime`），查了 SDK 源码确认 `Ark`/`AsyncArk` 客户端的 `chat.completions.create()` 请求/响应结构跟 OpenAI SDK 完全同构（`ChatCompletionMessage`/`tool_calls`/`image_url` content part 字段都一样）。
+- `doubao_provider.py`：`DoubaoProvider` 直接继承 `OpenAIProvider`，只重写 `_build_client()`（用 `AsyncArk` 换掉 `openai.AsyncOpenAI`，默认 base_url `https://ark.cn-beijing.volces.com/api/v3`），工具调用解析/`format_tool_result`/`build_user_message` 全部复用，没有重复代码。
+- `agent_loop.py`：加了 `MODEL_REQUIRED_PROVIDERS = ("openai_compatible", "doubao")`，豆包模式下模型名（火山方舟的推理接入点 ID，如 `ep-xxxxxxxx-xxxxx`）必填，没有默认值。
+- 前端加了"豆包 (Doubao / 火山方舟 Ark)"选项，复用 Base URL 提示行（留空会用默认值）。
+
+**端到端验证**：起真实 MCP HTTP server + 网页后端，选豆包、填假 API Key + 假 endpoint ID 发消息：请求先正常走完 `mcp_client.list_tools()`，然后真的打到了火山方舟的 Ark API，拿到服务端返回的 `401 AuthenticationError: API key format is incorrect`——证明整条链路（MCP 工具列表 → DoubaoProvider → AsyncArk → 真实 Ark 服务端）是通的，只是假 key 格式不对。
