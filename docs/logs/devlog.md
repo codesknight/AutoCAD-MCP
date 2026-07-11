@@ -229,3 +229,19 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 两处修复都已验证过不报错、正常工作（用全新的图片+问题重新跑了一遍，2.x 秒内成功）。**用户需要重启网页后端进程**（`uvicorn web.backend.app:app`）才能让这些改动生效——运行中的进程没开热重载。
 
 如果重启后再试还是卡住，需要用户提供更具体的复现信息（选的哪个大脑模型、卡住时浏览器控制台有没有报错、是整个页面都无法操作还是只是聊天没反应）才能进一步排查。
+
+## 2026-07-11（续五）：补图块、变换、图层管理、MTEXT——冲着"复杂图纸"这个目标
+
+用户问"要实现复杂图纸的绘制和理解还缺什么"。分析下来最大的两个缺口：
+
+1. **没有图块能力**：电力工程图纸（变压器/断路器/隔离开关/母线）几乎全靠标准图块符号表达，之前完全没有插入/枚举图块的工具。
+2. **没有编辑能力**：之前 8 个绘图工具全是"从零画新实体"，完全没有移动/旋转/复制/缩放/镜像已有实体的能力——真实制图大量是编辑，不是从零画。
+
+这次一口气加了 12 个新工具（现在总共 28 个）：
+
+- `cad/controller.py` 新增：`draw_mtext`（多行富文本，`AddMText`）、`list_blocks`/`insert_block`（`Blocks` 集合枚举 + `ModelSpace.InsertBlock`，`block_name` 可以是图纸里已有的图块名，也可以是一个 .dwg 文件路径——AutoCAD 会自动把外部 dwg 定义成同名图块）、`create_layer`/`set_layer_properties`（`Layers.Add`，颜色/锁定/冻结/可见性）。
+- `cad/query.py` 新增：`move_entity`/`rotate_entity`/`copy_entity`/`scale_entity`/`mirror_entity`（全部复用已有的 `_find_entity(object_id)` 按 ID 查找模式，用 AutoCAD 实体自带的 `Move`/`Rotate`/`Copy`/`ScaleEntity`/`Mirror` 方法——`ScaleEntity` 不叫 `Scale` 是因为 `Scale` 在 COM/VBA 里是保留名）、`get_block_attributes`/`set_block_attribute`（图块属性 tag→value）。`_entity_summary()` 顺手扩展：`AcDbBlockReference` 类型会额外报 `block_name`/`insertion_point`/`rotation`/`attributes`，让 `query_entities` 能精确识别图块符号，不用靠 VQA 猜。
+
+**端到端验证**：这次很少见地一次性全部通过，没踩到新的 COM 坑（大概是因为 Move/Rotate/Copy/ScaleEntity/Mirror 这类"标准实体方法"比之前折腾的打印/图块自动定义相关 API 成熟很多）。用 AutoCAD 自带的 `Express/brkline.dwg` 当外部图块测试插入，`list_blocks` 确认自动定义成功；画一条线做移动(5,5,0)→旋转90°→复制偏移(20,0,0)→以端点为基点缩放2倍→镜像，每一步返回的坐标都手算验证过完全正确。之后又用真实 MCP streamable-http 协议重新跑了一遍全部新工具，确认协议层（JSON schema 参数）也没问题。
+
+**尚未做（记入 architecture.md 的"开放问题"，作为下一步 roadmap）**：按区域批量选择/查询（`query_entities` 目前仍是全表扫描）；电力工程标准图块符号库（现在还得自己找 .dwg 文件当图块用）；图块属性批量填报/校核。

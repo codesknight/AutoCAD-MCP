@@ -44,7 +44,16 @@ AutoCAD.Application (COM, ProgID: AutoCAD.Application.25.1)
 
 ## 工具清单
 
-全部 13 个工具均已实现并在真实 AutoCAD 2026 上端到端验证通过：`draw_line`/`draw_circle`/`draw_arc`/`draw_rectangle`/`draw_text`/`draw_polyline`/`draw_hatch`/`add_dimension`/`save_drawing`/`list_layers`/`query_entities`/`get_entity`/`delete_entity`（后四个是相对参考项目 CAD-MCP 的创新点，见 [cad-mcp-analysis.md](../references/cad-mcp-analysis.md)）。详细实现记录见 [devlog.md](../logs/devlog.md)。
+目前共 **28 个** MCP 工具，全部在真实 AutoCAD 2026 上端到端验证通过（含真实 MCP 协议验证，不只是直接调 Python 函数）：
+
+| 分组 | 工具 |
+|---|---|
+| 绘图/创建（`cad/controller.py` + `tools/drawing_tools.py`） | `draw_line`/`draw_circle`/`draw_arc`/`draw_rectangle`/`draw_text`/`draw_mtext`/`draw_polyline`/`draw_hatch`/`add_dimension`/`insert_block`/`create_layer`/`set_layer_properties` |
+| 查询/编辑（`cad/query.py` + `tools/query_tools.py`） | `list_layers`/`list_blocks`/`query_entities`/`get_entity`/`delete_entity`/`move_entity`/`rotate_entity`/`copy_entity`/`scale_entity`/`mirror_entity`/`get_block_attributes`/`set_block_attribute` |
+| 文档（`tools/document_tools.py`） | `save_drawing`/`export_current_view` |
+| 图纸理解（`tools/vqa_tools.py`，转发到另一个毕设项目的本地 VQA 模型） | `ask_drawing_vqa`/`vqa_service_status` |
+
+其中 `list_layers`/`query_entities`/`get_entity`/`delete_entity`（查询能力）以及 `insert_block`/变换操作/`ask_drawing_vqa`（图块 + 编辑 + 看图理解）都是相对参考项目 CAD-MCP 的创新点（CAD-MCP 只能从零画图元，不能编辑已有内容、不能用标准符号图块、没有图纸理解能力，见 [cad-mcp-analysis.md](../references/cad-mcp-analysis.md)）。详细实现记录（含踩过的 COM 坑）见 [devlog.md](../logs/devlog.md)。
 
 ## 环境信息
 
@@ -83,3 +92,6 @@ AutoCAD.Application (COM, ProgID: AutoCAD.Application.25.1)
 
 - 是否要支持多 CAD 后端（中望/浩辰）？参考项目支持，本项目当前只针对 AutoCAD 2026，若要跟进需要在 `config.json` 里加 `cad_type` 切换逻辑（骨架已预留字段）。
 - 事务/撤销管理：AutoCAD COM 接口本身对事务支持有限，可能需要在 `controller.py` 里手动记录"本次会话创建的 ObjectID 列表"来实现简单撤销，或改走 .NET 插件方案获得真正的 Transaction 支持。
+- **按区域批量选择/查询**：`query_entities` 目前是全表扫描，复杂图纸实体多的时候，需要"框选某个矩形区域内的实体"这类能力（对应 AutoCAD 的 `SelectionSet` + `SelectByPoint`/`SelectByPolygon`），而不是只能全表过滤或按单个 ObjectID 查。
+- **标准图块符号库**：`insert_block` 支持传 .dwg 路径自动定义图块，但项目本身还没有一套现成的电力工程标准符号库（变压器/断路器/隔离开关等）——如果要让 AI"用标准符号组装图纸"而不是每次现找 .dwg 文件，需要整理一套符号库放进项目里。
+- **图块属性批量填报**：`get_block_attributes`/`set_block_attribute` 目前一次只能查/改一个图块，复杂图纸里成百上千个设备图块的属性批量填报/校核还需要更高层的封装。
