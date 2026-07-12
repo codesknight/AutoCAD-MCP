@@ -387,3 +387,14 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 **验证**：真实浏览器测试（起 `autocad-mcp --http` + `web-backend` 两个真实进程，`.claude/launch.json` 补了 `autocad-mcp-http` 这个新配置项）反复点击发送按钮，`read_page`/`get_page_text` 确认前端正确显示错误信息、正常状态提示行；`read_network_requests` 确认 `/api/chat/stream` 返回 `200 OK`；服务端 `preview_logs` 确认请求-响应本身完整。`pytest` 全量跑过，26 个测试全过，无回归（AutoCAD 那边真实连接测试跑完之后解释器退出时有一个和这次改动无关的 COM 清理相关的崩溃堆栈，出现在"26 passed"之后，不影响测试结果本身）。
 
 **尚未解决**：服务端日志里这个 `RuntimeError` 噪音本身没有连根拔起，只是确认了不影响功能正确性。如果以后遇到真实的流式响应异常中断（不只是日志噪音），需要重新审视这个问题。GitHub `#16` 按功能已实现的标准关闭，但在 issue 里如实注明这个已知的日志噪音。
+
+## 2026-07-11（续十六）：本地 VQA 模型服务端到端验证（用真实变电站图纸）
+
+用户启动了本地 VQA 模型服务（`vqa_api_server.py`，端口 8933）之后，让我验证一下。先 `vqa_service_status` 确认服务已加载（`internvl3-8b-power-vqa-lora-v9_1-checkpoint800`），然后想直接用当前会话已连接的 `mcp__autocad-mcp__ask_drawing_vqa` 工具测——结果连续两次都报 `MCP error -32001: Request timed out`。
+
+**排查**：这个超时不是 VQA 服务本身的问题——`vqa_tools.py` 里 `ask_drawing_vqa` 自己用的 httpx 超时是 180 秒（模型 4bit 量化单题推理本来就要 90~130 秒），但当前这个 Claude 会话自己的 MCP 客户端（走 stdio，由 harness 驱动，不是这个项目代码控制的东西）显然有一个更短的默认请求超时，先于 180 秒触发。绕开 MCP 层，直接用 Python 脚本 `httpx.post` 打 VQA 服务的 `/vqa` 接口（超时设够 180 秒），确认服务本身完全正常工作：
+
+1. 先测了一张当前 AutoCAD 导出的空白 scratch 图纸截图（`export_current_view` 导出）——耗时 178.4s，模型正确回答"这张图没有任何绘制内容，是纯空白的画布"，证明整个转发链路本身没问题。
+2. 再测了一张真实数据集里的图（`UnderstandingCircuitDiagrams-VQA/origin-data` 目录下一张国家电网 110kV 变电站"电气主接线图"的 PNG）——耗时 130.5s，问"这张图里画的是什么设备，母线是什么接线方式？"，模型回答"这是120kV变电站的GIS母线，采用单母线分段接线，一共两段母线"——语义连贯、领域相关，说明这个针对电力工程图纸微调过的模型确实能看懂真实变电站图纸并给出合理回答（电压等级说的是 120kV 不是 110kV，可能是模型本身的小误差，不影响这次验证"整条链路能不能跑通、回答质不质"的目的）。
+
+**结论**：`ask_drawing_vqa` 工具本身（HTTP 转发 + 本地 VQA 服务）功能完全正常，用真实变电站图纸验证过给出的回答是有意义的领域回答。**这次验证的是本地 VQA 模型（用户口头说的"#17"），不是 GitHub `#17` issue 字面上写的"网页 UI vision 图片上传 + 画图"那个功能**——那个仍然需要真实 Anthropic/OpenAI API Key 才能测，和 `#14`/`#15` 卡在同一个原因上，这次没有动，GitHub `#17` 保持打开。
