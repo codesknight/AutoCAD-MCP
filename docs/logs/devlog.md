@@ -338,3 +338,19 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - `query_entities(entity_type=...)` 传入的类型如果命中 `_ENTITY_TYPE_TO_DXF_FILTER` 映射表，就走 `SelectionSet` 原生过滤；不在表里的类型名（或不传类型）回退到原来的全表扫描——保证任何输入都不会查不到，只是命中已知类型时更快。用的还是 `query_entities_in_region` 那次踩过的"SelectionSet 第一次 Select 偶发返回空集合"规避写法（连续 Select 两次）。
 
 **验证**：真实 MCP 协议跑通 `get_entity`/`query_entities`（含类型过滤、无过滤、未收录类型三种情况）、不存在的 ObjectID 正确抛 `KeyError`、`move_entity`/`copy_entity` 等依赖 `_find_entity` 的操作全部正常。`pytest` 无回归。GitHub `#11` 已关闭。
+
+## 2026-07-11（续十三）：[#10] 补充 pytest 自动化测试覆盖
+
+`tests/` 之前只有 `test_connection.py` 一个文件（就测了个连接）。这次把 `cad/controller.py`/`cad/query.py` 的核心能力补上真实自动化测试，遵循 CLAUDE.md 的安全规则——不是 mock，是接真实 AutoCAD 连接跑，但连不上就 `pytest.skip`，且每个测试都在 `new_document()` 出来的全新空白图纸上跑，绝不会碰用户当前打开的真实图纸。
+
+**新增**：
+- `tests/conftest.py`：`cad_connection`（session 级，连不上就 skip 掉所有依赖它的测试）+ `scratch_doc`（每个测试前强制切到新空白图纸）两个共用 fixture。
+- `tests/test_controller.py`：`draw_line`/`draw_circle`/`draw_arc`/`draw_rectangle`/`draw_polyline`/`draw_hatch`/`add_dimension`/`create_layer`+`set_layer_properties`/`insert_block`+`list_blocks`，以及专门验证 `draw_text`/`draw_mtext` 确实用了 `MCP_CJK` 样式（防止"中文变问号"那个 bug 回归）。
+- `tests/test_query.py`：`query_entities`（无过滤/按类型过滤/未收录类型回退）、`get_entity`/`delete_entity`（含查不存在的 ObjectID 正确抛 `KeyError`）、`move`/`rotate`/`copy`/`scale`/`mirror_entity`、`query_entities_in_region`（区域内 vs 区域外 + 非法 mode 报错）、单个/批量图块属性 get/set/validate。
+- `tests/test_document.py`：`save_drawing` 的三种安全校验（错误扩展名/目标目录不存在/同路径覆盖保护）。
+- `tests/test_symbol_library.py`：`symbol_library.list_symbols()` 不需要真实 AutoCAD 连接，纯单元测试。
+- `tests/test_server_registration.py`：工具注册也不需要连接 AutoCAD（`server.py` 只是装饰函数），校验 34 个工具全部注册成功，覆盖所有分组。
+
+**踩坑**：第一次全量跑通过，但连续跑第二遍时 `test_save_drawing_overwrite_protection` 报了一个 COM 错误（"保存文档时出错"）——原因是这个测试原来用固定文件名，而这台机器上 AutoCAD 连接是跨 pytest 运行复用的长连接，`new_document()` 只切到新文档、不会关掉旧文档，上一轮测试保存过的那个文档还开着占用同一个路径，这一轮再 `SaveAs` 到同名路径就冲突了——不是被测代码的 bug，是测试之间的资源冲突。改成每次跑都用 `uuid4` 生成唯一文件名后，连续跑 3 遍都是 26 个测试全过，没有再复现。
+
+**验证**：`pytest tests/ -v` 连续 3 次全量运行，均 26 passed，无回归无 flaky。GitHub `#10` 已关闭。
