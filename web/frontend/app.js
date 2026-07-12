@@ -71,23 +71,26 @@ async function sendMessage() {
   clearPendingImage();
   sendButton.disabled = true;
 
-  // Some tools (e.g. VQA over a locally-hosted model) can legitimately take
-  // 1-2+ minutes -- without visible progress this looks identical to the
-  // page being stuck, so show an elapsed-time indicator while waiting.
-  const thinkingDiv = document.createElement("div");
-  thinkingDiv.className = "msg assistant";
-  const startTime = Date.now();
-  const updateThinking = () => {
-    const secs = Math.round((Date.now() - startTime) / 1000);
-    thinkingDiv.textContent = `助手：思考中...（已等待 ${secs} 秒，复杂任务可能需要 1-2 分钟）`;
-  };
-  updateThinking();
-  log.appendChild(thinkingDiv);
+  // Streaming reply: text accumulates into replyDiv as it arrives; tool
+  // calls get their own status line so a slow tool (e.g. VQA, 1-2+ minutes)
+  // shows *what* it's doing instead of a generic "thinking..." spinner.
+  const replyDiv = document.createElement("div");
+  replyDiv.className = "msg assistant";
+  replyDiv.textContent = "助手：";
+  log.appendChild(replyDiv);
   log.scrollTop = log.scrollHeight;
-  const thinkingTimer = setInterval(updateThinking, 1000);
+  let replyText = "";
+
+  function appendStatusLine(text) {
+    const statusDiv = document.createElement("div");
+    statusDiv.className = "msg assistant status";
+    statusDiv.textContent = text;
+    log.appendChild(statusDiv);
+    log.scrollTop = log.scrollHeight;
+  }
 
   try {
-    const resp = await fetch("/api/chat", {
+    const resp = await fetch("/api/chat/stream", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -103,20 +106,41 @@ async function sendMessage() {
         image_media_type: imageToSend ? imageToSend.mediaType : null,
       }),
     });
-    if (!resp.ok) {
+    if (!resp.ok || !resp.body) {
       const errText = await resp.text();
-      thinkingDiv.remove();
-      appendMessage("assistant", `请求失败：${resp.status} ${errText}`);
+      replyDiv.textContent = `助手：请求失败：${resp.status} ${errText}`;
       return;
     }
-    const data = await resp.json();
-    thinkingDiv.remove();
-    appendMessage("assistant", data.reply);
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const parts = buffer.split("\n\n");
+      buffer = parts.pop(); // last part may be incomplete, keep it for next read
+      for (const part of parts) {
+        const line = part.split("\n").find((l) => l.startsWith("data: "));
+        if (!line) continue;
+        const event = JSON.parse(line.slice("data: ".length));
+        if (event.type === "text_delta") {
+          replyText += event.text;
+          replyDiv.textContent = "助手：" + replyText;
+          log.scrollTop = log.scrollHeight;
+        } else if (event.type === "tool_call") {
+          appendStatusLine(`🔧 调用工具 ${event.name}(${JSON.stringify(event.input)})`);
+        } else if (event.type === "tool_result") {
+          appendStatusLine(`✓ ${event.name} 完成`);
+        } else if (event.type === "error") {
+          appendStatusLine(`出错了：${event.message}`);
+        }
+      }
+    }
   } catch (err) {
-    thinkingDiv.remove();
-    appendMessage("assistant", `网络错误：${err}`);
+    appendStatusLine(`网络错误：${err}`);
   } finally {
-    clearInterval(thinkingTimer);
     sendButton.disabled = false;
   }
 }

@@ -364,3 +364,26 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 **过程中意外发现两个值得记录的问题**：
 1. 验证完之后想顺手截图存证，调 `export_current_view` 超时了。查了一下发现这台 AutoCAD 实例这次会话里累积开着 **136 个文档**（`Drawing1.dwg` 到 `Drawing136.dwg`，全是这次会话反复测试 `new_document()`/`new_drawing` 留下的空白文档，`FullName` 全是空，没存过盘）——AutoCAD 被这么多文档拖慢，导致原本 30s 的导出超时窗口不够用了。这是这次超长测试会话自己攒出来的资源问题，不是 `export_current_view` 代码本身的 bug。问过用户后确认清理，关掉了全部 136 个（`Document.Close(False)`，确认都没有真实文件路径，不是用户的东西）只留一个新建的空白图纸，之后导出立刻恢复正常。
 2. 清理过程中还发现一个真实的健壮性问题：清理脚本是从一个新建的 `CADConnection`（`GetActiveObject` 连的同一个 AutoCAD 进程）里关掉文档的，而**当前这个 MCP 服务器进程自己缓存的 `document`/`model_space` COM 引用**是指向被关掉的那个文档的——被关掉之后，服务器进程再调用工具就报 `(-2147417848, '被调用的对象已与其客户端断开连接。', ...)`（RPC_E_DISCONNECTED），需要手动再调一次 `new_drawing` 强制刷新 `state.py` 里的连接单例才恢复。也就是说：如果 AutoCAD 里的活动文档被别的途径（比如用户自己在 AutoCAD 界面里关掉）意外改变，服务器不会自愈，会一直报底层 COM 错误直到有人手动调 `new_drawing`。这个不在这次 `#12` 的范围内，已经拆成一个单独的后台任务建议（`task_373b8e0b`）留给后续处理，不在这次顺便改。
+
+## 2026-07-11（续十五）：[#16] 网页聊天支持流式响应
+
+用户让我按顺序继续做剩下的 backlog，`#16` 是"网页聊天支持流式响应"。之前的 `/api/chat` 是等整个 agent loop（可能包含好几轮工具调用）跑完才一次性返回，前端只能靠一个"思考中...(已等待 N 秒)"的计时器撑场面，看不到具体在干什么。
+
+**实现**：
+- `web/backend/providers/base.py`：`LLMProvider` 新增抽象方法 `chat_stream()`，逐步 yield `{"type": "text_delta", "text"}`，正常结束 yield 一次 `{"type": "done", "tool_calls": [...]}`。
+- `web/backend/providers/anthropic_provider.py`：用 `client.messages.stream()`（`async with` + `stream.text_stream` + `stream.get_final_message()`，这是当前 Anthropic Python SDK 文档里的推荐流式写法，不是训练数据里可能过时的旧模式，专门用 claude-api 技能核对过）。
+- `web/backend/providers/openai_provider.py`：用 `stream=True`，累积每个 chunk 的 `delta.content`（文字）和 `delta.tool_calls`（按 `index` 累积，因为 `arguments` 是分片到达的）。`DoubaoProvider` 直接继承，不用改。
+- `web/backend/agent_loop.py`：新增 `run_turn_stream()`，逐步 yield 结构化事件（`text_delta`/`tool_call`/`tool_result`/`error`/`done`），工具调用之间也能看到进度。
+- `web/backend/app.py`：新增 `POST /api/chat/stream`，用 FastAPI 的 `StreamingResponse`（`text/event-stream`）包一层 SSE 格式。
+- `web/frontend/app.js`：把之前的"思考中...计时器"换成真正逐字追加的回复文本，工具调用/结果单独显示成一行灰色小字状态提示。
+
+**排查过程（这次踩的坑比预想的深很多）**：用真实浏览器测试（起了 AutoCAD MCP 的 `--http` 服务 + 网页后端两个真实进程，故意不填 API Key 触发一个真实的认证失败），前端显示完全正确（错误信息干净地展示出来），但服务端日志每次都报一个奇怪的 `RuntimeError: Attempted to exit a cancel scope that isn't the current tasks's current cancel scope`。为了搞清楚这是不是我自己代码的 bug，做了一系列最小化对照测试（不经过 Anthropic/OpenAI，纯用 FastAPI + httpx + 一个什么都不做的 `async with`）：
+
+1. 确认了触发条件——一个异步生成器只要"某次 `yield` 之后，同一个生成器帧里后面又抛了异常并从这个生成器传播出去"，被 Starlette 的 `StreamingResponse` 消费时就必定触发这个 `RuntimeError`，和具体用没用 httpx/Anthropic SDK 完全无关，纯粹是这条"异步生成器链路 + Starlette 自带的 anyio 任务组"本身的限制（用几个只包含普通 `async with`/无关异常的最小化测试复现过好几次）。
+2. 但改成"异常在 with 块内部就地捕获、绝不 `raise`、只把结果转成普通 `yield` 出去的字典值"之后，真实场景里**还是**复现了同一个报错——而这次做了更细的最小化对照测试才发现：单独测 httpx 出错、单独测 Anthropic SDK 认证失败、两层生成器嵌套（模拟 `event_generator → run_turn_stream → chat_stream` 这条真实链路）分别测都**没有**复现，但完整的真实应用（`uvicorn web.backend.app:app`）里就是会复现——说明触发条件比我目前验证到的更微妙，大概率是这几层东西按真实应用的组合方式叠加时才会触发，具体机制没有继续深挖下去（投入产出比已经不划算，这是 Starlette/anyio 版本组合本身的一个边角问题）。
+
+**结论**：这个报错**只在服务端日志里出现，不影响任何用户可见的行为**——每一次测试，前端收到的响应内容都完整、正确（用真实浏览器点击发送、读页面文字、看网络请求验证过好几轮）。过程中顺手修了两个真实的、值得保留的问题：`AnthropicProvider`/`OpenAIProvider` 之前每次调用都新建一个 `AsyncAnthropic`/`AsyncOpenAI` 客户端却从来不关闭（`chat()` 和 `chat_stream()` 都是），现在统一用 `async with` 显式关闭，不再依赖垃圾回收器兜底；`run_turn_stream()` 里每个可能失败的调用（建 provider、连 MCP、调工具）都各自独立 try/except，出错立刻 `yield` 错误事件 + `return`，不再用一个大 try 包住跨越多个 yield 的整段逻辑。这两处修复本身是有意义的代码质量改进，但没能让那个服务端日志噪音消失——如实记录，没有假装"完全修好了"。
+
+**验证**：真实浏览器测试（起 `autocad-mcp --http` + `web-backend` 两个真实进程，`.claude/launch.json` 补了 `autocad-mcp-http` 这个新配置项）反复点击发送按钮，`read_page`/`get_page_text` 确认前端正确显示错误信息、正常状态提示行；`read_network_requests` 确认 `/api/chat/stream` 返回 `200 OK`；服务端 `preview_logs` 确认请求-响应本身完整。`pytest` 全量跑过，26 个测试全过，无回归（AutoCAD 那边真实连接测试跑完之后解释器退出时有一个和这次改动无关的 COM 清理相关的崩溃堆栈，出现在"26 passed"之后，不影响测试结果本身）。
+
+**尚未解决**：服务端日志里这个 `RuntimeError` 噪音本身没有连根拔起，只是确认了不影响功能正确性。如果以后遇到真实的流式响应异常中断（不只是日志噪音），需要重新审视这个问题。GitHub `#16` 按功能已实现的标准关闭，但在 issue 里如实注明这个已知的日志噪音。

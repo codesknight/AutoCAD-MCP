@@ -57,12 +57,15 @@ class OpenAIProvider(LLMProvider):
         api_key: str,
         base_url: str | None = None,
     ) -> ProviderResult:
-        client = self._build_client(api_key, base_url)
-        response = await client.chat.completions.create(
-            model=self.model,
-            tools=tools,
-            messages=messages,
-        )
+        # 显式 async with 关闭底层 httpx client——不关的话交给垃圾回收器兜底，
+        # 见 anthropic_provider.py 里那次实测复现的 StreamingResponse + anyio
+        # cancel scope 报错，同一类问题，这里一并修掉。
+        async with self._build_client(api_key, base_url) as client:
+            response = await client.chat.completions.create(
+                model=self.model,
+                tools=tools,
+                messages=messages,
+            )
         message = response.choices[0].message
 
         tool_calls = [
@@ -87,6 +90,77 @@ class OpenAIProvider(LLMProvider):
         )
 
         return ProviderResult(text=message.content, tool_calls=tool_calls)
+
+    async def chat_stream(
+        self,
+        messages: list[dict],
+        tools: list[dict],
+        api_key: str,
+        base_url: str | None = None,
+    ):
+        content_parts = []
+        # index -> {"id", "name", "arguments"} -- tool call fragments arrive
+        # split across chunks (arguments especially, one piece at a time) and
+        # are matched up by their position in the response, not by id.
+        tool_call_acc: dict[int, dict] = {}
+        error: Exception | None = None
+
+        # 出错时在这里直接 yield 一个 error 事件、不再 raise——原因见
+        # anthropic_provider.py::chat_stream 里那段注释（实测确认过的
+        # Starlette StreamingResponse + 异步生成器的限制，和 SDK 无关）。
+        async with self._build_client(api_key, base_url) as client:
+            try:
+                stream = await client.chat.completions.create(
+                    model=self.model,
+                    tools=tools,
+                    messages=messages,
+                    stream=True,
+                )
+                async for chunk in stream:
+                    if not chunk.choices:
+                        continue  # some OpenAI-compatible servers send a trailing usage-only chunk
+                    delta = chunk.choices[0].delta
+                    if delta.content:
+                        content_parts.append(delta.content)
+                        yield {"type": "text_delta", "text": delta.content}
+                    for tc_delta in delta.tool_calls or []:
+                        entry = tool_call_acc.setdefault(tc_delta.index, {"id": None, "name": None, "arguments": ""})
+                        if tc_delta.id:
+                            entry["id"] = tc_delta.id
+                        if tc_delta.function and tc_delta.function.name:
+                            entry["name"] = tc_delta.function.name
+                        if tc_delta.function and tc_delta.function.arguments:
+                            entry["arguments"] += tc_delta.function.arguments
+            except Exception as exc:  # noqa: BLE001
+                error = exc
+
+        if error is not None:
+            yield {"type": "error", "message": str(error)}
+            return
+
+        content = "".join(content_parts) or None
+        ordered = [tool_call_acc[i] for i in sorted(tool_call_acc)]
+        tool_calls = [
+            ToolCall(id=entry["id"], name=entry["name"], input=json.loads(entry["arguments"] or "{}"))
+            for entry in ordered
+        ]
+
+        messages.append(
+            {
+                "role": "assistant",
+                "content": content,
+                "tool_calls": [
+                    {
+                        "id": entry["id"],
+                        "type": "function",
+                        "function": {"name": entry["name"], "arguments": entry["arguments"]},
+                    }
+                    for entry in ordered
+                ]
+                or None,
+            }
+        )
+        yield {"type": "done", "tool_calls": tool_calls}
 
     def format_tool_result(self, tool_call: ToolCall, result_text: str) -> dict:
         return {"role": "tool", "tool_call_id": tool_call.id, "content": result_text}

@@ -1,11 +1,13 @@
+import json
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from web.backend import conversation_store
-from web.backend.agent_loop import run_turn
+from web.backend.agent_loop import run_turn, run_turn_stream
 
 app = FastAPI(title="AutoCAD MCP Web UI")
 
@@ -52,6 +54,29 @@ async def chat(req: ChatRequest) -> ChatResponse:
             )
         return ChatResponse(reply=f"出错了：{exc_text}")
     return ChatResponse(reply=reply)
+
+
+@app.post("/api/chat/stream")
+async def chat_stream(req: ChatRequest) -> StreamingResponse:
+    """SSE 版本的 /api/chat：逐步推送文字片段和工具调用进度，而不是等整个
+    agent loop（可能包含好几轮慢工具调用）跑完才一次性返回。
+    """
+    messages = conversation_store.get(req.conversation_id)
+
+    async def event_generator():
+        async for event in run_turn_stream(
+            messages,
+            req.provider,
+            req.api_key,
+            req.message,
+            req.base_url,
+            req.model,
+            req.image_base64,
+            req.image_media_type,
+        ):
+            yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 @app.post("/api/reset")
