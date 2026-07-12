@@ -323,3 +323,18 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 `tools/query_tools.py` 注册 `bulk_get_block_attributes`/`bulk_set_block_attributes`/`validate_block_attributes` 三个 MCP 工具（现在总共 **34 个**工具）。
 
 **验证**：一开始想直接拿之前 `#26` 那批真实电力符号（断路器等）测试，结果发现这批 .dwg 符号本身其实没有定义属性（`HasAttributes=False`）——符号库目录名叫"带属性的块集合"但不代表每个文件都真带属性，这是数据集本身的情况，不是代码问题。于是改用 COM 现场定义一个带 `DEVICE_ID` 属性的临时测试图块（`Blocks.Add` + `Block.AddAttribute`），插入两份引用，跑通真实 MCP 协议全流程：按 ObjectID/按图块名批量查、批量设置（含一条故意传坏 ObjectID、一条故意传不存在的 tag，确认失败条目被单独标记而不影响其它条）、清空其中一条属性后校核出"缺失 tag + 空值 tag"都能正确识别。`pytest` 无回归。GitHub `#27` 已关闭。
+
+## 2026-07-11（续十二）：[#11] 大图纸查询性能优化——两个数量级的实测提升
+
+用户让我按顺序继续做剩下的 backlog，这次是 `#11`。`cad/query.py` 文件开头原来的注释写着"classic AutoCAD COM has no ObjectIdToObject like the .NET API"——这次实测发现这个假设是错的，AutoCAD ActiveX 其实是有的，只是之前没试过。
+
+**实测验证（真实 AutoCAD 连接，不是猜）**：
+1. `Document.ObjectIdToObject(object_id)`：直接测试确认存在且可用，传无效 ID 会抛 `pythoncom.com_error`（可以转成原来的 `KeyError` 语义，行为不变）。用 1500 条实体的图纸做基准：全表扫描找中间那条要 **3.4266s**，`ObjectIdToObject` 只要 **0.0045s**——快了约 760 倍。
+2. `SelectionSet.Select` 支持按 DXF group-0 类型过滤（`FilterType`/`FilterData` 参数），比 Python 侧逐个实体调 `.ObjectName` 判断快得多。同样 1650 个实体（1500 线 + 150 圆）里挑圆：原来的全表扫描+过滤要 **79.192s**，SelectionSet 过滤只要 **10.971s**——快了约 7 倍。
+3. **DXF 类型名不能直接从 ActiveX 的 `ObjectName` 猜**（比如 `AcDbBlockReference` 对应的 DXF 类型是 `"INSERT"` 不是 `"BLOCKREFERENCE"`），一个个建了真实连接实测才能确认映射表：`AcDbLine`→`LINE`、`AcDbCircle`→`CIRCLE`、`AcDbArc`→`ARC`、`AcDb2dPolyline`→`POLYLINE`（顺带发现 `draw_polyline`/`draw_rectangle` 生成的是老式 `AcDb2dPolyline` 而不是新式 `LWPOLYLINE`）、`AcDbText`→`TEXT`、`AcDbMText`→`MTEXT`、`AcDbHatch`→`HATCH`、`AcDbBlockReference`→`INSERT`、`AcDbAlignedDimension`→`DIMENSION`。
+
+**实现**：
+- `_find_entity`（`get_entity`/`delete_entity`/`move_entity`/`rotate_entity`/`copy_entity`/`scale_entity`/`mirror_entity`/`get_block_attributes`/`set_block_attribute` 等 9 个方法共用的查找入口）改用 `ObjectIdToObject`，全表扫描彻底去掉。
+- `query_entities(entity_type=...)` 传入的类型如果命中 `_ENTITY_TYPE_TO_DXF_FILTER` 映射表，就走 `SelectionSet` 原生过滤；不在表里的类型名（或不传类型）回退到原来的全表扫描——保证任何输入都不会查不到，只是命中已知类型时更快。用的还是 `query_entities_in_region` 那次踩过的"SelectionSet 第一次 Select 偶发返回空集合"规避写法（连续 Select 两次）。
+
+**验证**：真实 MCP 协议跑通 `get_entity`/`query_entities`（含类型过滤、无过滤、未收录类型三种情况）、不存在的 ObjectID 正确抛 `KeyError`、`move_entity`/`copy_entity` 等依赖 `_find_entity` 的操作全部正常。`pytest` 无回归。GitHub `#11` 已关闭。

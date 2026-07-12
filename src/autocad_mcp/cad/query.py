@@ -1,15 +1,31 @@
 """Entity/layer query + edit capabilities — the gap the reference project
 (CAD-MCP) does not cover: it can only create entities, never read or modify
 existing ones.
-
-MVP implementation iterates ModelSpace directly (O(n)); classic AutoCAD COM
-has no ObjectIdToObject like the .NET API, so this is the straightforward
-approach until/unless performance on large drawings requires something smarter.
 """
 import math
 
+import pythoncom
+import win32com.client
+
 from autocad_mcp.cad.connection import CADConnection
 from autocad_mcp.cad.geometry import Point, to_variant_point
+
+# ObjectName（ActiveX 类名）到 DXF group-0 类型名的映射，只收录这个项目实际会画出来的
+# 类型，且都是拿真实 AutoCAD 连接一个个实测验证过的（DXF 类型名不能直接从 ObjectName
+# 猜，比如 AcDbBlockReference 对应的是 "INSERT" 不是 "BLOCKREFERENCE"）。query_entities
+# 按类型过滤时，命中这个表就交给 AutoCAD 内部的 SelectionSet 过滤（见 devlog #11），
+# 不在表里的类型名回退到原来的全表扫描，不会因为没收录就查不到。
+_ENTITY_TYPE_TO_DXF_FILTER = {
+    "AcDbLine": "LINE",
+    "AcDbCircle": "CIRCLE",
+    "AcDbArc": "ARC",
+    "AcDb2dPolyline": "POLYLINE",
+    "AcDbText": "TEXT",
+    "AcDbMText": "MTEXT",
+    "AcDbHatch": "HATCH",
+    "AcDbBlockReference": "INSERT",
+    "AcDbAlignedDimension": "DIMENSION",
+}
 
 
 def _entity_summary(entity) -> dict:
@@ -65,12 +81,37 @@ class CADQuery:
         return self.connection.document.ModelSpace
 
     def _find_entity(self, object_id: int):
-        for entity in self._model_space():
-            if entity.ObjectID == object_id:
-                return entity
-        raise KeyError(f"未找到 ObjectID={object_id} 的实体")
+        # Document.ObjectIdToObject 是 O(1) 直接查找，实测比全表扫描 ModelSpace 快
+        # 几百倍（1500 个实体的图纸里，扫描到中间要 3.4s，ObjectIdToObject 只要
+        # 0.0045s，见 devlog #11）。
+        try:
+            return self.connection.document.ObjectIdToObject(object_id)
+        except pythoncom.com_error as exc:
+            raise KeyError(f"未找到 ObjectID={object_id} 的实体") from exc
 
     def query_entities(self, entity_type: str | None = None) -> list[dict]:
+        dxf_filter = _ENTITY_TYPE_TO_DXF_FILTER.get(entity_type) if entity_type else None
+        if dxf_filter:
+            # 按类型过滤时，交给 AutoCAD 原生的 SelectionSet 类型过滤，避免 Python
+            # 侧对每个不匹配的实体都要发一次 COM 调用查 ObjectName——大图纸场景实测
+            # 有数量级的速度差（1650 个实体里挑 150 个圆：79s -> 11s，见 devlog #11）。
+            document = self.connection.document
+            sel_set_name = "_MCP_TYPE_QUERY"
+            try:
+                document.SelectionSets.Item(sel_set_name).Delete()
+            except Exception:
+                pass
+            sel_set = document.SelectionSets.Add(sel_set_name)
+            try:
+                filter_type = win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_I2, [0])
+                filter_data = win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_VARIANT, [dxf_filter])
+                # 和 query_entities_in_region 一样的规避：第一次 Select 偶发返回空集合。
+                sel_set.Select(5, None, None, filter_type, filter_data)
+                sel_set.Select(5, None, None, filter_type, filter_data)
+                return [_entity_summary(entity) for entity in sel_set]
+            finally:
+                sel_set.Delete()
+
         results = []
         for entity in self._model_space():
             if entity_type and entity.ObjectName != entity_type:
