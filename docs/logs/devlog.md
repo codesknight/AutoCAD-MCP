@@ -354,3 +354,13 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 **踩坑**：第一次全量跑通过，但连续跑第二遍时 `test_save_drawing_overwrite_protection` 报了一个 COM 错误（"保存文档时出错"）——原因是这个测试原来用固定文件名，而这台机器上 AutoCAD 连接是跨 pytest 运行复用的长连接，`new_document()` 只切到新文档、不会关掉旧文档，上一轮测试保存过的那个文档还开着占用同一个路径，这一轮再 `SaveAs` 到同名路径就冲突了——不是被测代码的 bug，是测试之间的资源冲突。改成每次跑都用 `uuid4` 生成唯一文件名后，连续跑 3 遍都是 26 个测试全过，没有再复现。
 
 **验证**：`pytest tests/ -v` 连续 3 次全量运行，均 26 passed，无回归无 flaky。GitHub `#10` 已关闭。
+
+## 2026-07-11（续十四）：[#12] Claude Desktop 接入验证——原来当前会话本身就是现成的验证环境
+
+`#12` 要的是"接入 Claude Desktop，做自然语言端到端验证"。查 `claude_desktop_config.json` 发现 `autocad-mcp` 已经注册好了（`command` 指向 conda 环境里的 python.exe，`args` 是 `-m autocad_mcp.server`，走默认 stdio），而且**当前这个 Claude 会话本身就是通过这份配置连上 autocad-mcp 的**——也就是说不需要另外找个 Claude Desktop 窗口去验证，直接在这个会话里用已经加载好的 `mcp__autocad-mcp__*` 工具做的任何操作，就是 `#12` 要验证的那条链路本身。
+
+**验证**：依次调用 `new_drawing` → `draw_circle`（半径 25 的圆）→ `draw_mtext`（"Claude Desktop 端到端验证"，中文）→ `query_entities` 读回，全部通过真实 MCP 协议（stdio）走通，坐标、文字内容都正确。GitHub `#12` 已关闭。
+
+**过程中意外发现两个值得记录的问题**：
+1. 验证完之后想顺手截图存证，调 `export_current_view` 超时了。查了一下发现这台 AutoCAD 实例这次会话里累积开着 **136 个文档**（`Drawing1.dwg` 到 `Drawing136.dwg`，全是这次会话反复测试 `new_document()`/`new_drawing` 留下的空白文档，`FullName` 全是空，没存过盘）——AutoCAD 被这么多文档拖慢，导致原本 30s 的导出超时窗口不够用了。这是这次超长测试会话自己攒出来的资源问题，不是 `export_current_view` 代码本身的 bug。问过用户后确认清理，关掉了全部 136 个（`Document.Close(False)`，确认都没有真实文件路径，不是用户的东西）只留一个新建的空白图纸，之后导出立刻恢复正常。
+2. 清理过程中还发现一个真实的健壮性问题：清理脚本是从一个新建的 `CADConnection`（`GetActiveObject` 连的同一个 AutoCAD 进程）里关掉文档的，而**当前这个 MCP 服务器进程自己缓存的 `document`/`model_space` COM 引用**是指向被关掉的那个文档的——被关掉之后，服务器进程再调用工具就报 `(-2147417848, '被调用的对象已与其客户端断开连接。', ...)`（RPC_E_DISCONNECTED），需要手动再调一次 `new_drawing` 强制刷新 `state.py` 里的连接单例才恢复。也就是说：如果 AutoCAD 里的活动文档被别的途径（比如用户自己在 AutoCAD 界面里关掉）意外改变，服务器不会自愈，会一直报底层 COM 错误直到有人手动调 `new_drawing`。这个不在这次 `#12` 的范围内，已经拆成一个单独的后台任务建议（`task_373b8e0b`）留给后续处理，不在这次顺便改。
