@@ -167,3 +167,67 @@ class CADQuery:
                 attr.TextString = value
                 return
         raise KeyError(f"图块没有名为 {tag!r} 的属性标签")
+
+    def bulk_get_block_attributes(
+        self, object_ids: list[int] | None = None, block_name: str | None = None,
+    ) -> dict[int, dict[str, str]]:
+        """批量取多个图块引用的属性。object_ids 指定就只查这些 ObjectID；不指定则按
+        block_name 过滤（block_name 也不指定就是图纸里所有带属性的图块引用）。
+        返回 {object_id: {tag: value}}，成百上千个设备图块批量校核时不用逐个调
+        get_block_attributes。
+        """
+        id_filter = set(object_ids) if object_ids else None
+        results: dict[int, dict[str, str]] = {}
+        for entity in self._model_space():
+            if entity.ObjectName != "AcDbBlockReference":
+                continue
+            if id_filter is not None and entity.ObjectID not in id_filter:
+                continue
+            if block_name is not None and entity.EffectiveName != block_name:
+                continue
+            if not entity.HasAttributes:
+                continue
+            results[entity.ObjectID] = {a.TagString: a.TextString for a in entity.GetAttributes()}
+        return results
+
+    def bulk_set_block_attributes(self, updates: list[dict]) -> list[dict]:
+        """批量设置图块属性。updates 是 [{"object_id", "tag", "value"}, ...]；单条
+        失败（比如 object_id 不存在，或图块没有这个 tag）不影响其它条，返回每条的
+        执行结果（status="ok" 或 "error"+错误信息）而不是让整批调用直接抛异常中断。
+        """
+        results = []
+        for item in updates:
+            object_id = item["object_id"]
+            tag = item["tag"]
+            value = item["value"]
+            try:
+                self.set_block_attribute(object_id, tag, value)
+                results.append({"object_id": object_id, "tag": tag, "status": "ok"})
+            except Exception as e:
+                results.append({"object_id": object_id, "tag": tag, "status": "error", "error": str(e)})
+        return results
+
+    def validate_block_attributes(self, required_tags: list[str], block_name: str | None = None) -> list[dict]:
+        """校核图块属性完整性：找出缺少某个必填 tag、或该 tag 值是空字符串的图块引用。
+        block_name 不指定就检查图纸里所有图块引用。只返回有问题的条目
+        [{"object_id", "block_name", "missing_tags", "empty_tags"}]，没问题的不出现在结果里。
+        """
+        problems = []
+        for entity in self._model_space():
+            if entity.ObjectName != "AcDbBlockReference":
+                continue
+            if block_name is not None and entity.EffectiveName != block_name:
+                continue
+            attrs = {}
+            if entity.HasAttributes:
+                attrs = {a.TagString: a.TextString for a in entity.GetAttributes()}
+            missing = [t for t in required_tags if t not in attrs]
+            empty = [t for t in required_tags if t in attrs and not attrs[t]]
+            if missing or empty:
+                problems.append({
+                    "object_id": entity.ObjectID,
+                    "block_name": entity.EffectiveName,
+                    "missing_tags": missing,
+                    "empty_tags": empty,
+                })
+        return problems

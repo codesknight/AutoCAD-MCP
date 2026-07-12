@@ -44,12 +44,12 @@ AutoCAD.Application (COM, ProgID: AutoCAD.Application.25.1)
 
 ## 工具清单
 
-目前共 **31 个** MCP 工具，全部在真实 AutoCAD 2026 上端到端验证通过（含真实 MCP 协议验证，不只是直接调 Python 函数）：
+目前共 **34 个** MCP 工具，全部在真实 AutoCAD 2026 上端到端验证通过（含真实 MCP 协议验证，不只是直接调 Python 函数）：
 
 | 分组 | 工具 |
 |---|---|
 | 绘图/创建（`cad/controller.py` + `tools/drawing_tools.py`） | `draw_line`/`draw_circle`/`draw_arc`/`draw_rectangle`/`draw_text`/`draw_mtext`/`draw_polyline`/`draw_hatch`/`add_dimension`/`insert_block`/`create_layer`/`set_layer_properties` |
-| 查询/编辑（`cad/query.py` + `tools/query_tools.py`） | `list_layers`/`list_blocks`/`list_symbol_library`/`query_entities`/`query_entities_in_region`/`get_entity`/`delete_entity`/`move_entity`/`rotate_entity`/`copy_entity`/`scale_entity`/`mirror_entity`/`get_block_attributes`/`set_block_attribute` |
+| 查询/编辑（`cad/query.py` + `tools/query_tools.py`） | `list_layers`/`list_blocks`/`list_symbol_library`/`query_entities`/`query_entities_in_region`/`get_entity`/`delete_entity`/`move_entity`/`rotate_entity`/`copy_entity`/`scale_entity`/`mirror_entity`/`get_block_attributes`/`set_block_attribute`/`bulk_get_block_attributes`/`bulk_set_block_attributes`/`validate_block_attributes` |
 | 文档（`tools/document_tools.py`） | `new_drawing`/`save_drawing`/`export_current_view` |
 | 图纸理解（`tools/vqa_tools.py`，转发到另一个毕设项目的本地 VQA 模型） | `ask_drawing_vqa`/`vqa_service_status` |
 
@@ -94,4 +94,4 @@ AutoCAD.Application (COM, ProgID: AutoCAD.Application.25.1)
 - 事务/撤销管理：AutoCAD COM 接口本身对事务支持有限，可能需要在 `controller.py` 里手动记录"本次会话创建的 ObjectID 列表"来实现简单撤销，或改走 .NET 插件方案获得真正的 Transaction 支持。
 - ~~按区域批量选择/查询~~：已实现，见 `query_entities_in_region`（[#25](https://github.com/codesknight/AutoCAD-MCP/issues/25)）。
 - ~~标准图块符号库~~：已用真实数据集解决，见 `list_symbol_library`（[#26](https://github.com/codesknight/AutoCAD-MCP/issues/26)）。
-- **图块属性批量填报**：`get_block_attributes`/`set_block_attribute` 目前一次只能查/改一个图块，复杂图纸里成百上千个设备图块的属性批量填报/校核还需要更高层的封装。
+- ~~图块属性批量填报~~：已实现，见 `bulk_get_block_attributes`/`bulk_set_block_attributes`/`validate_block_attributes`（[#27](https://github.com/codesknight/AutoCAD-MCP/issues/27)）。

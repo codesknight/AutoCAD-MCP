@@ -114,3 +114,28 @@ def register(mcp: FastMCP) -> None:
         """修改图块引用某个属性标签的值。"""
         get_query().set_block_attribute(object_id, tag, value)
         return f"set_block_attribute ok, object_id={object_id}, tag={tag}"
+
+    @mcp.tool()
+    def bulk_get_block_attributes(object_ids: list[int] | None = None, block_name: str = "") -> str:
+        """批量取多个图块引用的属性。传 object_ids 就只查这些；不传就按 block_name
+        过滤（block_name 也不传就是图纸里所有带属性的图块引用）。返回 JSON：
+        {"object_id": {"tag": "value", ...}, ...}。
+        """
+        results = get_query().bulk_get_block_attributes(object_ids or None, block_name or None)
+        return json.dumps({str(k): v for k, v in results.items()}, ensure_ascii=False)
+
+    @mcp.tool()
+    def bulk_set_block_attributes(updates: list[dict]) -> str:
+        """批量设置图块属性。updates 是 [{"object_id":.., "tag":.., "value":..}, ...]，
+        单条失败不影响其它条。返回每条的执行结果 JSON。
+        """
+        return json.dumps(get_query().bulk_set_block_attributes(updates), ensure_ascii=False)
+
+    @mcp.tool()
+    def validate_block_attributes(required_tags: list[str], block_name: str = "") -> str:
+        """校核图块属性完整性：检查图纸里的图块引用（不传 block_name 就是全部）是否
+        都有 required_tags 里列出的每个属性标签，且值不为空。只返回有问题的条目
+        （缺失/空值），JSON 数组，没问题就返回空数组。
+        """
+        results = get_query().validate_block_attributes(required_tags, block_name or None)
+        return json.dumps(results, ensure_ascii=False)

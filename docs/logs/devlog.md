@@ -310,3 +310,16 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 **实现**：`cad/query.py` 新增 `query_entities_in_region(corner1, corner2, mode="crossing", entity_type=None)`，`tools/query_tools.py` 注册同名 MCP 工具（现在总共 **31 个**工具）。`architecture.md` 工具清单和"开放问题"章节同步更新（`#25`、`#26` 两条 roadmap 划掉）。
 
 **验证**：真实 MCP 协议全量跑通（小窗口只选中框内的线，大窗口选中全部线，按 `entity_type` 过滤正常），`pytest` 无回归。GitHub `#25` 已关闭。
+
+## 2026-07-11（续十一）：[#27] 图块属性批量填报/校核
+
+用户让我按顺序把剩下的 backlog 依次做完。这次做 `#27`：`get_block_attributes`/`set_block_attribute` 之前一次只能查/改一个图块，复杂图纸里成百上千个设备图块要批量填报/校核完全没有高层封装。
+
+**实现**（`cad/query.py`）：
+- `bulk_get_block_attributes(object_ids=None, block_name=None)`：按 ObjectID 列表或图块名批量取属性，都不传就是图纸里所有带属性的图块引用，返回 `{object_id: {tag: value}}`。
+- `bulk_set_block_attributes(updates: list[dict])`：批量设置 `[{"object_id","tag","value"}, ...]`，单条失败（ObjectID 不存在/图块没这个 tag）不影响其它条，每条都返回 `status="ok"/"error"`——不会让一整批调用因为一条坏数据直接抛异常中断。
+- `validate_block_attributes(required_tags, block_name=None)`：校核必填属性是否都存在且非空，只返回有问题的图块（缺失的 tag 列表 + 空值的 tag 列表）。
+
+`tools/query_tools.py` 注册 `bulk_get_block_attributes`/`bulk_set_block_attributes`/`validate_block_attributes` 三个 MCP 工具（现在总共 **34 个**工具）。
+
+**验证**：一开始想直接拿之前 `#26` 那批真实电力符号（断路器等）测试，结果发现这批 .dwg 符号本身其实没有定义属性（`HasAttributes=False`）——符号库目录名叫"带属性的块集合"但不代表每个文件都真带属性，这是数据集本身的情况，不是代码问题。于是改用 COM 现场定义一个带 `DEVICE_ID` 属性的临时测试图块（`Blocks.Add` + `Block.AddAttribute`），插入两份引用，跑通真实 MCP 协议全流程：按 ObjectID/按图块名批量查、批量设置（含一条故意传坏 ObjectID、一条故意传不存在的 tag，确认失败条目被单独标记而不影响其它条）、清空其中一条属性后校核出"缺失 tag + 空值 tag"都能正确识别。`pytest` 无回归。GitHub `#27` 已关闭。
