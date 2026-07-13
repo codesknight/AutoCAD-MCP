@@ -398,3 +398,11 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 2. 再测了一张真实数据集里的图（`UnderstandingCircuitDiagrams-VQA/origin-data` 目录下一张国家电网 110kV 变电站"电气主接线图"的 PNG）——耗时 130.5s，问"这张图里画的是什么设备，母线是什么接线方式？"，模型回答"这是120kV变电站的GIS母线，采用单母线分段接线，一共两段母线"——语义连贯、领域相关，说明这个针对电力工程图纸微调过的模型确实能看懂真实变电站图纸并给出合理回答（电压等级说的是 120kV 不是 110kV，可能是模型本身的小误差，不影响这次验证"整条链路能不能跑通、回答质不质"的目的）。
 
 **结论**：`ask_drawing_vqa` 工具本身（HTTP 转发 + 本地 VQA 服务）功能完全正常，用真实变电站图纸验证过给出的回答是有意义的领域回答。**这次验证的是本地 VQA 模型（用户口头说的"#17"），不是 GitHub `#17` issue 字面上写的"网页 UI vision 图片上传 + 画图"那个功能**——那个仍然需要真实 Anthropic/OpenAI API Key 才能测，和 `#14`/`#15` 卡在同一个原因上，这次没有动，GitHub `#17` 保持打开。
+
+## 2026-07-13：用真实豆包 API Key 跑通完整流式响应（成功路径），并纠正续十五里一个错误结论
+
+用户新建了 `.env`（`doubao_base_url`/`doubao_model_name`/`doubao_api_key`，测试用的真实豆包接口凭证），说可以拿来开发测试。**先做的第一件事**：发现 `.env` 当时没被 `.gitignore` 忽略，赶在它被 git 追踪之前把 `.env` 加进 `.gitignore` 并提交推送，避免真实 Key 被误提交。
+
+**用途**：`#16` 流式响应实现完之后，之前所有真实浏览器测试都只测过"认证失败"这一条错误路径，从没验证过"真的连上一个能用的模型、跑出完整的流式回复+工具调用"这条成功路径。用真实豆包 Key 写了个脚本（直接读 `.env`、程序化调用 `POST /api/chat/stream`，不经过浏览器表单——按项目安全规则，API Key 不能由我操作浏览器填进网页输入框，但脚本里当参数值传给自己项目的 API 是两回事）跑了一遍"新建一张空白图纸，然后画一个圆心在原点、半径为15的圆"：完整收到了 `tool_call(new_drawing)` → `tool_result` → `tool_call(draw_circle)` → `tool_result` → 一连串真实的逐字 `text_delta`（豆包大模型对着刚才的工具执行结果生成的自然语言总结）→ `done`，整条 SSE 事件流结构、内容都完全正确，`OpenAIProvider.chat_stream()`（豆包走这条继承路径）的 tool_call 累积和文字增量转发逻辑，真实场景下第一次得到完整验证。
+
+**纠正续十五的结论**：这次成功路径的真实测试里，服务端日志**同样**报了那个 `RuntimeError: Attempted to exit a cancel scope that isn't the current tasks's current cancel scope`——续十五当时因为只测过错误路径，错误地把这个报错和"出错时的 yield/raise 处理方式"关联在一起，写成"这个报错只在...出错路径"，这个说法不准确，如实更正：**这个报错和请求是否成功、代码里怎么处理异常都没关系，是这个环境下 Starlette StreamingResponse 处理这类多层生成器嵌套 + 真实网络 I/O 时的一个通用副作用**，成功和失败路径都会触发，但两种情况下响应内容本身都是完整、正确的，不影响功能。仍然只是服务端日志噪音。
