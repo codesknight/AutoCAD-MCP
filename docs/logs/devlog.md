@@ -422,3 +422,21 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 3. 测试过程中不小心让 AutoCAD 又累积了 99 个空白测试文档（这轮功能开发反复调试产生的），导致 `pytest` 连续几次运行都有随机不同的测试在 COM 资源紧张时偶发失败（单独跑都能过）。问过用户后确认清理，关掉了全部 99 个只留一个新建的空白图纸，之后 `pytest` 连续跑两遍都稳定 26 个测试全过。
 
 **验证**：真实 MCP 协议跑通 `list_reference_drawings`（返回 4 条目录）→ `analyze_reference_drawing`（对 35kV 变电站图纸提取真实坐标，`total_entity_count=2912`，按 `max_entities` 截断返回；按 `entity_type="AcDbBlockReference"` 过滤能精确挑出那 1 个图签图块）→ 分析完之后确认当前 scratch 文档仍是活动文档、`connection` 状态正常，没有踩上第 2 点那个坑。补充了 `tests/test_reference_library.py`（目录列表纯单元测试 + 真实提取测试，数据集不在本机时 skip）。`pytest` 全量 26 个测试通过，无回归。
+
+## 2026-07-14：数据管道第一步——真实图纸批量转训练样本，外加两个真实踩坑（老式多段线坐标步长、图纸缺字体）
+
+用户上一轮问"能不能用真实图纸训练画图模型"，讨论后定了方向：不训练/微调第三方大模型（不符合项目架构原则），而是把真实图纸的实体机械转换成"重建它需要调用哪个 MCP 工具"的记录——转换不需要人工标注，真实坐标本身就是最准确的标签。这次做数据管道的前两步：批量抽取 + 实体转工具调用序列。
+
+**实现**：
+- `cad/training_export.py`：`entity_to_tool_call(entity)`，把 COM 实体转换成 `{"tool": 工具名, "args": {...}}`，参数名严格对齐 `tools/drawing_tools.py` 里各工具的真实签名（拍平的 x/y/z，不是嵌套列表），产出的样本可以直接当 MCP 工具调用参数回放。支持 `AcDbLine`/`AcDbCircle`/`AcDbArc`/`AcDbPolyline`/`AcDb2dPolyline`/`AcDbBlockReference`/`AcDbText`/`AcDbMText`，不认识的类型或提取失败返回 `None`（调用方跳过，不是致命错误）。
+- `scripts/build_training_dataset.py`：批量扫描一个目录下的真实 DWG，每个文件产出一行 JSONL（`file`/`entity_count`/`converted_count`/`tool_calls`），支持断点续跑（已处理过的文件自动跳过）。
+- 用户反馈真实数据集里混了广告/水印文字（举的例子："星欣设计图库"）——`training_export.py` 加了 `_is_ad_noise()` 精确短语匹配，命中的文字实体直接跳过不进数据集。**踩坑**：一开始想用宽泛关键词"QQ"过滤，测试数据里发现会误伤"1QQ"这种正常的设备/继电器位号（真实图纸里大量这类简写位号），改成只匹配完整、明确是广告的短语，不用单个宽泛关键词。
+
+**两个新真实坑（都是本次实测发现，不是猜的）**：
+1. **老式多段线的坐标步长和新式的不一样**：`_extract_polyline_points` 一开始假设 `Coordinates` 都是"每个顶点 2 个数（x,y）"，用本项目自己的 `draw_polyline` 画一个三角形转换测试时，读出来的坐标完全对不上——实测确认 `AcDb2dPolyline`（老式重量级多段线，`draw_polyline` 自己画出来的就是这种）的 `Coordinates` 其实是"每个顶点 3 个数（x,y,z）"，而 `AcDbPolyline`（现代轻量级/LWPOLYLINE，真实图纸里绝大多数是这种）才是 2 个数。已经按实体类型区分步长，两种都验证过正确。
+2. **打开真实图纸中文不显示**：用户反馈开真实图纸时中文变问号，排查发现是图纸引用的自定义大字体（`HZ`/`ST64F`/`khz`/`HZFS`/`HZFS1`/`hztxt` 等）本机没装。用户提供了两个字体资源：一个"万能字体"单文件、一个"CAD字体大全"（4623 个文件的完整字体库）。写了 `scripts/fill_missing_fonts.py`：扫描真实图纸收集 `fontFile`/`BigFontFile` 引用，从字体库里找到真名字体，只新增缺失的、绝不覆盖 AutoCAD 目录下任何已存在文件。**中途一个真实翻车**：图省事先用万能字体假冒了 `HZ.shx`/`ST64F.shx`/`khz.shx` 三个名字（用户后来给了字体库里的真字体后换成真的）；脚本第一版还犯了一个更隐蔽的错——把 Windows 系统自带的 `simsun.ttc`（TrueType Collection，一个文件装了多个字体）改名当成 `SimSun.ttf`（单个 TrueType 字体）复制进 AutoCAD 目录，`file` 命令验证过这就是一次真实的格式冒充，及时发现并删除，同时把脚本改成扩展名必须精确匹配（不再跨扩展名冒充）+ TrueType 字体要在 AutoCAD 自己的 Fonts 目录**或** Windows 系统字体目录（`C:\Windows\Fonts`）任一处存在即可，不需要额外复制。这两次改动**只影响真实图纸打开时中文能不能正常显示，不影响训练数据本身**（`TextString` 属性读到的是图纸内部存的真实 Unicode 文字，跟渲染字体是否存在无关，这一点在续十五排查中文乱码问题时已经验证过）。凡是往 AutoCAD/Windows 字体目录写文件的操作都先问过用户再做。
+3. **意外发现并修复了一个已上线工具的潜在 bug**：批量跑数据管道时复现了 `AttributeError('<unknown>.Close')`——这是 `Documents.Open()` 返回值不可靠这个老坑的另一种表现形式（这个项目里 `Documents.Add()` 的返回值也有过同样问题），只是这次连 `Close()` 都会踩到。之前 `reference_library.py::analyze_reference_drawing`（已经上线的 MCP 工具）没有做这层防护，只是运气好没在之前的测试里触发——这次把"打开重试+验证解析完成"和"关闭重试"都提炼成 `open_reference_drawing()`/`close_reference_drawing()` 两个共享函数，`analyze_reference_drawing`、`build_training_dataset.py`、`fill_missing_fonts.py` 三处统一复用，不再各自维护一份逻辑。
+
+**验证**：`build_training_dataset.py` 对"小型水电站电气一次主接线图"目录跑通，产出真实 JSONL（比如一条真实记录：2 点直线 `draw_line` 参数完全对应图纸里的真实坐标）；`entity_count == converted_count` 对纯直线/多段线的文件做到 100% 转换率。新增 `tests/test_training_export.py`（噪声过滤 + 各实体类型转换，含多段线步长修复后的正确性验证）。`pytest` 全量跑通（有 1 次偶发的 COM 忙碌瞬时失败，单独跑通过，跟这批改动无关——这次会话末尾特意保留了 53 个只读打开的参考图纸文档没清理，AutoCAD 资源比较紧张，这类偶发失败在这台机器上是已知的、跟真实 bug 无关的噪音）。
+
+**尚未做**：这只是数据管道的前两步（抽取 + 转换），"输入提示（instruction）从哪来"和"训练什么模型、怎么评估"这两个更大的问题还没展开，按之前讨论的方案，这些留给独立的机器学习项目决策。
