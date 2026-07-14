@@ -10,7 +10,7 @@ def test_all_expected_tools_registered():
     tools = asyncio.run(srv.mcp.list_tools())
     names = {t.name for t in tools}
 
-    assert len(names) >= 34
+    assert len(names) >= 36
 
     expected = {
         "new_drawing", "save_drawing", "export_current_view",
@@ -23,5 +23,6 @@ def test_all_expected_tools_registered():
         "get_block_attributes", "set_block_attribute",
         "bulk_get_block_attributes", "bulk_set_block_attributes", "validate_block_attributes",
         "ask_drawing_vqa", "vqa_service_status",
+        "list_reference_drawings", "analyze_reference_drawing",
     }
     assert expected <= names

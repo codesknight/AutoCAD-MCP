@@ -46,7 +46,7 @@ AutoCAD.Application (COM, ProgID: AutoCAD.Application.25.1)
 
 ## 工具清单
 
-目前共 **34 个** MCP 工具，全部在真实 AutoCAD 2026 上端到端验证通过（含真实 MCP 协议验证，不只是直接调 Python 函数）：
+目前共 **36 个** MCP 工具，全部在真实 AutoCAD 2026 上端到端验证通过（含真实 MCP 协议验证，不只是直接调 Python 函数）：
 
 | 分组 | 工具 |
 |---|---|
@@ -54,6 +54,7 @@ AutoCAD.Application (COM, ProgID: AutoCAD.Application.25.1)
 | 查询/编辑（`cad/query.py` + `tools/query_tools.py`） | `list_layers`/`list_blocks`/`list_symbol_library`/`query_entities`/`query_entities_in_region`/`get_entity`/`delete_entity`/`move_entity`/`rotate_entity`/`copy_entity`/`scale_entity`/`mirror_entity`/`get_block_attributes`/`set_block_attribute`/`bulk_get_block_attributes`/`bulk_set_block_attributes`/`validate_block_attributes` |
 | 文档（`tools/document_tools.py`） | `new_drawing`/`save_drawing`/`export_current_view` |
 | 图纸理解（`tools/vqa_tools.py`，转发到另一个毕设项目的本地 VQA 模型） | `ask_drawing_vqa`/`vqa_service_status` |
+| 真实图纸参考（`cad/reference_library.py` + `tools/reference_tools.py`） | `list_reference_drawings`/`analyze_reference_drawing`——只读打开真实历史图纸，提取实体的真实坐标/布局，供画新图纸时参考真实的间距/朝向/连接方式，而不是凭空猜（详见 [devlog.md](../logs/devlog.md) 2026-07-13） |
 
 其中 `list_layers`/`query_entities`/`get_entity`/`delete_entity`（查询能力）以及 `insert_block`/变换操作/`ask_drawing_vqa`（图块 + 编辑 + 看图理解）都是相对参考项目 CAD-MCP 的创新点（CAD-MCP 只能从零画图元，不能编辑已有内容、不能用标准符号图块、没有图纸理解能力，见 [cad-mcp-analysis.md](../references/cad-mcp-analysis.md)）。详细实现记录（含踩过的 COM 坑）见 [devlog.md](../logs/devlog.md)。
 

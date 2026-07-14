@@ -406,3 +406,19 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 **用途**：`#16` 流式响应实现完之后，之前所有真实浏览器测试都只测过"认证失败"这一条错误路径，从没验证过"真的连上一个能用的模型、跑出完整的流式回复+工具调用"这条成功路径。用真实豆包 Key 写了个脚本（直接读 `.env`、程序化调用 `POST /api/chat/stream`，不经过浏览器表单——按项目安全规则，API Key 不能由我操作浏览器填进网页输入框，但脚本里当参数值传给自己项目的 API 是两回事）跑了一遍"新建一张空白图纸，然后画一个圆心在原点、半径为15的圆"：完整收到了 `tool_call(new_drawing)` → `tool_result` → `tool_call(draw_circle)` → `tool_result` → 一连串真实的逐字 `text_delta`（豆包大模型对着刚才的工具执行结果生成的自然语言总结）→ `done`，整条 SSE 事件流结构、内容都完全正确，`OpenAIProvider.chat_stream()`（豆包走这条继承路径）的 tool_call 累积和文字增量转发逻辑，真实场景下第一次得到完整验证。
 
 **纠正续十五的结论**：这次成功路径的真实测试里，服务端日志**同样**报了那个 `RuntimeError: Attempted to exit a cancel scope that isn't the current tasks's current cancel scope`——续十五当时因为只测过错误路径，错误地把这个报错和"出错时的 yield/raise 处理方式"关联在一起，写成"这个报错只在...出错路径"，这个说法不准确，如实更正：**这个报错和请求是否成功、代码里怎么处理异常都没关系，是这个环境下 Starlette StreamingResponse 处理这类多层生成器嵌套 + 真实网络 I/O 时的一个通用副作用**，成功和失败路径都会触发，但两种情况下响应内容本身都是完整、正确的，不影响功能。仍然只是服务端日志噪音。
+
+## 2026-07-13：新增"真实图纸参考"能力——解决"画出来的电力图不像"
+
+用户反馈"画出来的电力图还是很不像"，问能不能用之前给的那批真实 DWG 数据（ground truth）让模型学会怎么画。跟用户对齐过方向：不训练/微调大模型（不符合 CLAUDE.md"不自己搞 NLP/训练层"的架构原则，Claude/豆包这类第三方模型也没法微调），而是从真实图纸里提取结构化的布局数据，做成一个新工具，让 AI 画图前先"查"一下真实图纸里符号是怎么摆放、连接的，用真实范例代替瞎猜坐标——跟 `#26` 解决"有没有标准符号"是同一个思路的延伸，这次解决"符号该怎么摆"。
+
+**实现**：
+- `reference_drawings.json`：真实参考图纸目录（完整图纸，不是单个符号），`base_dir` 指向 206Origin 数据集里"14-配电房设计CAD施工图"目录，先收了 4 张有代表性的真实主接线图（35kV 变电站改造、小型水电站、三峡左岸/隔河岩水电站电气主接线图）。图纸本体不提交仓库，跟 `symbol_library.json` 一个原则。
+- `cad/reference_library.py`：`list_reference_drawings()` 解析目录；`analyze_reference_drawing(connection, file_path, entity_type=None, max_entities=500)` 用 `Documents.Open(file_path, True)` 只读打开真实图纸（不影响当前正在编辑的文档），遍历 ModelSpace，复用 `query.py` 里现成的 `_entity_summary()` 提取每个实体的类型/坐标/包围盒，返回给 AI 参考。
+- `tools/reference_tools.py`：注册 `list_reference_drawings`/`analyze_reference_drawing` 两个 MCP 工具（现在总共 **36 个**工具）。
+
+**踩坑（真实图纸和之前用的标准符号库很不一样）**：
+1. 用真实文件测的时候发现，`35kV变电站改造主接线及总平面.dwg` 全图 2912 个实体，**图块引用（AcDbBlockReference）只有 1 个**，而且那 1 个还是"电气图签"（图纸标题栏），不是电路符号——绝大多数"符号"其实是用直线/圆/圆弧这些原始图元手工画出来的，不是插入的图块。这意味着这个工具不能只看图块引用，必须把所有图元类型的真实坐标都提取出来给 AI 参考，一开始的设计假设（"参考图纸=一堆图块引用"）是错的，已经改成提取全部实体类型。
+2. `Documents.Open()` 会把新打开的参考图纸变成当前活动文档，分析完得切回原来的文档——第一次实现只做了"切回去"（`app.ActiveDocument = original_active`），忘了 `state.py` 里 `connection` 自己缓存的 `document`/`model_space` COM 引用在切换活动文档之后会失效，导致分析完之后紧接着调用其它工具直接报 `AttributeError`。这是这个项目里已经出现过好几次的"缓存的 COM 引用会失效"这类坑（和 #12 发现的连接自愈缺口是同一类问题，这次是自己的新代码直接踩上了）——修复：分析完之后主动调用 `connection._wait_for_document(...)` 强制刷新缓存，不留给调用方自己踩坑。
+3. 测试过程中不小心让 AutoCAD 又累积了 99 个空白测试文档（这轮功能开发反复调试产生的），导致 `pytest` 连续几次运行都有随机不同的测试在 COM 资源紧张时偶发失败（单独跑都能过）。问过用户后确认清理，关掉了全部 99 个只留一个新建的空白图纸，之后 `pytest` 连续跑两遍都稳定 26 个测试全过。
+
+**验证**：真实 MCP 协议跑通 `list_reference_drawings`（返回 4 条目录）→ `analyze_reference_drawing`（对 35kV 变电站图纸提取真实坐标，`total_entity_count=2912`，按 `max_entities` 截断返回；按 `entity_type="AcDbBlockReference"` 过滤能精确挑出那 1 个图签图块）→ 分析完之后确认当前 scratch 文档仍是活动文档、`connection` 状态正常，没有踩上第 2 点那个坑。补充了 `tests/test_reference_library.py`（目录列表纯单元测试 + 真实提取测试，数据集不在本机时 skip）。`pytest` 全量 26 个测试通过，无回归。

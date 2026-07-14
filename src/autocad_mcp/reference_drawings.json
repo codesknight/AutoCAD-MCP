@@ -1,0 +1,26 @@
+{
+  "_comment": "真实电力工程图纸目录（完整图纸，不是单个符号）。file 是本机绝对路径（不随项目分发，原始数据集不在仓库里，来源不明确是否可自由再分发）。给 analyze_reference_drawing 工具用，只读打开、提取真实实体布局，供 AI 参考真实图纸该怎么画，不是靠猜坐标。",
+  "base_dir": "D:\\LiuYanhong\\Projects\\BISHE\\data\\UnderstandingCircuitDiagrams-206Origin\\源数据\\14-配电房设计CAD施工图2510（train2）\\1、电气图例",
+  "drawings": [
+    {
+      "name_cn": "35kV变电站改造主接线及总平面",
+      "description": "35kV 变电站改造项目，主接线图 + 总平面布置图",
+      "file": "35kV变电站改造主接线及总平面.dwg"
+    },
+    {
+      "name_cn": "小型水电站电气一次主接线图（D1-JX-01）",
+      "description": "小型水电站电气一次主接线图集，第 1 张",
+      "file": "小型水电站电气一次主接线图\\D1-JX-01.dwg"
+    },
+    {
+      "name_cn": "华中电气主接线图册-三峡左岸(14X700MW)",
+      "description": "三峡水电站左岸电厂电气主接线图，大型水电站真实主接线图范例",
+      "file": "华中电气主接线图册\\1三峡左岸（14X700MW）.dwg"
+    },
+    {
+      "name_cn": "华中电气主接线图册-隔河岩(4X300MW)",
+      "description": "隔河岩水电站电气主接线图",
+      "file": "华中电气主接线图册\\4隔河岩（4X300MW）.dwg"
+    }
+  ]
+}
