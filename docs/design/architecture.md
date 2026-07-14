@@ -94,6 +94,22 @@ AutoCAD.Application (COM, ProgID: AutoCAD.Application.25.1)
 - `chat_stream()`/`run_turn_stream()` 逐步 yield 结构化事件（`text_delta`/`tool_call`/`tool_result`/`error`/`done`），前端用 SSE 逐字显示回复、每次工具调用单独一行状态，不再是笼统的"思考中..."计时器。**已知问题**：这套多层异步生成器 + `StreamingResponse` 组合，在当前 anyio/Starlette 版本下，无论请求成功还是失败，服务端日志里都会出现一条 `RuntimeError: Attempted to exit a cancel scope...`——排查确认过这只是日志噪音，不影响返回给前端的内容（每次都完整正确），根因没有连根拔起，详见 [devlog.md](../logs/devlog.md) 2026-07-11（续十五、续十六后的更正）。
 - 已知限制（记录在 README）：会话历史存进程内存、不落盘，没有鉴权，只适合本机单用户场景，不是生产方案。
 
+## 训练数据管道（`scripts/`，离线数据准备，不是 MCP 工具）
+
+针对"画出来的电力图不像真实图纸"这个问题，探索了一条不训练/微调第三方大模型的路子
+（不符合本项目"不自研 NLP/训练层"的架构原则）：把真实 DWG 图纸的实体机械转换成
+"重建它需要调用哪个 MCP 工具"的记录，真实坐标本身就是最准确的标签，不需要人工标注。
+
+- `cad/training_export.py::entity_to_tool_call()`：把一个 COM 实体转换成
+  `{"tool": 工具名, "args": {...}}`，参数名严格对齐 `tools/drawing_tools.py`
+  里各工具的真实签名，产出的样本可以直接当 MCP 工具调用参数回放。
+- `scripts/build_training_dataset.py`：批量扫描一个目录下的真实 DWG，产出可断点续跑的 JSONL 数据集。
+- `scripts/fill_missing_fonts.py`：从用户提供的字体库里补全真实图纸引用的、本机缺失的中文大字体（只影响显示，不影响提取出来的数据本身）。
+
+这只是数据管道的前两步（抽取 + 转换）——"输入提示怎么来"、"训练什么模型、怎么评估"
+这些更大的问题还没有答案，按讨论过的方案，留给独立的机器学习项目决策，不在这个
+MCP 服务器项目的范围内。详见 [devlog.md](../logs/devlog.md) 2026-07-14。
+
 ## 开放问题 / 后续迭代方向
 
 - 是否要支持多 CAD 后端（中望/浩辰）？参考项目支持，本项目当前只针对 AutoCAD 2026，若要跟进需要在 `config.json` 里加 `cad_type` 切换逻辑（骨架已预留字段）。
