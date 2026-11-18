@@ -126,3 +126,7 @@ MCP 工具 → `state` 兼容 facade → `CadBackend`/factory → COM STA 队列
 本轮增加 lifecycle/工厂/线程与协议回归、默认离线测试、Windows CI；规划中的 .NET Bridge 和 HTTP adapter 尚未实现。
 上文的“36 个工具全部实机通过”是历史版本的验证记录，本轮仅对创建/查询闭环做了实机 smoke。
 完整现状、限制与下一步见 [backend-foundation.md](backend-foundation.md)，逐工具状态见 [tool-migration-matrix.md](tool-migration-matrix.md)。
+
+## 2026-11-18（第二轮）：实验性原生 Bridge / HTTP 后端
+
+新增 Kestrel loopback Bridge、CAD Idle 队列、文档会话、事务、有界 job 去重和 Python HTTP adapter。七项工具及 stdio/Streamable HTTP 闭环已实机通过；默认仍 COM。最新设计、事故记录与限制见 [http-bridge.md](http-bridge.md)。

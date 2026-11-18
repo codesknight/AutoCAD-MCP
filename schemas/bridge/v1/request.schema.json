@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "request_id",
+    "operation",
+    "args"
+  ],
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,128}$"
+    },
+    "document_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "expected_revision": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "operation": {
+      "enum": [
+        "new_document",
+        "draw_line",
+        "draw_circle",
+        "create_layer",
+        "list_layers",
+        "query_entities",
+        "get_entity"
+      ]
+    },
+    "args": {
+      "type": "object"
+    }
+  }
+}

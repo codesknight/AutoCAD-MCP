@@ -80,7 +80,8 @@ doubao_api_key=你的真实key
 ## 后端迁移与开发验证
 
 当前默认后端仍是 COM。`state.py` 统一管理后端，CAD 操作通过单个 STA 工作线程串行执行。
-`config.json` 可省略 `backend`（等同 `"com"`）；`"http"` 后端尚未实现，会明确报错。
+`config.json` 可省略 `backend`（等同 `"com"`）；`"http"` 后端已完成七项核心工具与事务批处理的最小闭环验证。
+安装、认证配置和限制见 [.NET Bridge / HTTP 后端](docs/design/http-bridge.md)。
 MCP 的 `--http` 是现有 8931 端口传输模式，与规划中的 CAD Bridge HTTP 后端不同。
 单个进程内多个客户端共享执行队列；多个独立服务进程没有跨进程写入协调，应只保留一个 COM 写入口。
 

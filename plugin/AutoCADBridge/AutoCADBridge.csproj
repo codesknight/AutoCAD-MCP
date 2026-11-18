@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <AutoCADDir Condition="'$(AutoCADDir)' == ''">$(AUTOCAD_SDK_DIR)</AutoCADDir>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <Reference Include="AcCoreMgd"><HintPath>$(AutoCADDir)/accoremgd.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="AcDbMgd"><HintPath>$(AutoCADDir)/acdbmgd.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="AcMgd"><HintPath>$(AutoCADDir)/acmgd.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+  <Target Name="RequireAutoCADSDK" BeforeTargets="ResolveReferences">
+    <Error Condition="!Exists('$(AutoCADDir)/acdbmgd.dll')" Text="Set AutoCADDir or AUTOCAD_SDK_DIR to the AutoCAD 2026 managed assemblies directory." />
+  </Target>
+</Project>

@@ -24,3 +24,14 @@ jobs:
             Write-Output "::error title=Offline pytest output::$details"
           }
           exit $pytestExit
+  bridge-contracts:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Verify Bridge journal contracts without AutoCAD
+        run: dotnet run --project plugin/AutoCADBridge.ContractTests -c Release
+      - name: Verify embedded Kestrel lifecycle without a UI message pump
+        run: dotnet run --project plugin/AutoCADBridge.HostingTests -c Release

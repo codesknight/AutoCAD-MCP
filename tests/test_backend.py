@@ -219,8 +219,9 @@ def test_config_backwards_compatibility_and_no_http_fallback():
     assert config().backend == "com"
     backend = create_backend(config())
     backend.close()
-    with pytest.raises(UnsupportedBackendError, match="not implemented"):
-        create_backend(config(backend="http"))
+    http_backend = create_backend(config(backend="http"))
+    assert http_backend.__class__.__name__ == "HTTPBackend"
+    http_backend.close()
     with pytest.raises(ValidationError):
         config(backend="typo")
 
