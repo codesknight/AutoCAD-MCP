@@ -1,0 +1,42 @@
+{
+  "recorded_date": "2026-11-18",
+  "timezone": "Asia/Shanghai",
+  "baseline_git_sha": "5e8379835c7dced142e6fcf9339741975b8dfae0",
+  "remote_main_sha_verified": "5e8379835c7dced142e6fcf9339741975b8dfae0",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "python": "3.11.15",
+  "packages": {
+    "mcp": "1.28.1",
+    "pydantic": "2.13.4",
+    "pywin32": "312",
+    "pytest": "9.1.1",
+    "anyio": "4.14.1"
+  },
+  "autocad": {
+    "file_version": "31.1.60.0",
+    "managed_dll_version": "25.1.60.0.0",
+    "prog_id": "AutoCAD.Application.25.1",
+    "update_label_verified": false
+  },
+  "dotnet_sdks": [],
+  "mcp_tool_count": 36,
+  "cad_tool_call_fixture_count": 32,
+  "performance_baseline": {
+    "collected": false,
+    "reason": "No controlled timing samples; smoke success is not a benchmark"
+  },
+  "verification": [
+    {
+      "command": "python -m pytest -q",
+      "passed": 56,
+      "skipped": 33,
+      "cad_enabled": false
+    },
+    {
+      "command": "python -m pytest tests/test_backend_integration.py --cad-integration -q -s",
+      "passed": 2,
+      "cad_enabled": true
+    }
+  ],
+  "preexisting_worktree_changes_preserved": true
+}

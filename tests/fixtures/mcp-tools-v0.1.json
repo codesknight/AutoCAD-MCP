@@ -1,0 +1,1557 @@
+[
+  {
+    "name": "add_dimension",
+    "description": "添加一个对齐标注（起点、终点、标注文字位置），返回新实体的 ObjectID。",
+    "inputSchema": {
+      "properties": {
+        "start_x": {
+          "title": "Start X",
+          "type": "number"
+        },
+        "start_y": {
+          "title": "Start Y",
+          "type": "number"
+        },
+        "start_z": {
+          "title": "Start Z",
+          "type": "number"
+        },
+        "end_x": {
+          "title": "End X",
+          "type": "number"
+        },
+        "end_y": {
+          "title": "End Y",
+          "type": "number"
+        },
+        "end_z": {
+          "title": "End Z",
+          "type": "number"
+        },
+        "text_x": {
+          "title": "Text X",
+          "type": "number"
+        },
+        "text_y": {
+          "title": "Text Y",
+          "type": "number"
+        },
+        "text_z": {
+          "title": "Text Z",
+          "type": "number"
+        }
+      },
+      "required": [
+        "start_x",
+        "start_y",
+        "start_z",
+        "end_x",
+        "end_y",
+        "end_z",
+        "text_x",
+        "text_y",
+        "text_z"
+      ],
+      "title": "add_dimensionArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "add_dimensionOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "analyze_reference_drawing",
+    "description": "只读打开一份真实图纸（不影响、不修改当前正在编辑的文档），提取里面\n        实体的真实空间布局（类型/坐标/包围盒），返回结构化 JSON，供画新图纸前\n        参考真实的间距、朝向、连接线走法。file_path 用 list_reference_drawings\n        返回的路径，或任何本机可访问的 .dwg 文件。可选按 entity_type\n        （如 AcDbLine/AcDbCircle/AcDbBlockReference）过滤。\n        ",
+    "inputSchema": {
+      "properties": {
+        "file_path": {
+          "title": "File Path",
+          "type": "string"
+        },
+        "entity_type": {
+          "default": "",
+          "title": "Entity Type",
+          "type": "string"
+        },
+        "max_entities": {
+          "default": 500,
+          "title": "Max Entities",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "file_path"
+      ],
+      "title": "analyze_reference_drawingArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "analyze_reference_drawingOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "ask_drawing_vqa",
+    "description": "向本地微调的电力工程图纸理解模型提问（针对110kV变电站图纸领域优化，\n        擅长回答设备类型/数量、母线接线方式、电压等级等问题）。image_path 需为本机可访问的\n        图片文件路径（PNG/JPG）。若需要先把当前 AutoCAD 图纸导出成图片，请先用其他工具导出。\n        ",
+    "inputSchema": {
+      "properties": {
+        "image_path": {
+          "title": "Image Path",
+          "type": "string"
+        },
+        "question": {
+          "title": "Question",
+          "type": "string"
+        }
+      },
+      "required": [
+        "image_path",
+        "question"
+      ],
+      "title": "ask_drawing_vqaArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "ask_drawing_vqaOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "bulk_get_block_attributes",
+    "description": "批量取多个图块引用的属性。传 object_ids 就只查这些；不传就按 block_name\n        过滤（block_name 也不传就是图纸里所有带属性的图块引用）。返回 JSON：\n        {\"object_id\": {\"tag\": \"value\", ...}, ...}。\n        ",
+    "inputSchema": {
+      "properties": {
+        "object_ids": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Object Ids"
+        },
+        "block_name": {
+          "default": "",
+          "title": "Block Name",
+          "type": "string"
+        }
+      },
+      "title": "bulk_get_block_attributesArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "bulk_get_block_attributesOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "bulk_set_block_attributes",
+    "description": "批量设置图块属性。updates 是 [{\"object_id\":.., \"tag\":.., \"value\":..}, ...]，\n        单条失败不影响其它条。返回每条的执行结果 JSON。\n        ",
+    "inputSchema": {
+      "properties": {
+        "updates": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Updates",
+          "type": "array"
+        }
+      },
+      "required": [
+        "updates"
+      ],
+      "title": "bulk_set_block_attributesArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "bulk_set_block_attributesOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "copy_entity",
+    "description": "复制一份实体并沿偏移量平移，原实体不变，返回新实体的 ObjectID。",
+    "inputSchema": {
+      "properties": {
+        "object_id": {
+          "title": "Object Id",
+          "type": "integer"
+        },
+        "offset_x": {
+          "title": "Offset X",
+          "type": "number"
+        },
+        "offset_y": {
+          "title": "Offset Y",
+          "type": "number"
+        },
+        "offset_z": {
+          "title": "Offset Z",
+          "type": "number"
+        }
+      },
+      "required": [
+        "object_id",
+        "offset_x",
+        "offset_y",
+        "offset_z"
+      ],
+      "title": "copy_entityArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "copy_entityOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "create_layer",
+    "description": "新建图层。color 是 AutoCAD 颜色索引（ACI，1=红 2=黄 3=绿 4=青 5=蓝 6=洋红 7=白/黑），\n        不填用默认颜色。",
+    "inputSchema": {
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Color"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "create_layerArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "create_layerOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "delete_entity",
+    "description": "按 ObjectID 删除实体。",
+    "inputSchema": {
+      "properties": {
+        "object_id": {
+          "title": "Object Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "object_id"
+      ],
+      "title": "delete_entityArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "delete_entityOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "draw_arc",
+    "description": "画一段圆弧，起止角度单位为度（从 X 轴正方向逆时针计），返回新实体的 ObjectID。",
+    "inputSchema": {
+      "properties": {
+        "center_x": {
+          "title": "Center X",
+          "type": "number"
+        },
+        "center_y": {
+          "title": "Center Y",
+          "type": "number"
+        },
+        "center_z": {
+          "title": "Center Z",
+          "type": "number"
+        },
+        "radius": {
+          "title": "Radius",
+          "type": "number"
+        },
+        "start_angle": {
+          "title": "Start Angle",
+          "type": "number"
+        },
+        "end_angle": {
+          "title": "End Angle",
+          "type": "number"
+        },
+        "layer": {
+          "default": "",
+          "title": "Layer",
+          "type": "string"
+        }
+      },
+      "required": [
+        "center_x",
+        "center_y",
+        "center_z",
+        "radius",
+        "start_angle",
+        "end_angle"
+      ],
+      "title": "draw_arcArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "draw_arcOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "draw_circle",
+    "description": "在当前图纸中画一个圆，返回新实体的 ObjectID。",
+    "inputSchema": {
+      "properties": {
+        "center_x": {
+          "title": "Center X",
+          "type": "number"
+        },
+        "center_y": {
+          "title": "Center Y",
+          "type": "number"
+        },
+        "center_z": {
+          "title": "Center Z",
+          "type": "number"
+        },
+        "radius": {
+          "title": "Radius",
+          "type": "number"
+        },
+        "layer": {
+          "default": "",
+          "title": "Layer",
+          "type": "string"
+        }
+      },
+      "required": [
+        "center_x",
+        "center_y",
+        "center_z",
+        "radius"
+      ],
+      "title": "draw_circleArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "draw_circleOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "draw_hatch",
+    "description": "对 points 围成的闭合边界填充图案（默认 SOLID 实体填充），返回新实体的 ObjectID。",
+    "inputSchema": {
+      "properties": {
+        "points": {
+          "items": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "title": "Points",
+          "type": "array"
+        },
+        "pattern_name": {
+          "default": "SOLID",
+          "title": "Pattern Name",
+          "type": "string"
+        },
+        "layer": {
+          "default": "",
+          "title": "Layer",
+          "type": "string"
+        }
+      },
+      "required": [
+        "points"
+      ],
+      "title": "draw_hatchArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "draw_hatchOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "draw_line",
+    "description": "在当前图纸中画一条直线，返回新实体的 ObjectID。",
+    "inputSchema": {
+      "properties": {
+        "start_x": {
+          "title": "Start X",
+          "type": "number"
+        },
+        "start_y": {
+          "title": "Start Y",
+          "type": "number"
+        },
+        "start_z": {
+          "title": "Start Z",
+          "type": "number"
+        },
+        "end_x": {
+          "title": "End X",
+          "type": "number"
+        },
+        "end_y": {
+          "title": "End Y",
+          "type": "number"
+        },
+        "end_z": {
+          "title": "End Z",
+          "type": "number"
+        },
+        "layer": {
+          "default": "",
+          "title": "Layer",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start_x",
+        "start_y",
+        "start_z",
+        "end_x",
+        "end_y",
+        "end_z"
+      ],
+      "title": "draw_lineArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "draw_lineOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "draw_mtext",
+    "description": "插入多行富文本（支持 \\n 换行，超出 width 会自动换行），返回新实体的 ObjectID。",
+    "inputSchema": {
+      "properties": {
+        "position_x": {
+          "title": "Position X",
+          "type": "number"
+        },
+        "position_y": {
+          "title": "Position Y",
+          "type": "number"
+        },
+        "position_z": {
+          "title": "Position Z",
+          "type": "number"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "width": {
+          "default": 100.0,
+          "title": "Width",
+          "type": "number"
+        },
+        "height": {
+          "default": 2.5,
+          "title": "Height",
+          "type": "number"
+        },
+        "layer": {
+          "default": "",
+          "title": "Layer",
+          "type": "string"
+        }
+      },
+      "required": [
+        "position_x",
+        "position_y",
+        "position_z",
+        "text"
+      ],
+      "title": "draw_mtextArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "draw_mtextOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "draw_polyline",
+    "description": "画一条多段线，points 是 [x,y,z] 坐标点的列表，返回新实体的 ObjectID。",
+    "inputSchema": {
+      "properties": {
+        "points": {
+          "items": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "title": "Points",
+          "type": "array"
+        },
+        "closed": {
+          "default": false,
+          "title": "Closed",
+          "type": "boolean"
+        },
+        "layer": {
+          "default": "",
+          "title": "Layer",
+          "type": "string"
+        }
+      },
+      "required": [
+        "points"
+      ],
+      "title": "draw_polylineArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "draw_polylineOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "draw_rectangle",
+    "description": "画一个矩形（对角两点确定），返回新实体的 ObjectID。",
+    "inputSchema": {
+      "properties": {
+        "corner1_x": {
+          "title": "Corner1 X",
+          "type": "number"
+        },
+        "corner1_y": {
+          "title": "Corner1 Y",
+          "type": "number"
+        },
+        "corner1_z": {
+          "title": "Corner1 Z",
+          "type": "number"
+        },
+        "corner2_x": {
+          "title": "Corner2 X",
+          "type": "number"
+        },
+        "corner2_y": {
+          "title": "Corner2 Y",
+          "type": "number"
+        },
+        "corner2_z": {
+          "title": "Corner2 Z",
+          "type": "number"
+        },
+        "layer": {
+          "default": "",
+          "title": "Layer",
+          "type": "string"
+        }
+      },
+      "required": [
+        "corner1_x",
+        "corner1_y",
+        "corner1_z",
+        "corner2_x",
+        "corner2_y",
+        "corner2_z"
+      ],
+      "title": "draw_rectangleArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "draw_rectangleOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "draw_text",
+    "description": "在指定位置插入文字（rotation 单位为度），返回新实体的 ObjectID。",
+    "inputSchema": {
+      "properties": {
+        "position_x": {
+          "title": "Position X",
+          "type": "number"
+        },
+        "position_y": {
+          "title": "Position Y",
+          "type": "number"
+        },
+        "position_z": {
+          "title": "Position Z",
+          "type": "number"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "height": {
+          "title": "Height",
+          "type": "number"
+        },
+        "layer": {
+          "default": "",
+          "title": "Layer",
+          "type": "string"
+        },
+        "rotation": {
+          "default": 0.0,
+          "title": "Rotation",
+          "type": "number"
+        }
+      },
+      "required": [
+        "position_x",
+        "position_y",
+        "position_z",
+        "text",
+        "height"
+      ],
+      "title": "draw_textArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "draw_textOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "export_current_view",
+    "description": "把当前 AutoCAD 图纸的全图导出成 PNG 图片，方便交给看图工具\n        （比如 ask_drawing_vqa）分析。不填 file_path 会自动生成一个临时文件路径。\n        返回实际导出的图片路径。\n        ",
+    "inputSchema": {
+      "properties": {
+        "file_path": {
+          "default": "",
+          "title": "File Path",
+          "type": "string"
+        }
+      },
+      "title": "export_current_viewArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "export_current_viewOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "get_block_attributes",
+    "description": "取图块引用的属性（tag -> value），返回 JSON。",
+    "inputSchema": {
+      "properties": {
+        "object_id": {
+          "title": "Object Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "object_id"
+      ],
+      "title": "get_block_attributesArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "get_block_attributesOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "get_entity",
+    "description": "按 ObjectID 获取单个实体详情。",
+    "inputSchema": {
+      "properties": {
+        "object_id": {
+          "title": "Object Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "object_id"
+      ],
+      "title": "get_entityArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "get_entityOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "insert_block",
+    "description": "插入一个图块引用（比如标准电力设备符号），返回新实体的 ObjectID。\n        block_name 可以是当前图纸已有的图块名（用 list_blocks 查），也可以是一个 .dwg 文件的\n        完整路径（AutoCAD 会自动把它定义成同名图块）。rotation 单位为度。\n        ",
+    "inputSchema": {
+      "properties": {
+        "block_name": {
+          "title": "Block Name",
+          "type": "string"
+        },
+        "position_x": {
+          "title": "Position X",
+          "type": "number"
+        },
+        "position_y": {
+          "title": "Position Y",
+          "type": "number"
+        },
+        "position_z": {
+          "title": "Position Z",
+          "type": "number"
+        },
+        "scale": {
+          "default": 1.0,
+          "title": "Scale",
+          "type": "number"
+        },
+        "rotation": {
+          "default": 0.0,
+          "title": "Rotation",
+          "type": "number"
+        },
+        "layer": {
+          "default": "",
+          "title": "Layer",
+          "type": "string"
+        }
+      },
+      "required": [
+        "block_name",
+        "position_x",
+        "position_y",
+        "position_z"
+      ],
+      "title": "insert_blockArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "insert_blockOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "list_blocks",
+    "description": "列出当前图纸里已有的、可插入的图块定义名（JSON 数组）。",
+    "inputSchema": {
+      "properties": {},
+      "title": "list_blocksArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "list_blocksOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "list_layers",
+    "description": "列出当前图纸的所有图层名（JSON 数组）。",
+    "inputSchema": {
+      "properties": {},
+      "title": "list_layersArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "list_layersOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "list_reference_drawings",
+    "description": "列出本机可用的真实电力工程参考图纸（完整图纸，不是单个符号），\n        返回 [{\"name_cn\", \"description\", \"file\"}, ...]。file 是可以直接传给\n        analyze_reference_drawing 的 .dwg 文件路径。这份数据集不在本机时返回\n        空数组。用于\"画出来的图不像真实图纸\"时，先查一下真实图纸长什么样。\n        ",
+    "inputSchema": {
+      "properties": {},
+      "title": "list_reference_drawingsArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "list_reference_drawingsOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "list_symbol_library",
+    "description": "列出本机可用的标准电力单线图符号库（断路器/隔离开关/变压器/避雷器等），\n        返回 [{\"name_cn\", \"name_en\", \"file\"}, ...]。file 是可以直接传给 insert_block\n        的 .dwg 文件路径。这份库不在本机时返回空数组。\n        ",
+    "inputSchema": {
+      "properties": {},
+      "title": "list_symbol_libraryArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "list_symbol_libraryOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "mirror_entity",
+    "description": "以 point1-point2 连线为镜像轴，返回镜像后新实体的 ObjectID。\n        erase_source=True 时删除原实体（相当于翻转而不是镜像出一份新的）。\n        ",
+    "inputSchema": {
+      "properties": {
+        "object_id": {
+          "title": "Object Id",
+          "type": "integer"
+        },
+        "point1_x": {
+          "title": "Point1 X",
+          "type": "number"
+        },
+        "point1_y": {
+          "title": "Point1 Y",
+          "type": "number"
+        },
+        "point1_z": {
+          "title": "Point1 Z",
+          "type": "number"
+        },
+        "point2_x": {
+          "title": "Point2 X",
+          "type": "number"
+        },
+        "point2_y": {
+          "title": "Point2 Y",
+          "type": "number"
+        },
+        "point2_z": {
+          "title": "Point2 Z",
+          "type": "number"
+        },
+        "erase_source": {
+          "default": false,
+          "title": "Erase Source",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "object_id",
+        "point1_x",
+        "point1_y",
+        "point1_z",
+        "point2_x",
+        "point2_y",
+        "point2_z"
+      ],
+      "title": "mirror_entityArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "mirror_entityOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "move_entity",
+    "description": "把实体沿 (offset_x, offset_y, offset_z) 平移（相对位移，不是绝对坐标）。",
+    "inputSchema": {
+      "properties": {
+        "object_id": {
+          "title": "Object Id",
+          "type": "integer"
+        },
+        "offset_x": {
+          "title": "Offset X",
+          "type": "number"
+        },
+        "offset_y": {
+          "title": "Offset Y",
+          "type": "number"
+        },
+        "offset_z": {
+          "title": "Offset Z",
+          "type": "number"
+        }
+      },
+      "required": [
+        "object_id",
+        "offset_x",
+        "offset_y",
+        "offset_z"
+      ],
+      "title": "move_entityArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "move_entityOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "new_drawing",
+    "description": "新建一张空白图纸并切换过去（不会碰当前正在编辑的图纸），\n        返回新图纸的名字。做实验性的绘图操作前建议先调用这个，\n        避免不小心画到用户正在编辑的真实图纸上。\n        ",
+    "inputSchema": {
+      "properties": {},
+      "title": "new_drawingArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "new_drawingOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "query_entities",
+    "description": "查询当前图纸中的实体，可选按类型（如 AcDbLine/AcDbCircle）过滤，返回结构化 JSON。",
+    "inputSchema": {
+      "properties": {
+        "entity_type": {
+          "default": "",
+          "title": "Entity Type",
+          "type": "string"
+        }
+      },
+      "title": "query_entitiesArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "query_entitiesOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "query_entities_in_region",
+    "description": "查询矩形区域 (corner1, corner2) 内的实体，比 query_entities 全表扫描快，\n        适合复杂图纸只关心某一块区域的场景。mode=\"crossing\"（默认，区域内或和边界\n        相交都算）或 \"window\"（只有完全被区域包住才算，偶发不稳定，见函数内部注释）。\n        可选按 entity_type（如 AcDbLine/AcDbBlockReference）过滤。返回结构化 JSON。\n        ",
+    "inputSchema": {
+      "properties": {
+        "corner1_x": {
+          "title": "Corner1 X",
+          "type": "number"
+        },
+        "corner1_y": {
+          "title": "Corner1 Y",
+          "type": "number"
+        },
+        "corner1_z": {
+          "title": "Corner1 Z",
+          "type": "number"
+        },
+        "corner2_x": {
+          "title": "Corner2 X",
+          "type": "number"
+        },
+        "corner2_y": {
+          "title": "Corner2 Y",
+          "type": "number"
+        },
+        "corner2_z": {
+          "title": "Corner2 Z",
+          "type": "number"
+        },
+        "mode": {
+          "default": "crossing",
+          "title": "Mode",
+          "type": "string"
+        },
+        "entity_type": {
+          "default": "",
+          "title": "Entity Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "corner1_x",
+        "corner1_y",
+        "corner1_z",
+        "corner2_x",
+        "corner2_y",
+        "corner2_z"
+      ],
+      "title": "query_entities_in_regionArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "query_entities_in_regionOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "rotate_entity",
+    "description": "绕 (base_x, base_y, base_z) 旋转实体，angle 单位为度。",
+    "inputSchema": {
+      "properties": {
+        "object_id": {
+          "title": "Object Id",
+          "type": "integer"
+        },
+        "base_x": {
+          "title": "Base X",
+          "type": "number"
+        },
+        "base_y": {
+          "title": "Base Y",
+          "type": "number"
+        },
+        "base_z": {
+          "title": "Base Z",
+          "type": "number"
+        },
+        "angle": {
+          "title": "Angle",
+          "type": "number"
+        }
+      },
+      "required": [
+        "object_id",
+        "base_x",
+        "base_y",
+        "base_z",
+        "angle"
+      ],
+      "title": "rotate_entityArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "rotate_entityOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "save_drawing",
+    "description": "将当前图纸另存为指定路径。默认不允许 file_path 和当前文档的原始路径相同\n        （避免覆盖用户正在编辑的真实图纸）；确实要覆盖原文件时传 overwrite=True。\n        ",
+    "inputSchema": {
+      "properties": {
+        "file_path": {
+          "title": "File Path",
+          "type": "string"
+        },
+        "overwrite": {
+          "default": false,
+          "title": "Overwrite",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "file_path"
+      ],
+      "title": "save_drawingArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "save_drawingOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "scale_entity",
+    "description": "以 (base_x, base_y, base_z) 为基点等比缩放实体。",
+    "inputSchema": {
+      "properties": {
+        "object_id": {
+          "title": "Object Id",
+          "type": "integer"
+        },
+        "base_x": {
+          "title": "Base X",
+          "type": "number"
+        },
+        "base_y": {
+          "title": "Base Y",
+          "type": "number"
+        },
+        "base_z": {
+          "title": "Base Z",
+          "type": "number"
+        },
+        "scale_factor": {
+          "title": "Scale Factor",
+          "type": "number"
+        }
+      },
+      "required": [
+        "object_id",
+        "base_x",
+        "base_y",
+        "base_z",
+        "scale_factor"
+      ],
+      "title": "scale_entityArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "scale_entityOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "set_block_attribute",
+    "description": "修改图块引用某个属性标签的值。",
+    "inputSchema": {
+      "properties": {
+        "object_id": {
+          "title": "Object Id",
+          "type": "integer"
+        },
+        "tag": {
+          "title": "Tag",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "object_id",
+        "tag",
+        "value"
+      ],
+      "title": "set_block_attributeArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "set_block_attributeOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "set_layer_properties",
+    "description": "修改已有图层的颜色/锁定/冻结/可见性，不填的参数保持不变。",
+    "inputSchema": {
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Color"
+        },
+        "locked": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Locked"
+        },
+        "frozen": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Frozen"
+        },
+        "visible": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Visible"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "set_layer_propertiesArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "set_layer_propertiesOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "validate_block_attributes",
+    "description": "校核图块属性完整性：检查图纸里的图块引用（不传 block_name 就是全部）是否\n        都有 required_tags 里列出的每个属性标签，且值不为空。只返回有问题的条目\n        （缺失/空值），JSON 数组，没问题就返回空数组。\n        ",
+    "inputSchema": {
+      "properties": {
+        "required_tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Required Tags",
+          "type": "array"
+        },
+        "block_name": {
+          "default": "",
+          "title": "Block Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "required_tags"
+      ],
+      "title": "validate_block_attributesArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "validate_block_attributesOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "vqa_service_status",
+    "description": "检查本地 VQA API 服务是否已启动、模型是否加载完成。",
+    "inputSchema": {
+      "properties": {},
+      "title": "vqa_service_statusArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "vqa_service_statusOutput",
+      "type": "object"
+    }
+  }
+]

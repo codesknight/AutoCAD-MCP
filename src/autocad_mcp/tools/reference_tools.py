@@ -3,7 +3,7 @@ import json
 from mcp.server.fastmcp import FastMCP
 
 from autocad_mcp.cad import reference_library
-from autocad_mcp.state import get_controller
+from autocad_mcp import state
 
 
 def register(mcp: FastMCP) -> None:
@@ -24,7 +24,7 @@ def register(mcp: FastMCP) -> None:
         返回的路径，或任何本机可访问的 .dwg 文件。可选按 entity_type
         （如 AcDbLine/AcDbCircle/AcDbBlockReference）过滤。
         """
-        result = reference_library.analyze_reference_drawing(
-            get_controller().connection, file_path, entity_type or None, max_entities,
+        result = state.analyze_reference_drawing(
+            file_path, entity_type or None, max_entities,
         )
         return json.dumps(result, ensure_ascii=False)

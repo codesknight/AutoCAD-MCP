@@ -1,4 +1,5 @@
 {
+  "backend": "com",
   "cad_type": "AutoCAD",
   "prog_id": "AutoCAD.Application.25.1",
   "prog_id_fallbacks": ["AutoCAD.Application.25", "AutoCAD.Application"],
