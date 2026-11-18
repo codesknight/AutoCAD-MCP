@@ -19,8 +19,11 @@ from scripts.verify_http_bridge import cad_processes
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output",type=Path,required=True)
+    parser.add_argument("--control-dir",type=Path,help="Optional local operator checkpoints instead of stdin")
     args=parser.parse_args()
     records=Records(args.output)
+    if args.control_dir:
+        args.control_dir.mkdir(parents=True,exist_ok=False)
     records.json("plan.json",{"mode":"cad_restart","launch":"operator normal desktop, no COM Dispatch"})
     baseline=cad_processes()
     owned=[]
@@ -38,13 +41,21 @@ def main():
     h=None
     fresh=None
     result={"completed":False,"passed":False}
+    def operator(stage,prompt):
+        print(prompt,flush=True)
+        if args.control_dir:
+            path=args.control_dir/(stage+".json")
+            print("Waiting for local checkpoint: "+path.name,flush=True)
+            wait_for(lambda:path.exists(),timeout=900)
+            return json.loads(path.read_text(encoding="utf-8"))
+        value=input("Owned CAD PID: " if stage in ("initial","replacement") else "Press Enter: ")
+        return {"pid":int(value)} if value else {}
     def connect():
         traffic=Traffic()
         client=httpx.Client(base_url=config.http.base_url,transport=traffic,timeout=5,trust_env=False)
         return HTTPBackend(config,client=client),traffic
-    def new_pid(prompt):
-        print(prompt,flush=True)
-        pid=int(input("Owned CAD PID: "))
+    def new_pid(stage,prompt):
+        pid=int(operator(stage,prompt)["pid"])
         if pid in baseline or pid in owned or pid not in cad_processes():
             raise RuntimeError("PID is not a newly created CAD process")
         owned.append(pid)
@@ -54,14 +65,14 @@ def main():
             return data if response.status_code==200 and data["process_id"]==pid else None
         return pid,wait_for(ready,timeout=120)
     try:
-        first,health=new_pid("Normally launch a NEW dedicated AutoCAD, NETLOAD the installed Bridge and run MCPBRIDGE_START.")
+        first,health=new_pid("initial","Normally launch a NEW dedicated AutoCAD, NETLOAD the installed Bridge and run MCPBRIDGE_START.")
         h,traffic=connect()
         document=h.execute("new_document",{})
         documents=h.status()["documents"]
         if any(not re.fullmatch(r"Drawing\d+\.dwg",d["name"]) for d in documents):
             raise RuntimeError("Unexpected non-scratch document in the new instance; preserve it")
         print(f"Own scratch drawing: {document}. In ONLY PID {first}, start LINE and leave it awaiting a point.",flush=True)
-        input("Press Enter after LINE is waiting: ")
+        operator("busy","Confirm LINE is waiting in the owned instance.")
         rid=uuid4().hex
         traffic.reset()
         with ThreadPoolExecutor(max_workers=1) as pool:
@@ -77,7 +88,7 @@ def main():
             state=wait_for(queued,timeout=10)
             records.add("restart",event="queued_before_process_death",status=state["status"],write_posts=traffic.posts)
             print(f"Verified queued write. Terminate ONLY owned CAD PID {first}, then press Enter.",flush=True)
-            input()
+            operator("terminated","Confirm the first owned process has exited.")
             wait_for(lambda:first not in cad_processes(),timeout=20)
             try:
                 pending.result(timeout=10)
@@ -87,7 +98,7 @@ def main():
                     raise
                 result["lost_process_outcome"]=exc.code
                 result["write_posts"]=traffic.posts
-        second,new_health=new_pid("Normally launch a replacement NEW dedicated AutoCAD, NETLOAD Bridge and run MCPBRIDGE_START.")
+        second,new_health=new_pid("replacement","Normally launch a replacement NEW dedicated AutoCAD, NETLOAD Bridge and run MCPBRIDGE_START.")
         if new_health["instance_id"]==health["instance_id"]:
             raise AssertionError("Instance identity survived process replacement")
         try:
@@ -113,7 +124,7 @@ def main():
         result.update(recovery_verified=True,journal_lost_explicitly=True,
             original_processes_preserved=baseline<=cad_processes())
         print(f"Recovery verified in {rebound}. Terminate ONLY owned replacement PID {second}, then press Enter.",flush=True)
-        input()
+        operator("cleanup","Confirm the replacement owned process has exited.")
         wait_for(lambda:second not in cad_processes(),timeout=20)
         if not baseline<=cad_processes():
             raise AssertionError("Original CAD process disappeared")
