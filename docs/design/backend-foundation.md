@@ -12,6 +12,8 @@
 
 COM backend 首次执行操作时才启动独立 STA 线程。在同一线程初始化 COM、创建 connection/controller/query、串行执行、泵送消息及释放引用。最多排队 64 项，满队列明确报错。关闭时停止接收请求、排空已接收任务、在所属线程释放引用并反初始化 COM；不保存、关闭图纸或退出 CAD。原生调用执行期间不能承诺立即中断，关闭会等待其返回。工作线程异常退出会使等待请求失败，不留下永远等待的 Future。
 
+MCP SDK 声明兼容范围 `>=1.28.1,<2`：项目依赖 1.x FastMCP API，干净 runner 首轮安装 2.x 时已确认导入失败；2.x 升级应独立迁移和验收。
+
 配置缺省 `backend="com"`，旧 JSON 配置仍有效。`backend="http"` 暂时明确返回 `UNSUPPORTED_BACKEND`，不隐式回退。HTTP adapter、Bridge DTO、实例状态、认证和事务协议要等插件最小闭环验证后实现，避免提供无法兑现语义的空壳。
 
 ## 文档与恢复边界

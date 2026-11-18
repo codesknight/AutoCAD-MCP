@@ -5,7 +5,7 @@ description = "MCP server that controls AutoCAD via COM automation"
 requires-python = ">=3.11"
 dependencies = [
     "pywin32",
-    "mcp[cli]",
+    "mcp[cli]>=1.28.1,<2",
     "anyio>=4,<5",
     "pydantic",
     "httpx",
