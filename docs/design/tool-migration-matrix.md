@@ -11,28 +11,28 @@
 | `bulk_get_block_attributes` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `bulk_set_block_attributes` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `copy_entity` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
-| `create_layer` | 串行 STA adapter | 协议 fixture + 小规模实机 smoke | 未实现 |
+| `create_layer` | 串行 STA adapter | 协议 fixture + 小规模实机 smoke | 实验支持；本轮实机重读通过 |
 | `delete_entity` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `draw_arc` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
-| `draw_circle` | 串行 STA adapter | 协议 fixture + 小规模实机 smoke | 未实现 |
+| `draw_circle` | 串行 STA adapter | 协议 fixture + 小规模实机 smoke | 实验支持；本轮实机重读通过 |
 | `draw_hatch` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
-| `draw_line` | 串行 STA adapter | 协议 fixture + 小规模实机 smoke | 未实现 |
+| `draw_line` | 串行 STA adapter | 协议 fixture + 小规模实机 smoke | 实验支持；本轮实机重读通过 |
 | `draw_mtext` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `draw_polyline` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `draw_rectangle` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `draw_text` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `export_current_view` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `get_block_attributes` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
-| `get_entity` | 串行 STA adapter | 协议 fixture + 小规模实机 smoke | 未实现 |
+| `get_entity` | 串行 STA adapter | 协议 fixture + 小规模实机 smoke | 实验支持；本轮实机重读通过 |
 | `insert_block` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `list_blocks` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
-| `list_layers` | 串行 STA adapter | 协议 fixture + 小规模实机 smoke | 未实现 |
+| `list_layers` | 串行 STA adapter | 协议 fixture + 小规模实机 smoke | 实验支持；本轮实机重读通过 |
 | `list_reference_drawings` | 本地目录读取 | schema；未调用外部服务 | 不适用 |
 | `list_symbol_library` | 本地目录读取 | schema；未调用外部服务 | 不适用 |
 | `mirror_entity` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `move_entity` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
-| `new_drawing` | 串行 STA adapter | 协议 fixture + 小规模实机 smoke | 未实现 |
-| `query_entities` | 串行 STA adapter | 协议 fixture + 小规模实机 smoke | 未实现 |
+| `new_drawing` | 串行 STA adapter | 协议 fixture + 小规模实机 smoke | 实验支持；本轮实机重读通过 |
+| `query_entities` | 串行 STA adapter | 协议 fixture + 小规模实机 smoke | 实验支持；本轮实机重读通过 |
 | `query_entities_in_region` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `rotate_entity` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `save_drawing` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
@@ -41,3 +41,5 @@
 | `set_layer_properties` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `validate_block_attributes` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `vqa_service_status` | 独立 VQA HTTP 转发 | schema；未调用外部服务 | 不适用 |
+
+最新 HTTP 验收见 [http-bridge.md](http-bridge.md)。批处理目前仅内部 Python API，未新增 MCP 工具。

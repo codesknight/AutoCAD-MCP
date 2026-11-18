@@ -10,3 +10,7 @@ dist/
 .claude/
 *.dwg
 *.bak
+
+# .NET build artifacts
+**/bin/
+**/obj/

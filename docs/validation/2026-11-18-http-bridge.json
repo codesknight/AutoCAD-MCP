@@ -1,0 +1,72 @@
+{
+  "sdk": "8.0.428",
+  "target": "net8.0-windows",
+  "protocol": "1",
+  "launch_method": "attach_existing",
+  "completed": true,
+  "tested_dll_sha256": "0aefe2db4f50bf3a4e559c3c99294c13f48e75bdfdc92d51b4d50d4f9ee89627",
+  "base_git_sha": "2f44d7b1edf8c973e6ed2abdb2003c1f78b545dd",
+  "existing_pid": 4940,
+  "health": {
+    "protocol_version": "1",
+    "status": "ready",
+    "process_id": 4940,
+    "instance_id": "c4aa803eb53843099fde5e938ee464a3"
+  },
+  "cad": {
+    "document": "Drawing2.dwg",
+    "entity_count": 4,
+    "deduplication": true,
+    "request_conflict": true,
+    "atomic_rollback": true,
+    "atomic_commit": true,
+    "revision_conflict": true,
+    "wrong_document_rejected": true,
+    "document_binding": true,
+    "authentication": true,
+    "origin_rejected": true,
+    "unmanaged_write_rejected": true
+  },
+  "mcp_stdio": {
+    "document": "Drawing4.dwg",
+    "entity_count": 1,
+    "unsupported_operation_rejected": true
+  },
+  "mcp_streamable_http": {
+    "document": "Drawing5.dwg",
+    "entity_count": 1,
+    "unsupported_operation_rejected": true
+  },
+  "closed_test_documents": [
+    "Drawing5.dwg",
+    "Drawing4.dwg",
+    "Drawing3.dwg",
+    "Drawing2.dwg"
+  ],
+  "test_documents_remaining": [],
+  "existing_process_preserved": true,
+  "bridge_listener_stopped": true,
+  "recorded_date": "2026-11-18",
+  "timezone": "Asia/Shanghai",
+  "python_offline": {
+    "passed": 77,
+    "skipped_cad": 33
+  },
+  "csharp_contract_assertions": 11,
+  "embedded_hosting_assertions": 12,
+  "based_on_dirty_worktree": true,
+  "full_performance_benchmark_collected": false,
+  "authorized_test_process_closed_after_verification": true,
+  "source_sha256": {
+    "plugin/AutoCADBridge/BridgeServer.cs": "767d64e7495fbc6b71a1ddfc6fdc55dc1dfda1878217cbff5b171ae0a4c5883b",
+    "plugin/AutoCADBridge/CadOperations.cs": "d0e4ab24f07fbb0c1397ebb87006a5c536c5dfeec0436f226b26e75749164dc3",
+    "plugin/AutoCADBridge/Contracts.cs": "635e4d2a9bc8bdcf7de08fc7b069fd7406476de1cdcf71b558a1be3a5923b305",
+    "plugin/AutoCADBridge/Diagnostics.cs": "41cdbe98d07b8910154386d3ceb120aece02d2bad712948e3a93411b24d30c8c",
+    "plugin/AutoCADBridge/EmbeddedHttpHost.cs": "3533abbcf80ab1d88316c07d45bbfb8fcdf2e3f4eb942674f015c8f1b5e7127d",
+    "plugin/AutoCADBridge/Plugin.cs": "bdd09a55fdb763aa6b5c20a784679359109221047c78fd12948349f4c46120fa",
+    "plugin/AutoCADBridge/AutoCADBridge.csproj": "e09883935bc0bd39dcabcfe5b1139a934e1f07c8ddb834b4efe5221b52cfa3b2",
+    "src/autocad_mcp/cad/backends/http_backend.py": "8dc3139e2348a1b017e87b6481cd38124e0a25d08b2d78a2f303379fa5439001",
+    "src/autocad_mcp/config.py": "77f1984abb99c2a65e86601e73345f24ea18ca9ff8158be9e64f4303acf086d4",
+    "src/autocad_mcp/cad/models.py": "ce6cb8d8e839cfa4565da72e600ef3501279556a886dcb8fdd6283f4d6e22ecf"
+  }
+}

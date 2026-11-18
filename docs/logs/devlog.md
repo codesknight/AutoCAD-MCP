@@ -458,3 +458,16 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 远端干净 Windows runner 的首轮测试步骤失败；Actions 日志下载域名从本机不可达，API 只能读到通用退出码。CI 增加失败时将 pytest 输出写入检查注释，保留原始非零退出码，便于直接定位 runner 差异。
 - 通过 Actions 单 job 日志接口取得具体错误：无版本上限的 MCP 依赖在干净 runner 安装了 2.3.0，FastMCP 和测试 memory API 已变更；本机为 1.28.1。明确声明 `mcp[cli]>=1.28.1,<2`，保留已验证的 1.x 协议/API，避免把本轮变成 SDK 主版本迁移。
 - 同步 conda environment.yml 中的 MCP/AnyIO 兼容范围，保证 conda 新建环境与 pyproject.toml 的 SDK 主版本一致。
+
+
+## 2026-11-18（续）：安装 .NET SDK，完成 Bridge / HTTP 最小闭环
+
+- 核对官方兼容表和本机 runtimeconfig，安装用户级 SDK 8.0.428，解压前验证官方 SHA-512；引用本机 SDK DLL，不在产物分发 Autodesk DLL。
+- 实现原生 Kestrel loopback 认证服务、Idle 队列、managed-only 文档会话、线/圆/图层/查询、事务、revision 观察及有界十分钟去重；无任意脚本/命令端点。
+- 实现 Python HTTPBackend、job DTO、URL 校验、配置选择器。未知写结果或轮询失败不重发、不回退；整数 ID 为文档会话别名，不混用 COM ObjectID。
+- 自动化激活确有 e0434352；Windows 与 ODIS wrapper 有 ODISSDK.dll 访问异常/加载失败。曾据普通 dump 模块列表未列 Bridge 就断言未加载，证据不足，已纠正。用户确认普通桌面启动正常，验证改为 attach-only，不再隐式 Dispatch 启动。
+- 清理之前测试遗留的临时实例，记录用户要求：开发结束关闭不用的自建 CAD 进程，保留用户实例。旧插件同步停服阻塞收尾，拆出后台停止/释放的 EmbeddedHttpHost，并覆盖无 UI 消息泵场景。
+- 新 DLL 未签名确认阻塞 NETLOAD，用户手动“加载一次”后继续；右侧 CER 来自较早进程，未当作新 DLL 再次崩溃。最终加载与构建 DLL SHA-256 一致，构建零警告零错误。
+- Python 离线 77 passed / 33 skipped；C# journal 11 项、host 三轮启停 12 项断言通过。实机验证七项工具、认证/Origin、去重/冲突、提交/回滚、revision、错误文档、切图绑定，以及真实 MCP stdio 和 Streamable HTTP 创建后重读。
+- 最终报告 completed=true：四张测试图纸关闭、监听停止；用户授权重启的空白测试实例 PID 4940 最后已关闭，无 acad.exe 遗留。没有上传原始 dump、重置 CAD 配置或关闭安全策略。
+- 增加安装脚本、配置样例、协议 schema、验收/事故记录、脱敏报告和无 CAD 的 .NET CI。批处理仍仅内部 Python API；全工具迁移、分页、长期故障测试及完整性能基准待完成，不发版、不切默认。

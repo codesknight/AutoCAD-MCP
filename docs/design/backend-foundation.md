@@ -2,7 +2,9 @@
 
 日期：2026-11-18。基线：`5e8379835c7dced142e6fcf9339741975b8dfae0`。
 
-本文记录本轮实际实现；[完整 roadmap](development-roadmap.md) 保留为设计草案，不能视为完成清单。
+本页记录同日第一轮 COM 基础；第二轮已安装 SDK 并验证 HTTP，最新状态见 [http-bridge.md](http-bridge.md)。
+
+本文记录第一轮实际实现；[完整 roadmap](development-roadmap.md) 保留为设计草案，不能视为完成清单。
 
 ## 设计选择
 
