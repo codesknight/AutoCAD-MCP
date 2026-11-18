@@ -471,3 +471,10 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - Python 离线 77 passed / 33 skipped；C# journal 11 项、host 三轮启停 12 项断言通过。实机验证七项工具、认证/Origin、去重/冲突、提交/回滚、revision、错误文档、切图绑定，以及真实 MCP stdio 和 Streamable HTTP 创建后重读。
 - 最终报告 completed=true：四张测试图纸关闭、监听停止；用户授权重启的空白测试实例 PID 4940 最后已关闭，无 acad.exe 遗留。没有上传原始 dump、重置 CAD 配置或关闭安全策略。
 - 增加安装脚本、配置样例、协议 schema、验收/事故记录、脱敏报告和无 CAD 的 .NET CI。批处理仍仅内部 Python API；全工具迁移、分页、长期故障测试及完整性能基准待完成，不发版、不切默认。
+
+## 2026-11-18（续）：中英文 README 与项目视觉展示
+
+- 重构英文 README，新增内容对应的简体中文版；首尾提供语言切换，整理能力表、快速开始、MCP 客户端配置、Web UI、后端选择、验证与文档导航。
+- 新增原创 SVG 封面、约 1.2 MB 的 GIF 流程示意和 Mermaid 架构图。动画明确标注并非实机录屏，另附真实 Bridge 验证记录，不将示意图当作运行证据。
+- 按实现说明 36 个注册工具、HTTP 支持的 7 项 CAD 工具、仅内部 API 的原子批处理，以及 MCP HTTP / CAD Bridge 的独立端口；保留默认 COM、HTTP 实验性与自动启动兼容性限制。
+- 提供素材生成脚本与说明；Pillow 只用于文档素材制作，不增加项目运行依赖。检查两种语言的本地链接、锚点、JSON 配置与 SVG/GIF 完整性，并渲染检查首页排版。本轮不启动 AutoCAD，不改动已有 Web 与数据工作区修改。
