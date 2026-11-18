@@ -1,97 +1,228 @@
-# AutoCAD MCP
+<p align="center">
+  <img src="docs/assets/cover.svg" alt="AutoCAD MCP — Natural language. Real CAD. Default COM and experimental .NET HTTP Bridge." width="100%">
+</p>
 
-通过 MCP（Model Context Protocol）让 AI 客户端（Claude Desktop / Cursor 等）用自然语言控制 AutoCAD 绘图。参考并改进自 [daobataotie/CAD-MCP](https://github.com/daobataotie/CAD-MCP)（差异见 [docs/references/cad-mcp-analysis.md](docs/references/cad-mcp-analysis.md)）。
+<p align="center"><strong>English</strong> · <a href="README.zh-CN.md">简体中文</a></p>
 
-## 环境要求
+<p align="center">
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?style=flat-square" alt="Python 3.11+"></a>
+  <img src="https://img.shields.io/badge/Platform-Windows-0078D4?style=flat-square" alt="Windows">
+  <img src="https://img.shields.io/badge/MCP-v1-72CAFF?style=flat-square" alt="MCP SDK v1">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-67DFB0?style=flat-square" alt="MIT license"></a>
+</p>
 
-- Windows + 已安装 AutoCAD（本项目在 AutoCAD 2026 上开发，ProgID `AutoCAD.Application.25.1`，见 `src/autocad_mcp/config.json`）
-- conda
+**Connect MCP-compatible AI clients to AutoCAD.** Create geometry, inspect and edit entities, manage layers and blocks, and work with drawings through structured tools. Use Claude Desktop, Cursor, or the included Web UI with your own model provider.
 
-## 快速开始
+<p align="center">
+  <a href="#quick-start">Quick start</a> · <a href="#web-ui">Web UI</a> ·
+  <a href="#backends">Backends</a> · <a href="#development">Development</a> ·
+  <a href="#documentation">Documentation</a>
+</p>
 
-```bash
+## A tool workflow, at a glance
+
+![Illustrated MCP workflow: new drawing, line and circle, then geometry queries](docs/assets/workflow.gif)
+
+*Synthetic fixture illustration — not a live AutoCAD screen recording. Actual end-to-end evidence: [Bridge validation report](docs/validation/2026-11-18-http-bridge.json).*
+
+## What you can do
+
+| Capability | Examples |
+| --- | --- |
+| **Create** | Lines, circles, arcs, polylines, rectangles, text, hatches and dimensions |
+| **Inspect & edit** | Entity details, region queries, move/rotate/copy/scale/mirror/delete |
+| **Organize** | Layers, block insertion, block attributes and bulk attribute checks |
+| **Use references** | Local symbol catalogs and read-only layout extraction from reference drawings |
+| **Choose a model** | Streaming Web UI: Anthropic, OpenAI, OpenAI-compatible endpoints and Doubao |
+| **Extend understanding** | Optional local drawing VQA service |
+
+**36 registered MCP tools.** Default COM provides the existing CAD tool surface. Experimental HTTP supports a smaller, documented subset. See the [tool migration matrix](docs/design/tool-migration-matrix.md).
+
+## Quick start
+
+### 1. Prepare the environment
+
+- **Windows** with AutoCAD installed; development and native validation use AutoCAD 2026.
+- **Python 3.11+**. The commands below use conda.
+- A compatible AI client, or a model endpoint for the optional Web UI.
+
+~~~powershell
+git clone https://github.com/codesknight/AutoCAD-MCP.git
+cd AutoCAD-MCP
+conda create -n autocad-mcp python=3.11 -y
 conda activate autocad-mcp
-# 打开 AutoCAD 2026，然后：
-mcp dev src/autocad_mcp/server.py    # 用 MCP Inspector 调试
-```
+python -m pip install -e .
+~~~
 
-接入 Claude Desktop：在 `claude_desktop_config.json`（Windows 上一般是 `%APPDATA%\Claude\claude_desktop_config.json`）里加入 `mcpServers`：
+<details>
+<summary>Prefer Python venv?</summary>
 
-```json
+~~~powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e .
+~~~
+
+</details>
+
+### 2. Open AutoCAD normally
+
+Check the ProgID in [config.json](src/autocad_mcp/config.json); the development machine uses `AutoCAD.Application.25.1`. Use one COM write-serving process per AutoCAD instance.
+
+Before experimenting with write tools, ask the client to run **`new_drawing`** so test geometry goes into a fresh drawing.
+
+### 3. Connect an MCP client
+
+Find the absolute Python path in the environment where you installed the project:
+
+~~~powershell
+python -c "import sys; print(sys.executable)"
+~~~
+
+Add this entry to your client's MCP configuration. For Claude Desktop on Windows, the file is usually `%APPDATA%\Claude\claude_desktop_config.json`.
+
+~~~json
 {
   "mcpServers": {
     "autocad-mcp": {
-      "command": "C:\\Users\\<用户名>\\.conda\\envs\\autocad-mcp\\python.exe",
+      "command": "C:\\Users\\<you>\\.conda\\envs\\autocad-mcp\\python.exe",
       "args": ["-m", "autocad_mcp.server"]
     }
   }
 }
-```
+~~~
 
-（`command` 直接指向 conda 环境里的 `python.exe`，不要用 `conda run -n autocad-mcp ...`——后者在 Claude Desktop 拉起子进程时可能拿不到 conda 的 shell 初始化环境，也更容易碰到 Windows 控制台编码问题。前提是已经 `pip install -e .` 把本项目装进这个环境。）
+Use the environment's `python.exe` directly. Tool discovery is lazy and does not require connecting to AutoCAD.
 
-## 网页 UI（自己选大模型，仍走 MCP 协议）
+For development with MCP Inspector:
 
-除了接 Claude Desktop，也可以用自带的网页界面，自己填 API Key、自己选大模型（Claude / OpenAI / OpenAI 兼容的国产模型如通义千问/DeepSeek/智谱 / 豆包（火山方舟 Ark））。网页后端是一个自建的 MCP client，通过 HTTP 连接 AutoCAD MCP server——`cad/`/`tools/` 两层完全复用，不是绕开 MCP 直接调 Python 函数。支持流式响应（SSE）：回复逐字显示，每个工具调用单独显示一行执行状态，不是等全部跑完才一次性返回。
+~~~powershell
+mcp dev src/autocad_mcp/server.py
+~~~
 
-先装网页相关依赖（装进同一个 `autocad-mcp` conda 环境，或者直接 `pip install -e ".[web]"`）：
+### 4. Try a small task
 
-```bash
-"C:\Users\<用户名>\.conda\envs\autocad-mcp\python.exe" -m pip install anthropic openai fastapi "uvicorn[standard]" "volcengine-python-sdk[ark]"
-```
+> Create a new blank drawing. Add a layer named DEMO, draw a line from (0, 0, 0) to (10, 0, 0), and add a circle centered at (20, 0, 0) with radius 5. Query the drawing and check the result.
 
-需要同时起两个进程（**项目根目录**下执行，`web` 包不是通过 pip 装的，靠 `-m` 的当前目录解析）：
+## Web UI
 
-```bash
-# 终端 1：AutoCAD MCP server，HTTP 模式，供网页后端连接（不影响 Claude Desktop 的 stdio 配置）
-"C:\Users\<用户名>\.conda\envs\autocad-mcp\python.exe" -m autocad_mcp.server --http
+The Web UI connects through a real MCP client, with streamed replies and individual tool-call updates.
 
-# 终端 2：网页后端
-"C:\Users\<用户名>\.conda\envs\autocad-mcp\python.exe" -m uvicorn web.backend.app:app --port 8000
-```
+~~~powershell
+python -m pip install -e ".[web]"
+~~~
 
-打开 `http://127.0.0.1:8000`，选模型、填 API Key（只在当次请求里用，不落盘不写日志）、用自然语言聊天即可。**这是本地单用户场景的简化实现**：会话历史存在后端进程内存里（重启即丢），没有鉴权，只适合本机 `127.0.0.1` 访问，不要暴露到公网。
+From the **project root**, use two terminals in the same Python environment:
 
-自动化测试/开发时如果需要真实模型的 API Key，不要手动填进网页表单——在项目根目录建一个 `.env`（已加入 `.gitignore`，不会被提交），格式参考：
+~~~powershell
+# Terminal 1 — MCP Streamable HTTP, loopback port 8931
+python -m autocad_mcp.server --http
+~~~
 
-```
+~~~powershell
+# Terminal 2 — Web UI backend, loopback port 8000
+python -m uvicorn web.backend.app:app --host 127.0.0.1 --port 8000
+~~~
+
+Open [127.0.0.1:8000](http://127.0.0.1:8000), select a provider/model, and supply your API credentials.
+
+This UI is for local, single-user use: no authentication, in-memory history, and no conversation persistence across restarts.
+
+<details>
+<summary>Credentials for scripted development</summary>
+
+Keep test credentials in an untracked `.env` and have your script read it. The Web UI does not automatically load these values.
+
+~~~dotenv
 doubao_base_url=https://ark.cn-beijing.volces.com/api/v3
 doubao_model_name=ep-xxxxxxxx-xxxxx
-doubao_api_key=你的真实key
-```
+doubao_api_key=YOUR_KEY
+~~~
 
-然后写脚本直接读这个文件、程序化调用 `POST /api/chat/stream`（或 `/api/chat`）即可，不经过浏览器表单。
+Call `POST /api/chat/stream` or `POST /api/chat` from the script. Never commit real credentials or paste them into documentation.
 
-## 图纸理解（VQA，可选）
+</details>
 
-如果本机部署了配套的电力工程图纸理解模型（另一个毕设项目，InternVL3-8B + LoRA 微调，针对 110kV 变电站图纸场景），`ask_drawing_vqa`/`vqa_service_status` 这两个工具会转发到本地的 VQA API 服务（默认 `http://127.0.0.1:8933`）。没有部署这个模型也不影响其余功能——`vqa_tools.py` 只是一层薄的 HTTP 转发，服务没启动时会给出提示而不是报错崩溃。
+## Backends
 
-## 项目结构
+| | COM — default | .NET HTTP Bridge — experimental |
+| --- | --- | --- |
+| CAD execution | Python COM adapter on one STA worker | AutoCAD plugin, main-thread queue and transactions |
+| Current scope | Existing CAD tools | Seven CAD tools: new drawing, line/circle, create/list layers, query/get entity |
+| Atomic batch | Not supported | Internal Python API for transactional layer/line/circle operations |
+| Setup | Python + running AutoCAD | Matching .NET SDK, plugin build/NETLOAD, local token |
+| Write behavior | Existing COM workflow; one write entry point | Bridge-created documents only; explicit document binding |
+| Details | [COM foundation](docs/design/backend-foundation.md) | [Install, configure & validate](docs/design/http-bridge.md) |
 
-见 [docs/design/architecture.md](docs/design/architecture.md)。
+Both paths keep the MCP tool layer. Unsupported HTTP operations return an explicit error; writes never fall back to COM.
 
-## 开发文档 / 日志
+**MCP HTTP and the CAD Bridge are separate interfaces.** `--http` selects MCP Streamable HTTP on port **8931**. `backend: "http"` selects the CAD Bridge on port **8765**. The default remains COM.
 
-- 设计方案：[docs/design/](docs/design/)
-- 参考项目分析：[docs/references/](docs/references/)
-- 开发日志（每次改动都会更新）：[docs/logs/devlog.md](docs/logs/devlog.md)
+~~~mermaid
+flowchart LR
+    Client["MCP clients"] -->|"stdio / Streamable HTTP"| MCP["Python MCP server & tools"]
+    Web["Web UI · model providers"] -->|"MCP Streamable HTTP"| MCP
+    MCP --> Factory["Backend factory"]
+    Factory -->|"default"| COM["COM · serial STA worker"]
+    Factory -->|"experimental HTTP"| Bridge[".NET Bridge · CAD queue / transactions"]
+    COM --> CAD["AutoCAD"]
+    Bridge --> CAD
+    MCP --> Optional["Local resources · optional VQA"]
+~~~
 
+## Development
 
-## 后端迁移与开发验证
-
-当前默认后端仍是 COM。`state.py` 统一管理后端，CAD 操作通过单个 STA 工作线程串行执行。
-`config.json` 可省略 `backend`（等同 `"com"`）；`"http"` 后端已完成七项核心工具与事务批处理的最小闭环验证。
-安装、认证配置和限制见 [.NET Bridge / HTTP 后端](docs/design/http-bridge.md)。
-MCP 的 `--http` 是现有 8931 端口传输模式，与规划中的 CAD Bridge HTTP 后端不同。
-单个进程内多个客户端共享执行队列；多个独立服务进程没有跨进程写入协调，应只保留一个 COM 写入口。
-
-```powershell
+~~~powershell
 python -m pip install -e ".[dev]"
 python -m pytest -q
-# 实机测试需显式启用；先启动 AutoCAD，只在测试新建的空白图纸中写入：
-python -m pytest tests/test_backend_integration.py --cad-integration -q -s
-# 通过真实 MCP stdio 导出工具契约，不连接 CAD：
-python scripts/export_mcp_contract.py --output tools.json
-```
+~~~
 
-设计与进度：[roadmap](docs/design/development-roadmap.md)、[本轮后端设计](docs/design/backend-foundation.md)、[工具迁移矩阵](docs/design/tool-migration-matrix.md)。
+Default tests run without AutoCAD. Real CAD tests require explicit opt-in:
+
+~~~powershell
+# Open AutoCAD normally first; tests create scratch drawings.
+python -m pytest tests/test_backend_integration.py --cad-integration -q -s
+
+# Export actual MCP stdio tools/list without connecting to CAD.
+python scripts/export_mcp_contract.py --output tools.json
+~~~
+
+The latest [native verification record](docs/validation/2026-11-18-http-bridge.json) documents **77 Python tests passed**, 33 CAD tests skipped by default, 23 C# assertions, and real MCP stdio/Streamable HTTP checks. See [CI runs](https://github.com/codesknight/AutoCAD-MCP/actions) for current branch results.
+
+Native verification uses **normal AutoCAD startup, then attachment**; automatic startup compatibility remains under investigation. The harness closes its test drawings and stops its listener. Helpers must clean up CAD processes they create while preserving user-owned instances.
+
+## Documentation
+
+| Start here | Details |
+| --- | --- |
+| [Architecture](docs/design/architecture.md) | Layers, integrations and project structure |
+| [HTTP Bridge guide](docs/design/http-bridge.md) | Build, authentication, protocol, validation and known issues |
+| [Tool matrix](docs/design/tool-migration-matrix.md) | Per-tool migration and verification status |
+| [Roadmap](docs/design/development-roadmap.md) | Planned work and acceptance criteria |
+| [Development log](docs/logs/devlog.md) | Changes, experiments and incident records |
+| [Project conventions](CLAUDE.md) | Development and drawing-safety rules |
+
+<details>
+<summary>Repository layout</summary>
+
+~~~text
+src/autocad_mcp/    MCP server, tools, configuration and CAD backends
+plugin/            Native Bridge and C# contract/hosting checks
+web/               Web client, agent loop and model providers
+tests/             Python regressions, MCP contracts and opt-in CAD tests
+schemas/           Versioned Bridge JSON schemas
+scripts/           Build, verification, asset and data utilities
+docs/              Design, validation evidence, artwork and development log
+~~~
+
+</details>
+
+Reference drawings, symbol DWGs and the optional VQA model/service are external resources, not bundled with this repository. The VQA proxy defaults to loopback port **8933**; the other tools work without it.
+
+## Contributing & license
+
+[Report a bug or propose a feature](https://github.com/codesknight/AutoCAD-MCP/issues/new/choose). Include your AutoCAD build, backend, reproduction steps and redacted logs. Keep PRs focused and append the development log for substantive changes.
+
+Released under the [MIT license](LICENSE). Inspired by [daobataotie/CAD-MCP](https://github.com/daobataotie/CAD-MCP); see the [reference analysis](docs/references/cad-mcp-analysis.md).
+
+<p align="center"><a href="README.zh-CN.md">切换到简体中文 →</a></p>

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-labelledby="title desc">
+<title id="title">AutoCAD MCP — Natural language. Real CAD.</title>
+<desc id="desc">Original blueprint project cover. COM is the default backend; HTTP Bridge is experimental.</desc>
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#071321"/><stop offset="1" stop-color="#12263b"/></linearGradient>
+<radialGradient id="halo"><stop stop-color="#214d6d" stop-opacity=".65"/><stop offset="1" stop-color="#102033" stop-opacity="0"/></radialGradient></defs>
+<rect width="1200" height="340" rx="18" fill="url(#bg)"/>
+<g stroke="#6eb8dc" stroke-opacity=".065" stroke-width="1"><path d="M0 0V340"/><path d="M32 0V340"/><path d="M64 0V340"/><path d="M96 0V340"/><path d="M128 0V340"/><path d="M160 0V340"/><path d="M192 0V340"/><path d="M224 0V340"/><path d="M256 0V340"/><path d="M288 0V340"/><path d="M320 0V340"/><path d="M352 0V340"/><path d="M384 0V340"/><path d="M416 0V340"/><path d="M448 0V340"/><path d="M480 0V340"/><path d="M512 0V340"/><path d="M544 0V340"/><path d="M576 0V340"/><path d="M608 0V340"/><path d="M640 0V340"/><path d="M672 0V340"/><path d="M704 0V340"/><path d="M736 0V340"/><path d="M768 0V340"/><path d="M800 0V340"/><path d="M832 0V340"/><path d="M864 0V340"/><path d="M896 0V340"/><path d="M928 0V340"/><path d="M960 0V340"/><path d="M992 0V340"/><path d="M1024 0V340"/><path d="M1056 0V340"/><path d="M1088 0V340"/><path d="M1120 0V340"/><path d="M1152 0V340"/><path d="M1184 0V340"/><path d="M0 0H1200"/><path d="M0 32H1200"/><path d="M0 64H1200"/><path d="M0 96H1200"/><path d="M0 128H1200"/><path d="M0 160H1200"/><path d="M0 192H1200"/><path d="M0 224H1200"/><path d="M0 256H1200"/><path d="M0 288H1200"/><path d="M0 320H1200"/></g>
+<ellipse cx="950" cy="165" rx="295" ry="190" fill="url(#halo)"/>
+<g font-family="Segoe UI,Arial,sans-serif">
+<text x="58" y="64" fill="#76ceff" font-size="13" font-weight="700" letter-spacing="2">MODEL CONTEXT PROTOCOL × CAD</text>
+<text x="54" y="143" fill="#f2f7ff" font-size="61" font-weight="750" letter-spacing="-2">AutoCAD MCP</text>
+<text x="58" y="190" fill="#c1cede" font-size="26">Natural language. Real CAD.</text>
+<text x="58" y="225" fill="#8da5bf" font-size="15">Draw · inspect · edit · verify</text>
+<rect x="58" y="256" width="147" height="31" rx="15" fill="#15364b" stroke="#2e607a"/>
+<circle cx="76" cy="271.5" r="4" fill="#76ceff"/>
+<text x="88" y="277" fill="#caeaff" font-size="12" font-weight="600">COM / DEFAULT</text>
+<rect x="217" y="256" width="236" height="31" rx="15" fill="#302b27" stroke="#65513a"/>
+<circle cx="235" cy="271.5" r="4" fill="#ffca81"/>
+<text x="247" y="277" fill="#ffe1b5" font-size="12" font-weight="600">.NET HTTP / EXPERIMENTAL</text></g>
+<rect x="650" y="42" width="503" height="253" rx="13" fill="#0b1a2a" fill-opacity=".7" stroke="#34516b"/>
+<g fill="#7d9cb6" font-family="Consolas,monospace" font-size="10" letter-spacing="1"><text x="672" y="65">GEOMETRY / LAYERS / QUERIES</text><text x="1088" y="65">WCS</text></g>
+<path d="M650 80H1153" stroke="#29445d"/>
+<g fill="none" stroke="#73cfff" stroke-width="2.5" stroke-linecap="round"><path d="M695 137H801V207H903"/>
+<circle cx="971" cy="172" r="67"/><circle cx="971" cy="172" r="36" stroke-opacity=".45"/></g>
+<g stroke="#ffca81" fill="none" stroke-width="1.3"><path d="M971 91V253M890 172H1052" stroke-dasharray="5 6" stroke-opacity=".65"/>
+<path d="M695 255H801M695 248V262M801 248V262"/></g>
+<g fill="#73cfff"><circle cx="695" cy="137" r="4"/><circle cx="801" cy="137" r="4"/><circle cx="801" cy="207" r="4"/></g>
+<circle cx="971" cy="172" r="4" fill="#ffca81"/>
+<g font-family="Consolas,monospace" font-size="11" fill="#8ba7be"><text x="716" y="276">STRUCTURED TOOLS</text><text x="1057" y="211">r</text></g></svg>
