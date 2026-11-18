@@ -1,6 +1,7 @@
 """Attach-only native harness. All CAD writes are confined to owned scratch documents."""
 import gc
 import hashlib
+from datetime import datetime, timedelta, timezone
 import json
 import os
 from pathlib import Path
@@ -207,10 +208,27 @@ class Native:
     def environment(self):
         def git(*args):
             return subprocess.check_output(["git",*args],text=True).strip()
-        return dict(recorded_date=time.strftime("%Y-%m-%d"),git_sha=git("rev-parse","HEAD"),
+        import platform
+        import win32api
+        import win32process
+        handle=win32api.OpenProcess(0x410,False,self.pid)
+        try:
+            version=win32api.GetFileVersionInfo(win32process.GetModuleFileNameEx(handle,0),"\\")
+            parts=[version["FileVersionMS"]>>16,version["FileVersionMS"]&65535,
+                   version["FileVersionLS"]>>16,version["FileVersionLS"]&65535]
+        finally:
+            handle.Close()
+        hardware=json.loads(subprocess.check_output(["powershell","-NoProfile","-Command",
+            "@{cpu=(Get-CimInstance Win32_Processor).Name;ram_bytes=(Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory}|ConvertTo-Json -Compress"],
+            text=True,creationflags=subprocess.CREATE_NO_WINDOW))
+        return dict(recorded_date=datetime.now(timezone(timedelta(hours=8))).date().isoformat(),
+            timezone="Asia/Shanghai",git_sha=git("rev-parse","HEAD"),
             tracked_diff=git("diff","--name-only").splitlines(),python_version=os.sys.version.split()[0],
             sdk=subprocess.check_output([str(Path.home()/".dotnet/dotnet.exe"),"--version"],text=True).strip(),
-            cad_version=cad_read(lambda:self.app.Version),bridge_sha256=hashlib.sha256(self.bundle.read_bytes()).hexdigest(),
+            cad_version=cad_read(lambda:self.app.Version),cad_file_version=".".join(map(str,parts)),
+            os_version=platform.platform(),hardware=hardware,
+            harness_sha256={p.as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in Path("benchmarks").glob("*.py")},
+            bridge_sha256=hashlib.sha256(self.bundle.read_bytes()).hexdigest(),
             bridge_source_sha256={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in Path("plugin/AutoCADBridge").glob("*.cs")},
             logical_cpus=os.cpu_count(),backend_default=self.config.backend,launch="normal_desktop_then_attach",
             fixture="fresh Bridge-created acadiso.dwt document; INSUNITS=4; no save; no explicit timed regen",

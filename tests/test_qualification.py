@@ -57,3 +57,77 @@ def test_raw_records_are_append_only_and_json_rejects_nan(tmp_path):
     with pytest.raises(ValueError):
         records.add("bad",elapsed_ms=math.nan)
     assert records.path.read_bytes()==before
+
+def test_cleanup_activates_only_owned_scratch_before_cancelling_commands(tmp_path,monkeypatch):
+    from types import SimpleNamespace
+    import sys
+    from benchmarks.native import Native
+    events=[]
+    class Document:
+        def __init__(self,name):
+            self.Name=name
+    class Documents(list):
+        def Item(self,name):
+            return next(d for d in self if d.Name==name)
+    class App:
+        def __init__(self):
+            self.Documents=Documents([Document("user.dwg"),Document("scratch.dwg")])
+            self.ActiveDocument=self.Documents[0]
+        def Quit(self):
+            raise AssertionError("User-owned CAD must not be quit")
+    native=Native.__new__(Native)
+    native.app=App()
+    native.owned={"scratch.dwg"}
+    native.original_active="user.dwg"
+    native.original_names=["user.dwg"]
+    native.owned_pid=None
+    native.pid=123
+    native.running=True
+    native.settings_written=False
+    native.old_token="original-token"
+    native.raw=SimpleNamespace(close=lambda:events.append("client_closed"))
+    native.records=Records(tmp_path)
+    def check_context():
+        assert native.app.ActiveDocument.Name=="scratch.dwg"
+        events.append("safe_context")
+    native.idle=check_context
+    native.stop=check_context
+    def close(name):
+        assert name=="scratch.dwg"
+        native.app.Documents.remove(native.app.Documents.Item(name))
+        native.owned.remove(name)
+    native.close_document=close
+    monkeypatch.setitem(sys.modules,"pythoncom",SimpleNamespace(CoUninitialize=lambda:None))
+    monkeypatch.setenv("AUTOCAD_BRIDGE_TOKEN","test-token")
+    result=native.close()
+    assert result["listener_stopped"] and result["remaining_documents"]==[]
+    assert result["original_active_restored"] and not result["cad_process_closed"]
+    assert native.app.ActiveDocument.Name=="user.dwg"
+    assert events==["safe_context","safe_context","client_closed"]
+
+def test_report_preserves_failures_and_requires_completed_cleanup_for_acceptance(tmp_path):
+    import json
+    from benchmarks.report import render
+    root=tmp_path/"2026-11-19"
+    run=Records(root/"fault-01")
+    run.json("plan.json",{"mode":"faults"})
+    run.add("fault",case="problem",status="failed")
+    cases=[dict(case="problem",status="failed",error_type="AssertionError"),
+           dict(case="cad_process_restart",status="not_run",reason="preserve original")]
+    run.json("faults.json",{"completed":True,"cases":cases})
+    run.json("qualification.json",{"completed":False})
+    report=tmp_path/"report.md"
+    render(root,report)
+    assert "尚无完整且完成清理的故障运行" in report.read_text(encoding="utf-8")
+    run.json("qualification.json",{"completed":True})
+    render(root,report)
+    assert "失败 1 项，未执行 1 项" in report.read_text(encoding="utf-8")
+    restart=Records(root/"restart-01")
+    restart.json("plan.json",{"mode":"cad_restart"})
+    restart.add("restart",status="passed")
+    restart.json("restart.json",{"completed":True,"passed":True})
+    restart.json("qualification.json",{"completed":True})
+    render(root,report)
+    text=report.read_text(encoding="utf-8")
+    assert "通过 1 项，失败 1 项，未执行 0 项" in text
+    assert json.loads((root/"fault-01/faults.json").read_text(encoding="utf-8"))["cases"][1]["status"]=="not_run"

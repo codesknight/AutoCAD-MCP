@@ -45,6 +45,14 @@ New-Item -ItemType File benchmarks/results/<run>/STOP
 
 The original running CAD process is preserved unless explicitly identified as owned. CAD process restart is recorded as not run when doing so would close a user-owned instance. Long-lived/persistent crash recovery is not implemented.
 
+An additional process-restart check can preserve the original instance by using two NEW, dedicated instances and only HTTP (avoiding ambiguous COM attachment when multiple CAD processes exist):
+
+~~~powershell
+python -m benchmarks.restart --output benchmarks/results/<restart-run>
+~~~
+
+Follow its prompts: normally launch a new instance, NETLOAD the installed DLL and run MCPBRIDGE_START, enter its PID, start LINE in its scratch drawing, and leave it awaiting a point. After the driver verifies a queued write, terminate only that owned PID. Normally launch the replacement, load/start Bridge, and enter the new PID. The driver checks the unknown outcome, no replay, old-client rejection and explicit recovery. Finally close only the replacement test process as prompted. No original PID may be terminated. The temporary Bridge settings are restored; do not run this phase concurrently with another harness phase.
+
 This iteration does not benchmark unavailable HTTP block/edit tools, 10K/50K legacy queries (current limit: 1,000), LLM latency, or change the default backend.
 
 ## Evidence
@@ -54,3 +62,9 @@ Each run stores `plan.json`, `environment.json`, `cases.jsonl`, `cleanup.json` a
 No private DWG is needed or uploaded. Scratch geometry is generated locally, never saved, and re-read for verification. Tokens stay in the process environment and the temporary per-user Bridge settings file, which is restored during cleanup.
 
 The result field `completed` means the phase and cleanup finished; inspect `passed` and individual failures/not-run entries before drawing an acceptance conclusion.
+
+Render the audit report from all recorded attempts:
+
+~~~powershell
+python -m benchmarks.report --root benchmarks/results/<date> --output docs/validation/<date>-cad09.md
+~~~

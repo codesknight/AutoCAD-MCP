@@ -86,8 +86,9 @@ def benchmark(native,args):
     plans=[]
     total=0
     failed=0
+    warmup_failed=0
     def group(scenario,size,modes):
-        nonlocal total,failed
+        nonlocal total,failed,warmup_failed
         warm=[]
         for i in range(args.warmups):
             order=modes.copy()
@@ -95,6 +96,7 @@ def benchmark(native,args):
             for backend,mode in order:
                 warm.append(trial(native,scenario,size,backend,mode,"warmup",i))
         slow=max(r["elapsed_ms"] for r in warm)/1000
+        warmup_failed+=sum(not r["ok"] for r in warm)
         heavy=scenario!="cold_attach" and slow>args.heavy_threshold
         repetitions=args.heavy_samples if heavy else args.samples
         reason=(f"Paired warmup max {slow:.3f}s exceeds declared {args.heavy_threshold}s heavy threshold; "
@@ -119,7 +121,8 @@ def benchmark(native,args):
     for size in args.sizes:
         group("query",size,[("com","single"),("http","single")])
         group("create",size,[("com","single"),("http","single"),("http","batch")])
-    result=dict(completed=True,passed=failed==0,measured_samples=total,failed_samples=failed,groups=plans,
+    result=dict(completed=True,passed=failed==0 and warmup_failed==0,measured_samples=total,
+        failed_samples=failed,warmup_failed=warmup_failed,groups=plans,
         timing_boundary="Python adapter.execute/execute_batch, excluding fixture provisioning, validation, explicit regen/save and cleanup",
         instance_policy="Fresh Bridge instance and fresh acadiso.dwt document per sample, outside timing",
         statistics_policy="P95 only for >=20 successful measured samples; heavy groups expose median/max and sample count",

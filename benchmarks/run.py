@@ -19,7 +19,7 @@ def main():
     parser.add_argument("--warmups",type=int,default=3)
     parser.add_argument("--seed",type=int,default=190019)
     args=parser.parse_args()
-    if args.soak_seconds<0 or args.interval<0 or args.samples<1 or args.heavy_samples<1 or args.warmups<1 or any(n<1 or n>1000 for n in args.sizes):
+    if args.soak_seconds<0 or args.interval<0 or args.samples<1 or args.heavy_samples<1 or args.warmups<1 or args.heavy_threshold<=0 or any(n<1 or n>1000 for n in args.sizes):
         parser.error("Invalid sample counts, durations or supported fixture sizes")
     records=Records(args.output)
     records.json("plan.json",{k:str(v) if isinstance(v,Path) else v for k,v in vars(args).items()})

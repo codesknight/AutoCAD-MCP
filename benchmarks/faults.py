@@ -173,9 +173,12 @@ def faults(native):
     case("lost_post_response_no_replay",lost_response)
     for fault in ("poll_disconnect","wait_timeout"):
         def pending(fault=fault):
-            h,traffic,_,_=fresh(timeout=.25 if fault=="wait_timeout" else 5)
+            h,traffic,_,_=fresh(timeout=5)
             try:
                 traffic.reset()
+                if fault=="wait_timeout":
+                    # Reduce only the job wait budget after fixture creation/handshake.
+                    h._config.request_timeout_seconds=.25
                 native.busy()
                 traffic.drop_poll=fault=="poll_disconnect"
                 rid=uuid4().hex
