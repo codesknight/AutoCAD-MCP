@@ -440,3 +440,21 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 **验证**：`build_training_dataset.py` 对"小型水电站电气一次主接线图"目录跑通，产出真实 JSONL（比如一条真实记录：2 点直线 `draw_line` 参数完全对应图纸里的真实坐标）；`entity_count == converted_count` 对纯直线/多段线的文件做到 100% 转换率。新增 `tests/test_training_export.py`（噪声过滤 + 各实体类型转换，含多段线步长修复后的正确性验证）。`pytest` 全量跑通（有 1 次偶发的 COM 忙碌瞬时失败，单独跑通过，跟这批改动无关——这次会话末尾特意保留了 53 个只读打开的参考图纸文档没清理，AutoCAD 资源比较紧张，这类偶发失败在这台机器上是已知的、跟真实 bug 无关的噪音）。
 
 **尚未做**：这只是数据管道的前两步（抽取 + 转换），"输入提示（instruction）从哪来"和"训练什么模型、怎么评估"这两个更大的问题还没展开，按之前讨论的方案，这些留给独立的机器学习项目决策。
+
+
+## 2026-11-18：冻结 MCP 契约，统一 COM 后端与 STA 生命周期
+
+- 从 `main@5e83798` 建立 `codex/backend-foundation`。保留开始时已有的 3 个 Web 文件修改及 4 个未追踪的数据脚本/交接文档，未纳入本轮修改或提交。
+- 阅读项目分层、既有测试与 roadmap，先实施 CAD-01 的契约基线及 CAD-02/03 的 COM 基础。归档 roadmap 为设计草案，新增 backend 设计/状态、环境 JSON 和 36 项工具迁移矩阵；未将规划目标记为完成。
+- 修复 query-first 时 controller 无条件新建第二条 connection 的问题。统一 backend/factory 和兼容 facade，既有算法不移动；32 个 CAD 工具的调用经白名单执行，参考图纸工具不再把 COM connection 取出工具层。
+- 懒启动独立 STA 线程初始化/使用/释放全部 backend 原生对象，串行队列上限 64；只传普通数据，满队列和线程异常明确失败。关闭排空已接收任务，不保存、关闭图纸或退出 CAD；不自动重放失败写入。显式关闭后可重建，新建图纸刷新共享引用。
+- 增加活动文档名称防护、原子替换 document/model_space 快照、参考图纸恢复失败后失效引用；这是旧 COM 的保守保护，不替代规划中的稳定文档会话、权限和 revision。
+- MCP 服务共享后端按客户端会话计数，最后一位客户端退出才清理。新增回归确实发现了断连取消跳过 cleanup 的问题，改用 AnyIO cancellation shield 后通过，避免一个 HTTP 客户端断开关闭其他客户端的后端。
+- 配置保留所有旧字段，backend 缺省 COM；选择尚未实现的 HTTP backend 会明确报错，不回退。MCP 8931 的 Streamable HTTP 与规划 Bridge 是两件事。
+- 重构前运行的既有 8 项测试包含被误认为离线的集成测试，自动启动 AutoCAD 并在 fixture 新建的 scratch 图纸绘制。8 passed，但输出带 COM 忙碌异常诊断；如实记录，不能当作稳定性/性能结论。新增 `--cad-integration` 开关，默认测试不会启动 CAD。
+- 最终离线 `pytest -q`：56 passed、33 skipped。真实 stdio tools/list 与固定 schema 一致；32 CAD 工具的 MCP 参数/返回样例测试为 fake CAD。真实 AutoCAD STA smoke + stdio MCP 创建查询：2 passed，均先新建专用空白图纸再写入并重读坐标/图层/半径；没有覆盖保存用户原图。
+- 新增 Windows 离线 CI。本机 AutoCAD 文件版本 `25.1.60.0`、托管程序集 `25.1.60.0.0`，未安装 .NET SDK；插件/认证 Dispatcher/HTTP adapter/原子事务/性能 Benchmark 均待后续实施。没有发版或切换默认后端。
+
+- 远端干净 Windows runner 的首轮测试步骤失败；Actions 日志下载域名从本机不可达，API 只能读到通用退出码。CI 增加失败时将 pytest 输出写入检查注释，保留原始非零退出码，便于直接定位 runner 差异。
+- 通过 Actions 单 job 日志接口取得具体错误：无版本上限的 MCP 依赖在干净 runner 安装了 2.3.0，FastMCP 和测试 memory API 已变更；本机为 1.28.1。明确声明 `mcp[cli]>=1.28.1,<2`，保留已验证的 1.x 协议/API，避免把本轮变成 SDK 主版本迁移。
+- 同步 conda environment.yml 中的 MCP/AnyIO 兼容范围，保证 conda 新建环境与 pyproject.toml 的 SDK 主版本一致。

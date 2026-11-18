@@ -117,4 +117,12 @@ MCP 服务器项目的范围内。详见 [devlog.md](../logs/devlog.md) 2026-07-
 - ~~按区域批量选择/查询~~：已实现，见 `query_entities_in_region`（[#25](https://github.com/codesknight/AutoCAD-MCP/issues/25)）。
 - ~~标准图块符号库~~：已用真实数据集解决，见 `list_symbol_library`（[#26](https://github.com/codesknight/AutoCAD-MCP/issues/26)）。
 - ~~图块属性批量填报~~：已实现，见 `bulk_get_block_attributes`/`bulk_set_block_attributes`/`validate_block_attributes`（[#27](https://github.com/codesknight/AutoCAD-MCP/issues/27)）。
-- **连接层自愈**：`state.py` 里的 `_connection`/`_controller`/`_query` 单例只在第一次调用时建立，如果 AutoCAD 里的活动文档被外部途径（用户在 AutoCAD 界面里手动关掉、或别的进程关闭了文档）意外改变，服务器不会自动重连，会一直报底层 COM 错误（`RPC_E_DISCONNECTED` 之类），直到有人手动调用 `new_drawing` 强制刷新。已验证复现（见 devlog 2026-07-11 续十四），修复思路：在 `get_controller()`/`get_query()` 包一层，捕获到连接失效的 COM 错误时自动重新走 `_wait_for_document` 逻辑。
+- **连接生命周期（2026-11-18 更新）**：`state.py` 已统一 backend 单例和串行 STA 执行；写失败不重放，切换活动文档会拒绝操作，显式关闭后可重建。尚未实现可靠 document_id、revision、自动恢复或跨进程单写协调，见 [backend-foundation.md](backend-foundation.md)。
+
+## 2026-11-18：后端迁移基础
+
+MCP 工具 → `state` 兼容 facade → `CadBackend`/factory → COM STA 队列 → 既有 controller/query。
+原三层职责与 36 个 MCP 工具签名保留，工具不再持有原生连接。参考分析也经过同一队列。
+本轮增加 lifecycle/工厂/线程与协议回归、默认离线测试、Windows CI；规划中的 .NET Bridge 和 HTTP adapter 尚未实现。
+上文的“36 个工具全部实机通过”是历史版本的验证记录，本轮仅对创建/查询闭环做了实机 smoke。
+完整现状、限制与下一步见 [backend-foundation.md](backend-foundation.md)，逐工具状态见 [tool-migration-matrix.md](tool-migration-matrix.md)。

@@ -1,8 +1,26 @@
+from contextlib import asynccontextmanager
+
+import anyio
+
 from mcp.server.fastmcp import FastMCP
 
 from autocad_mcp.tools import document_tools, drawing_tools, query_tools, reference_tools, vqa_tools
 
-mcp = FastMCP("autocad-mcp", host="127.0.0.1", port=8931)
+from autocad_mcp.state import server_session_started, server_session_stopped
+
+
+@asynccontextmanager
+async def lifespan(server):
+    server_session_started()
+    try:
+        yield {}
+    finally:
+        # MCP session task groups cancel during disconnect; finish shared cleanup.
+        with anyio.CancelScope(shield=True):
+            await anyio.to_thread.run_sync(server_session_stopped)
+
+
+mcp = FastMCP("autocad-mcp", host="127.0.0.1", port=8931, lifespan=lifespan)
 
 drawing_tools.register(mcp)
 query_tools.register(mcp)

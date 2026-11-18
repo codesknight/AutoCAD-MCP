@@ -21,3 +21,16 @@ def cad_connection():
 def scratch_doc(cad_connection):
     cad_connection.new_document()
     return cad_connection
+
+
+def pytest_addoption(parser):
+    parser.addoption("--cad-integration", action="store_true", default=False,
+                     help="Enable tests that can launch AutoCAD and create scratch drawings")
+
+
+def pytest_collection_modifyitems(config, items):
+    for item in items:
+        if "cad_connection" in item.fixturenames:
+            item.add_marker(pytest.mark.cad_integration)
+        if item.get_closest_marker("cad_integration") and not config.getoption("--cad-integration"):
+            item.add_marker(pytest.mark.skip(reason="Use --cad-integration for real AutoCAD tests"))

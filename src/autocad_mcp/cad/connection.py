@@ -15,6 +15,10 @@ class CADConnectionError(RuntimeError):
     pass
 
 
+class CADDocumentChangedError(CADConnectionError):
+    """The active document no longer matches the bound COM document."""
+
+
 class CADConnection:
     def __init__(self, config: Config | None = None):
         self.config = config or load_config()
@@ -59,8 +63,9 @@ class CADConnection:
         deadline = time.time() + timeout
         while time.time() < deadline:
             try:
-                self.document = self.app.ActiveDocument
-                self.model_space = self.document.ModelSpace
+                document = self.app.ActiveDocument
+                model_space = document.ModelSpace
+                self.document, self.model_space = document, model_space
                 return
             except (pythoncom.com_error, AttributeError):
                 # A freshly created document's COM object isn't always ready
@@ -83,6 +88,26 @@ class CADConnection:
         else:
             self.app.Documents.Add()
         self._wait_for_document(self.config.connect_timeout)
+
+    def ensure_document(self) -> None:
+        """Fail on a switched/closed document rather than silently retargeting.
+
+        Names are a conservative legacy COM guard, not Bridge session IDs.
+        COM failures propagate; writes are never replayed after reconnecting.
+        """
+        if self.document is None or self.app is None:
+            raise CADConnectionError("CAD document is not connected")
+        if self.document.Name != self.app.ActiveDocument.Name:
+            raise CADDocumentChangedError(
+                "AutoCAD active document changed; call new_drawing for a new scratch "
+                "document or explicitly close/recreate the backend to select the active document"
+            )
+
+    def disconnect(self) -> None:
+        """Release references only; never save, close drawings, or quit AutoCAD."""
+        self.model_space = None
+        self.document = None
+        self.app = None
 
     def is_connected(self) -> bool:
         if self.app is None:

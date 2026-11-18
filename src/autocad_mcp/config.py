@@ -1,11 +1,13 @@
 import json
 from pathlib import Path
+from typing import Literal
 from pydantic import BaseModel
 
 _CONFIG_PATH = Path(__file__).parent / "config.json"
 
 
 class Config(BaseModel):
+    backend: Literal["com", "http"] = "com"
     cad_type: str
     prog_id: str
     prog_id_fallbacks: list[str] = []

@@ -1,44 +1,82 @@
-"""Process-wide singletons wiring the cad/ layer to the tools/ layer.
+"""Lazy process-wide backend and compatibility accessors; no native objects escape."""
+import atexit
+from threading import RLock
 
-Connection is established lazily on first tool call, not at import time,
-so `mcp dev` / tool listing works even before AutoCAD is open.
-"""
-from autocad_mcp.cad.connection import CADConnection
-from autocad_mcp.cad.controller import CADController
-from autocad_mcp.cad.query import CADQuery
+from autocad_mcp.config import load_config
+from autocad_mcp.cad.backends.base import (
+    CadBackend, OperationFacade, CONTROLLER_OPERATIONS, QUERY_OPERATIONS,
+)
+from autocad_mcp.cad.backends.factory import create_backend
 
-_connection: CADConnection | None = None
-_controller: CADController | None = None
-_query: CADQuery | None = None
-
-
-def get_controller() -> CADController:
-    global _connection, _controller
-    if _controller is None:
-        _connection = CADConnection()
-        _connection.connect()
-        _controller = CADController(_connection)
-    return _controller
+_lock = RLock()
+_backend: CadBackend | None = None
+_controller: OperationFacade | None = None
+_query: OperationFacade | None = None
+_server_sessions = 0
 
 
-def get_query() -> CADQuery:
-    global _connection, _query
-    if _query is None:
-        if _connection is None:
-            _connection = CADConnection()
-            _connection.connect()
-        _query = CADQuery(_connection)
-    return _query
+def get_backend() -> CadBackend:
+    global _backend
+    with _lock:
+        if _backend is None:
+            _backend = create_backend(load_config())
+        return _backend
+
+
+def get_controller() -> OperationFacade:
+    global _controller
+    with _lock:
+        if _controller is None:
+            _controller = OperationFacade(get_backend(), CONTROLLER_OPERATIONS)
+        return _controller
+
+
+def get_query() -> OperationFacade:
+    global _query
+    with _lock:
+        if _query is None:
+            _query = OperationFacade(get_backend(), QUERY_OPERATIONS)
+        return _query
 
 
 def new_document() -> str:
-    """Force-switch to a brand-new blank drawing (not whatever the user
-    currently has open) -- exposed as the new_drawing MCP tool so a human or
-    AI can explicitly ask for a safe scratch document before running
-    write-op tests, per the project's safety rule in CLAUDE.md."""
-    global _connection
-    if _connection is None:
-        _connection = CADConnection()
-        _connection.connect()
-    _connection.new_document()
-    return _connection.document.Name
+    return get_backend().execute("new_document", {})
+
+
+def analyze_reference_drawing(file_path: str, entity_type: str | None = None,
+                              max_entities: int = 500) -> dict:
+    return get_backend().execute("analyze_reference_drawing", {
+        "file_path": file_path, "entity_type": entity_type, "max_entities": max_entities,
+    })
+
+
+def close_backend() -> None:
+    """Drain and close; the next accessor explicitly starts a fresh backend.
+
+    Existing facade references stay closed rather than silently switching target.
+    This never saves/closes documents, quits CAD, or replays a failed operation.
+    """
+    global _backend, _controller, _query
+    with _lock:
+        if _backend is not None:
+            _backend.close()
+        _backend = _controller = _query = None
+
+
+def server_session_started() -> None:
+    """FastMCP low-level lifespan is per client session for HTTP transport."""
+    global _server_sessions
+    with _lock:
+        _server_sessions += 1
+
+
+def server_session_stopped() -> None:
+    """Only the final client session may close the shared backend."""
+    global _server_sessions
+    with _lock:
+        _server_sessions -= 1
+        if _server_sessions == 0:
+            close_backend()
+
+
+atexit.register(close_backend)

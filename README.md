@@ -75,3 +75,22 @@ doubao_api_key=你的真实key
 - 设计方案：[docs/design/](docs/design/)
 - 参考项目分析：[docs/references/](docs/references/)
 - 开发日志（每次改动都会更新）：[docs/logs/devlog.md](docs/logs/devlog.md)
+
+
+## 后端迁移与开发验证
+
+当前默认后端仍是 COM。`state.py` 统一管理后端，CAD 操作通过单个 STA 工作线程串行执行。
+`config.json` 可省略 `backend`（等同 `"com"`）；`"http"` 后端尚未实现，会明确报错。
+MCP 的 `--http` 是现有 8931 端口传输模式，与规划中的 CAD Bridge HTTP 后端不同。
+单个进程内多个客户端共享执行队列；多个独立服务进程没有跨进程写入协调，应只保留一个 COM 写入口。
+
+```powershell
+python -m pip install -e ".[dev]"
+python -m pytest -q
+# 实机测试需显式启用；先启动 AutoCAD，只在测试新建的空白图纸中写入：
+python -m pytest tests/test_backend_integration.py --cad-integration -q -s
+# 通过真实 MCP stdio 导出工具契约，不连接 CAD：
+python scripts/export_mcp_contract.py --output tools.json
+```
+
+设计与进度：[roadmap](docs/design/development-roadmap.md)、[本轮后端设计](docs/design/backend-foundation.md)、[工具迁移矩阵](docs/design/tool-migration-matrix.md)。

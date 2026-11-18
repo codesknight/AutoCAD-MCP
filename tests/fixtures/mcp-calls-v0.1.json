@@ -1,0 +1,672 @@
+[
+  {
+    "tool": "draw_line",
+    "arguments": {
+      "start_x": 1,
+      "start_y": 2,
+      "start_z": 0,
+      "end_x": 11,
+      "end_y": 2,
+      "end_z": 0,
+      "layer": "WIRES"
+    },
+    "operation": "draw_line",
+    "payload": {
+      "start": [
+        1,
+        2,
+        0
+      ],
+      "end": [
+        11,
+        2,
+        0
+      ],
+      "layer": "WIRES"
+    },
+    "result": 101,
+    "text": "draw_line ok, object_id=101"
+  },
+  {
+    "tool": "draw_circle",
+    "arguments": {
+      "center_x": 1,
+      "center_y": 2,
+      "center_z": 0,
+      "radius": 5
+    },
+    "operation": "draw_circle",
+    "payload": {
+      "center": [
+        1,
+        2,
+        0
+      ],
+      "radius": 5,
+      "layer": null
+    },
+    "result": 102,
+    "text": "draw_circle ok, object_id=102"
+  },
+  {
+    "tool": "draw_arc",
+    "arguments": {
+      "center_x": 1,
+      "center_y": 2,
+      "center_z": 0,
+      "radius": 5,
+      "start_angle": 0,
+      "end_angle": 90
+    },
+    "operation": "draw_arc",
+    "payload": {
+      "center": [
+        1,
+        2,
+        0
+      ],
+      "radius": 5,
+      "start_angle": 0,
+      "end_angle": 90,
+      "layer": null
+    },
+    "result": 103,
+    "text": "draw_arc ok, object_id=103"
+  },
+  {
+    "tool": "draw_rectangle",
+    "arguments": {
+      "corner1_x": 1,
+      "corner1_y": 2,
+      "corner1_z": 0,
+      "corner2_x": 11,
+      "corner2_y": 2,
+      "corner2_z": 0
+    },
+    "operation": "draw_rectangle",
+    "payload": {
+      "corner1": [
+        1,
+        2,
+        0
+      ],
+      "corner2": [
+        11,
+        2,
+        0
+      ],
+      "layer": null
+    },
+    "result": 104,
+    "text": "draw_rectangle ok, object_id=104"
+  },
+  {
+    "tool": "draw_text",
+    "arguments": {
+      "position_x": 1,
+      "position_y": 2,
+      "position_z": 0,
+      "text": "测试",
+      "height": 2.5
+    },
+    "operation": "draw_text",
+    "payload": {
+      "position": [
+        1,
+        2,
+        0
+      ],
+      "text": "测试",
+      "height": 2.5,
+      "layer": null,
+      "rotation": 0.0
+    },
+    "result": 105,
+    "text": "draw_text ok, object_id=105"
+  },
+  {
+    "tool": "draw_mtext",
+    "arguments": {
+      "position_x": 1,
+      "position_y": 2,
+      "position_z": 0,
+      "text": "测试"
+    },
+    "operation": "draw_mtext",
+    "payload": {
+      "position": [
+        1,
+        2,
+        0
+      ],
+      "text": "测试",
+      "width": 100.0,
+      "height": 2.5,
+      "layer": null
+    },
+    "result": 106,
+    "text": "draw_mtext ok, object_id=106"
+  },
+  {
+    "tool": "draw_polyline",
+    "arguments": {
+      "points": [
+        [
+          1,
+          2,
+          0
+        ],
+        [
+          11,
+          2,
+          0
+        ]
+      ]
+    },
+    "operation": "draw_polyline",
+    "payload": {
+      "points": [
+        [
+          1,
+          2,
+          0
+        ],
+        [
+          11,
+          2,
+          0
+        ]
+      ],
+      "closed": false,
+      "layer": null
+    },
+    "result": 107,
+    "text": "draw_polyline ok, object_id=107"
+  },
+  {
+    "tool": "draw_hatch",
+    "arguments": {
+      "points": [
+        [
+          1,
+          2,
+          0
+        ],
+        [
+          11,
+          2,
+          0
+        ],
+        [
+          5,
+          -2,
+          0
+        ]
+      ]
+    },
+    "operation": "draw_hatch",
+    "payload": {
+      "points": [
+        [
+          1,
+          2,
+          0
+        ],
+        [
+          11,
+          2,
+          0
+        ],
+        [
+          5,
+          -2,
+          0
+        ]
+      ],
+      "pattern_name": "SOLID",
+      "layer": null
+    },
+    "result": 108,
+    "text": "draw_hatch ok, object_id=108"
+  },
+  {
+    "tool": "add_dimension",
+    "arguments": {
+      "start_x": 1,
+      "start_y": 2,
+      "start_z": 0,
+      "end_x": 11,
+      "end_y": 2,
+      "end_z": 0,
+      "text_x": 5,
+      "text_y": -2,
+      "text_z": 0
+    },
+    "operation": "add_dimension",
+    "payload": {
+      "start": [
+        1,
+        2,
+        0
+      ],
+      "end": [
+        11,
+        2,
+        0
+      ],
+      "text_position": [
+        5,
+        -2,
+        0
+      ]
+    },
+    "result": 109,
+    "text": "add_dimension ok, object_id=109"
+  },
+  {
+    "tool": "insert_block",
+    "arguments": {
+      "position_x": 1,
+      "position_y": 2,
+      "position_z": 0,
+      "block_name": "BREAKER"
+    },
+    "operation": "insert_block",
+    "payload": {
+      "block_name": "BREAKER",
+      "position": [
+        1,
+        2,
+        0
+      ],
+      "scale": 1.0,
+      "rotation": 0.0,
+      "layer": null
+    },
+    "result": 110,
+    "text": "insert_block ok, object_id=110"
+  },
+  {
+    "tool": "create_layer",
+    "arguments": {
+      "name": "WIRES"
+    },
+    "operation": "create_layer",
+    "payload": {
+      "name": "WIRES",
+      "color": null
+    },
+    "result": null,
+    "text": "create_layer ok, name=WIRES"
+  },
+  {
+    "tool": "set_layer_properties",
+    "arguments": {
+      "name": "WIRES",
+      "locked": true
+    },
+    "operation": "set_layer_properties",
+    "payload": {
+      "name": "WIRES",
+      "color": null,
+      "locked": true,
+      "frozen": null,
+      "visible": null
+    },
+    "result": null,
+    "text": "set_layer_properties ok, name=WIRES"
+  },
+  {
+    "tool": "list_blocks",
+    "arguments": {},
+    "operation": "list_blocks",
+    "payload": {},
+    "result": [
+      "BREAKER"
+    ],
+    "text": "[\"BREAKER\"]"
+  },
+  {
+    "tool": "list_layers",
+    "arguments": {},
+    "operation": "list_layers",
+    "payload": {},
+    "result": [
+      "0",
+      "导线"
+    ],
+    "text": "[\"0\", \"导线\"]"
+  },
+  {
+    "tool": "query_entities",
+    "arguments": {},
+    "operation": "query_entities",
+    "payload": {
+      "entity_type": null
+    },
+    "result": [
+      {
+        "object_id": 101,
+        "object_name": "AcDbLine",
+        "layer": "WIRES"
+      }
+    ],
+    "text": "[{\"object_id\": 101, \"object_name\": \"AcDbLine\", \"layer\": \"WIRES\"}]"
+  },
+  {
+    "tool": "query_entities_in_region",
+    "arguments": {
+      "corner1_x": 1,
+      "corner1_y": 2,
+      "corner1_z": 0,
+      "corner2_x": 11,
+      "corner2_y": 2,
+      "corner2_z": 0
+    },
+    "operation": "query_entities_in_region",
+    "payload": {
+      "corner1": [
+        1,
+        2,
+        0
+      ],
+      "corner2": [
+        11,
+        2,
+        0
+      ],
+      "mode": "crossing",
+      "entity_type": null
+    },
+    "result": [
+      {
+        "object_id": 101,
+        "object_name": "AcDbLine",
+        "layer": "WIRES"
+      }
+    ],
+    "text": "[{\"object_id\": 101, \"object_name\": \"AcDbLine\", \"layer\": \"WIRES\"}]"
+  },
+  {
+    "tool": "get_entity",
+    "arguments": {
+      "object_id": 101
+    },
+    "operation": "get_entity",
+    "payload": {
+      "object_id": 101
+    },
+    "result": {
+      "object_id": 101,
+      "object_name": "AcDbLine",
+      "layer": "WIRES"
+    },
+    "text": "{\"object_id\": 101, \"object_name\": \"AcDbLine\", \"layer\": \"WIRES\"}"
+  },
+  {
+    "tool": "delete_entity",
+    "arguments": {
+      "object_id": 101
+    },
+    "operation": "delete_entity",
+    "payload": {
+      "object_id": 101
+    },
+    "result": null,
+    "text": "deleted object_id=101"
+  },
+  {
+    "tool": "move_entity",
+    "arguments": {
+      "object_id": 101,
+      "offset_x": 1,
+      "offset_y": 2,
+      "offset_z": 0
+    },
+    "operation": "move_entity",
+    "payload": {
+      "object_id": 101,
+      "offset": [
+        1,
+        2,
+        0
+      ]
+    },
+    "result": null,
+    "text": "moved object_id=101"
+  },
+  {
+    "tool": "rotate_entity",
+    "arguments": {
+      "object_id": 101,
+      "base_x": 1,
+      "base_y": 2,
+      "base_z": 0,
+      "angle": 90
+    },
+    "operation": "rotate_entity",
+    "payload": {
+      "object_id": 101,
+      "base_point": [
+        1,
+        2,
+        0
+      ],
+      "angle": 90
+    },
+    "result": null,
+    "text": "rotated object_id=101"
+  },
+  {
+    "tool": "copy_entity",
+    "arguments": {
+      "object_id": 101,
+      "offset_x": 1,
+      "offset_y": 2,
+      "offset_z": 0
+    },
+    "operation": "copy_entity",
+    "payload": {
+      "object_id": 101,
+      "offset": [
+        1,
+        2,
+        0
+      ]
+    },
+    "result": 111,
+    "text": "copy_entity ok, object_id=111"
+  },
+  {
+    "tool": "scale_entity",
+    "arguments": {
+      "object_id": 101,
+      "base_x": 1,
+      "base_y": 2,
+      "base_z": 0,
+      "scale_factor": 2
+    },
+    "operation": "scale_entity",
+    "payload": {
+      "object_id": 101,
+      "base_point": [
+        1,
+        2,
+        0
+      ],
+      "scale_factor": 2
+    },
+    "result": null,
+    "text": "scaled object_id=101"
+  },
+  {
+    "tool": "mirror_entity",
+    "arguments": {
+      "object_id": 101,
+      "point1_x": 1,
+      "point1_y": 2,
+      "point1_z": 0,
+      "point2_x": 11,
+      "point2_y": 2,
+      "point2_z": 0
+    },
+    "operation": "mirror_entity",
+    "payload": {
+      "object_id": 101,
+      "point1": [
+        1,
+        2,
+        0
+      ],
+      "point2": [
+        11,
+        2,
+        0
+      ],
+      "erase_source": false
+    },
+    "result": 112,
+    "text": "mirror_entity ok, object_id=112"
+  },
+  {
+    "tool": "get_block_attributes",
+    "arguments": {
+      "object_id": 101
+    },
+    "operation": "get_block_attributes",
+    "payload": {
+      "object_id": 101
+    },
+    "result": {
+      "ID": "QF1"
+    },
+    "text": "{\"ID\": \"QF1\"}"
+  },
+  {
+    "tool": "set_block_attribute",
+    "arguments": {
+      "object_id": 101,
+      "tag": "ID",
+      "value": "QF2"
+    },
+    "operation": "set_block_attribute",
+    "payload": {
+      "object_id": 101,
+      "tag": "ID",
+      "value": "QF2"
+    },
+    "result": null,
+    "text": "set_block_attribute ok, object_id=101, tag=ID"
+  },
+  {
+    "tool": "bulk_get_block_attributes",
+    "arguments": {},
+    "operation": "bulk_get_block_attributes",
+    "payload": {
+      "object_ids": null,
+      "block_name": null
+    },
+    "result": {
+      "101": {
+        "ID": "QF1"
+      }
+    },
+    "text": "{\"101\": {\"ID\": \"QF1\"}}"
+  },
+  {
+    "tool": "bulk_set_block_attributes",
+    "arguments": {
+      "updates": [
+        {
+          "object_id": 101,
+          "tag": "ID",
+          "value": "QF2"
+        }
+      ]
+    },
+    "operation": "bulk_set_block_attributes",
+    "payload": {
+      "updates": [
+        {
+          "object_id": 101,
+          "tag": "ID",
+          "value": "QF2"
+        }
+      ]
+    },
+    "result": [
+      {
+        "object_id": 101,
+        "tag": "ID",
+        "status": "ok"
+      }
+    ],
+    "text": "[{\"object_id\": 101, \"tag\": \"ID\", \"status\": \"ok\"}]"
+  },
+  {
+    "tool": "validate_block_attributes",
+    "arguments": {
+      "required_tags": [
+        "ID"
+      ]
+    },
+    "operation": "validate_block_attributes",
+    "payload": {
+      "required_tags": [
+        "ID"
+      ],
+      "block_name": null
+    },
+    "result": [],
+    "text": "[]"
+  },
+  {
+    "tool": "new_drawing",
+    "arguments": {},
+    "operation": "new_document",
+    "payload": {},
+    "result": "scratch-test",
+    "text": "scratch-test"
+  },
+  {
+    "tool": "save_drawing",
+    "arguments": {
+      "file_path": "scratch.dwg"
+    },
+    "operation": "save_drawing",
+    "payload": {
+      "file_path": "scratch.dwg",
+      "overwrite": false
+    },
+    "result": null,
+    "text": "saved to scratch.dwg"
+  },
+  {
+    "tool": "export_current_view",
+    "arguments": {},
+    "operation": "export_current_view",
+    "payload": {
+      "file_path": null
+    },
+    "result": "scratch.png",
+    "text": "scratch.png"
+  },
+  {
+    "tool": "analyze_reference_drawing",
+    "arguments": {
+      "file_path": "reference.dwg"
+    },
+    "operation": "analyze_reference_drawing",
+    "payload": {
+      "file_path": "reference.dwg",
+      "entity_type": null,
+      "max_entities": 500
+    },
+    "result": {
+      "total_entity_count": 0,
+      "returned_count": 0,
+      "entities": []
+    },
+    "text": "{\"total_entity_count\": 0, \"returned_count\": 0, \"entities\": []}"
+  }
+]

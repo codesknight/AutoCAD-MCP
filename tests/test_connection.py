@@ -8,6 +8,7 @@ import pytest
 from autocad_mcp.cad.connection import CADConnection, CADConnectionError
 
 
+@pytest.mark.cad_integration
 def test_connect_to_running_autocad():
     conn = CADConnection()
     try:
