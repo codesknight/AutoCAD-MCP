@@ -454,3 +454,5 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 重构前运行的既有 8 项测试包含被误认为离线的集成测试，自动启动 AutoCAD 并在 fixture 新建的 scratch 图纸绘制。8 passed，但输出带 COM 忙碌异常诊断；如实记录，不能当作稳定性/性能结论。新增 `--cad-integration` 开关，默认测试不会启动 CAD。
 - 最终离线 `pytest -q`：56 passed、33 skipped。真实 stdio tools/list 与固定 schema 一致；32 CAD 工具的 MCP 参数/返回样例测试为 fake CAD。真实 AutoCAD STA smoke + stdio MCP 创建查询：2 passed，均先新建专用空白图纸再写入并重读坐标/图层/半径；没有覆盖保存用户原图。
 - 新增 Windows 离线 CI。本机 AutoCAD 文件版本 `25.1.60.0`、托管程序集 `25.1.60.0.0`，未安装 .NET SDK；插件/认证 Dispatcher/HTTP adapter/原子事务/性能 Benchmark 均待后续实施。没有发版或切换默认后端。
+
+- 远端干净 Windows runner 的首轮测试步骤失败；Actions 日志下载域名从本机不可达，API 只能读到通用退出码。CI 增加失败时将 pytest 输出写入检查注释，保留原始非零退出码，便于直接定位 runner 差异。

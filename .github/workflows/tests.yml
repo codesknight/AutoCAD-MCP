@@ -15,4 +15,12 @@ jobs:
       - name: Install Python dependencies
         run: python -m pip install -e ".[dev]"
       - name: Run offline tests (CAD tests require explicit opt-in)
-        run: python -m pytest -q
+        shell: pwsh
+        run: |
+          python -m pytest -q 2>&1 | Tee-Object -Variable pytestOutput
+          $pytestExit = $LASTEXITCODE
+          if ($pytestExit -ne 0) {
+            $details = ($pytestOutput -join "`n").Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Output "::error title=Offline pytest output::$details"
+          }
+          exit $pytestExit
