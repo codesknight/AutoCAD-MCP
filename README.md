@@ -19,11 +19,11 @@
   <a href="#documentation">Documentation</a>
 </p>
 
-## A tool workflow, at a glance
+## See it in AutoCAD
 
-![Illustrated MCP workflow: new drawing, line and circle, then geometry queries](docs/assets/workflow.gif)
+![Actual AutoCAD capture: layers, mounting plate, holes, text, dimensions and entity queries through MCP](docs/assets/autocad-demo.gif)
 
-*Synthetic fixture illustration — not a live AutoCAD screen recording. Actual end-to-end evidence: [Bridge validation report](docs/validation/2026-11-18-http-bridge.json).*
+*Actual AutoCAD 2026 window captures using scripted MCP stdio calls through the COM backend. Edited step sequence: pauses trimmed and captions added. [Capture details & verified geometry](docs/validation/2026-11-18-readme-demo.json). The experimental HTTP backend has a separate [Bridge validation report](docs/validation/2026-11-18-http-bridge.json).*
 
 ## What you can do
 

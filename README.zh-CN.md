@@ -19,11 +19,11 @@
   <a href="#项目文档">项目文档</a>
 </p>
 
-## 一眼了解工具工作流
+## 实机演示
 
-![MCP 工具流程示意：新建图纸、绘制直线与圆，再查询几何结果](docs/assets/workflow.gif)
+![AutoCAD 实机演示：通过 MCP 创建图层、安装板轮廓、孔位、文字和尺寸，再查询实体](docs/assets/autocad-demo.gif)
 
-*这是基于测试用例制作的流程示意动画，并非 AutoCAD 实机录屏。真实端到端验证见 [Bridge 验证报告](docs/validation/2026-11-18-http-bridge.json)。*
+*AutoCAD 2026 实机画面，通过脚本执行 MCP stdio 调用，使用 COM 后端。按工具步骤采集并剪辑，已缩短停顿、添加步骤字幕。详见[画面来源与几何验证记录](docs/validation/2026-11-18-readme-demo.json)；实验性 HTTP 后端另见 [Bridge 验证报告](docs/validation/2026-11-18-http-bridge.json)。*
 
 ## 主要能力
 

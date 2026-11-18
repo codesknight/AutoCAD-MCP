@@ -1,0 +1,362 @@
+{
+  "recorded_date": "2026-11-18",
+  "timezone": "Asia/Shanghai",
+  "source_commit": "4b1b59cfb3f2cea8d0f44db74fb91d9e48c51453",
+  "backend": "com",
+  "transport": "mcp_stdio",
+  "execution": "scripted tool calls",
+  "capture": "real AutoCAD window snapshots, edited step sequence",
+  "editing": [
+    "crop Windows taskbar",
+    "resize",
+    "trim waiting time",
+    "add captions outside captured window"
+  ],
+  "source_frames": 12,
+  "gif_steps": 10,
+  "gif_duration_ms": 17400,
+  "tool_calls": [
+    {
+      "tool": "new_drawing",
+      "arguments": {}
+    },
+    {
+      "tool": "create_layer",
+      "arguments": {
+        "name": "MCP_OUTLINE",
+        "color": 4
+      }
+    },
+    {
+      "tool": "create_layer",
+      "arguments": {
+        "name": "MCP_HOLES",
+        "color": 2
+      }
+    },
+    {
+      "tool": "create_layer",
+      "arguments": {
+        "name": "MCP_NOTES",
+        "color": 7
+      }
+    },
+    {
+      "tool": "draw_rectangle",
+      "arguments": {
+        "corner1_x": 0,
+        "corner1_y": 0,
+        "corner1_z": 0,
+        "corner2_x": 100,
+        "corner2_y": 60,
+        "corner2_z": 0,
+        "layer": "MCP_OUTLINE"
+      }
+    },
+    {
+      "tool": "draw_circle",
+      "arguments": {
+        "center_x": 50,
+        "center_y": 30,
+        "center_z": 0,
+        "radius": 18,
+        "layer": "MCP_HOLES"
+      }
+    },
+    {
+      "tool": "draw_circle",
+      "arguments": {
+        "center_x": 10,
+        "center_y": 10,
+        "center_z": 0,
+        "radius": 4,
+        "layer": "MCP_HOLES"
+      }
+    },
+    {
+      "tool": "draw_circle",
+      "arguments": {
+        "center_x": 90,
+        "center_y": 10,
+        "center_z": 0,
+        "radius": 4,
+        "layer": "MCP_HOLES"
+      }
+    },
+    {
+      "tool": "draw_circle",
+      "arguments": {
+        "center_x": 90,
+        "center_y": 50,
+        "center_z": 0,
+        "radius": 4,
+        "layer": "MCP_HOLES"
+      }
+    },
+    {
+      "tool": "draw_circle",
+      "arguments": {
+        "center_x": 10,
+        "center_y": 50,
+        "center_z": 0,
+        "radius": 4,
+        "layer": "MCP_HOLES"
+      }
+    },
+    {
+      "tool": "draw_text",
+      "arguments": {
+        "position_x": 0,
+        "position_y": 72,
+        "position_z": 0,
+        "text": "AutoCAD MCP | LIVE DEMO",
+        "height": 4,
+        "layer": "MCP_NOTES"
+      }
+    },
+    {
+      "tool": "add_dimension",
+      "arguments": {
+        "start_x": 0,
+        "start_y": 0,
+        "start_z": 0,
+        "end_x": 100,
+        "end_y": 0,
+        "end_z": 0,
+        "text_x": 50,
+        "text_y": -12,
+        "text_z": 0
+      }
+    },
+    {
+      "tool": "query_entities",
+      "arguments": {}
+    }
+  ],
+  "verified_entities": [
+    {
+      "object_id": 2497883017408,
+      "type": "AcDb2dPolyline",
+      "layer": "MCP_OUTLINE",
+      "bounding_box": {
+        "min": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "max": [
+          100.0,
+          60.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "object_id": 2497883017504,
+      "type": "AcDbCircle",
+      "layer": "MCP_HOLES",
+      "center": [
+        50.0,
+        30.0,
+        0.0
+      ],
+      "radius": 18.0,
+      "bounding_box": {
+        "min": [
+          32.0,
+          12.0,
+          0.0
+        ],
+        "max": [
+          68.0,
+          48.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "object_id": 2497883017520,
+      "type": "AcDbCircle",
+      "layer": "MCP_HOLES",
+      "center": [
+        10.0,
+        10.0,
+        0.0
+      ],
+      "radius": 4.0,
+      "bounding_box": {
+        "min": [
+          6.0,
+          6.0,
+          0.0
+        ],
+        "max": [
+          14.0,
+          14.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "object_id": 2497883017536,
+      "type": "AcDbCircle",
+      "layer": "MCP_HOLES",
+      "center": [
+        90.0,
+        10.0,
+        0.0
+      ],
+      "radius": 4.0,
+      "bounding_box": {
+        "min": [
+          86.0,
+          6.0,
+          0.0
+        ],
+        "max": [
+          94.0,
+          14.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "object_id": 2497883017552,
+      "type": "AcDbCircle",
+      "layer": "MCP_HOLES",
+      "center": [
+        90.0,
+        50.0,
+        0.0
+      ],
+      "radius": 4.0,
+      "bounding_box": {
+        "min": [
+          86.0,
+          46.0,
+          0.0
+        ],
+        "max": [
+          94.0,
+          54.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "object_id": 2497883017568,
+      "type": "AcDbCircle",
+      "layer": "MCP_HOLES",
+      "center": [
+        10.0,
+        50.0,
+        0.0
+      ],
+      "radius": 4.0,
+      "bounding_box": {
+        "min": [
+          6.0,
+          46.0,
+          0.0
+        ],
+        "max": [
+          14.0,
+          54.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "object_id": 2497883017584,
+      "type": "AcDbText",
+      "layer": "MCP_NOTES",
+      "text_string": "AutoCAD MCP | LIVE DEMO",
+      "bounding_box": {
+        "min": [
+          0.0,
+          71.21787709497207,
+          0.0
+        ],
+        "max": [
+          65.7877094972067,
+          76.91620111731844,
+          0.0
+        ]
+      }
+    },
+    {
+      "object_id": 2497883017632,
+      "type": "AcDbAlignedDimension",
+      "layer": "0",
+      "bounding_box": {
+        "min": [
+          -8.113285044351215e-16,
+          -13.25,
+          0.0
+        ],
+        "max": [
+          100.0,
+          0.0,
+          0.0
+        ]
+      }
+    }
+  ],
+  "cleanup": {
+    "test_documents_remaining": [],
+    "owned_cad_process_closed": true
+  },
+  "frames": [
+    {
+      "step": "blank",
+      "source_sha256": "f144af4a382a4fc5256c8147e245c704063f0bfc23bc1cede40a40bcc22d20cd",
+      "captured_at_unix": 1795013196.222
+    },
+    {
+      "step": "outline",
+      "source_sha256": "6c1a406496190a599302ccd7cb9419d8e8962c38e2ba7a99b8ac6eae0c6c12ef",
+      "captured_at_unix": 1795013225.738
+    },
+    {
+      "step": "bore",
+      "source_sha256": "ba98c89e8c7a6774e6f4cd4c5cb111cf9ee7d3aa7cee2aa6e88b860920bbae8c",
+      "captured_at_unix": 1795013247.07
+    },
+    {
+      "step": "bolt1",
+      "source_sha256": "c7ade1b10e14dc4035efba63d9cf588f85aacb3f072679042efad79d4170af79",
+      "captured_at_unix": 1795013291.054
+    },
+    {
+      "step": "bolt2",
+      "source_sha256": "3322b8b1e50378fdaa16f946ff76cee70198c462364ea8fe51b5d2b19b8a0068",
+      "captured_at_unix": 1795013296.18
+    },
+    {
+      "step": "bolt3",
+      "source_sha256": "45840f88f47a3ac0f294e6608fabfdf7b1d8d8384f289cf26ddc7a74b3ec2a97",
+      "captured_at_unix": 1795013311.64
+    },
+    {
+      "step": "bolt4",
+      "source_sha256": "44a1467de2fa0444f67d0129be8793a7bfe1212bcaa9c73c9ebdd6b37917dd0a",
+      "captured_at_unix": 1795013316.767
+    },
+    {
+      "step": "notes",
+      "source_sha256": "282a312dcb51f8a761decbacd2f2134e402e2a1a2c4f833c935539f6a7c5ba79",
+      "captured_at_unix": 1795013334.508
+    },
+    {
+      "step": "dimension",
+      "source_sha256": "29667e5e7a45548430f451fe4d0afc91345347c96c4bbe51795d7902d81b4315",
+      "captured_at_unix": 1795013339.647
+    },
+    {
+      "step": "verified",
+      "source_sha256": "e6a4d97ecf280f251bdfd9e78c4421fa5b33d1a5a2c417b5afcd378204ae65cb",
+      "captured_at_unix": 1795013358.216
+    }
+  ],
+  "gif_sha256": "1ef4aedcb780fc514504f86d9c0c5739b5ac79d2fceb3ac2701ba70c4c184552"
+}
