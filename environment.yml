@@ -6,6 +6,7 @@ dependencies:
   - pip
   - pip:
       - pywin32
-      - mcp[cli]
+      - mcp[cli]>=1.28.1,<2
+      - anyio>=4,<5
       - pydantic
       - pytest

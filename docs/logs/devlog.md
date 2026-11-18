@@ -457,3 +457,4 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 
 - 远端干净 Windows runner 的首轮测试步骤失败；Actions 日志下载域名从本机不可达，API 只能读到通用退出码。CI 增加失败时将 pytest 输出写入检查注释，保留原始非零退出码，便于直接定位 runner 差异。
 - 通过 Actions 单 job 日志接口取得具体错误：无版本上限的 MCP 依赖在干净 runner 安装了 2.3.0，FastMCP 和测试 memory API 已变更；本机为 1.28.1。明确声明 `mcp[cli]>=1.28.1,<2`，保留已验证的 1.x 协议/API，避免把本轮变成 SDK 主版本迁移。
+- 同步 conda environment.yml 中的 MCP/AnyIO 兼容范围，保证 conda 新建环境与 pyproject.toml 的 SDK 主版本一致。
