@@ -6,6 +6,13 @@ This is an opt-in, local Windows harness. It never changes the default COM backe
 
 1. Install the project in the development environment: `python -m pip install -e ".[dev]"`.
 2. Build/install the Bridge using [the Bridge guide](../docs/design/http-bridge.md).
+   For native fault injection, also build the independent fixture:
+
+   ~~~powershell
+   dotnet build plugin/AutoCADBridge.NativeTests -c Release -p:AutoCADDir="<installed-AutoCAD-directory>"
+   ~~~
+
+   It is explicitly NETLOADed for fault tests only; handle its unsigned DLL confirmation manually.
 3. Normally launch one dedicated AutoCAD instance. Keep it idle and stop other MCP writers during qualification.
 4. Run from the repository root. Any unsigned DLL confirmation must be handled manually in AutoCAD.
 
@@ -32,6 +39,11 @@ New-Item -ItemType File benchmarks/results/<run>/STOP
 ## Scope and predeclared method
 
 - **Native faults:** authentication/Origin/Host, invalid geometry, rollback at first/middle/last step, deduplication/conflicting IDs, switching/closing documents, stale aliases, external COM revision changes, response loss, polling disconnect, wait-budget expiry, queue saturation/draining, pending-write shutdown, journal capacity, plugin restart and port conflict.
+
+Busy injection uses AutoCADBridge.NativeTests, an explicitly loaded local fixture which holds the CAD main thread for a fixed five seconds and signals entry through a named kernel event. It automatically returns to Idle; a separate variant stops Bridge before returning. This avoids both synchronous interactive-command blocking and COM calls rejected while LINE waits for user input. The fixture exposes no HTTP endpoint and has no startup hook. Stop detection uses the OS TCP listener table; a short loopback connection timeout alone does not prove that a listener is still running on Windows.
+
+The discarded interactive approach is documented by Autodesk's [PostCommand](https://help.autodesk.com/cloudhelp/2026/ENU/AutoCAD-ActiveX-Reference/files/GUID-9D3B8666-1B40-47C0-911B-859E3C38FB1A.htm) and [GetAcadState](https://help.autodesk.com/cloudhelp/2026/ENU/AutoCAD-ActiveX-Reference/files/GUID-820F93B4-7B83-4708-8E21-0D43D7D1C828.htm) references; its failed attempts remain in the raw evidence.
+
 - **Soak:** at least 30 minutes and 1,000 successful mixed calls. One call per second, cycling line creation, layer listing, geometry query, entity lookup and circle creation. A fresh scratch drawing every 500 calls bounds model size. CAD private memory is sampled every minute; a 512 MiB increase from the initial baseline stops the run for investigation. This is a stop budget, not a proof of leak freedom.
 - **Creation:** 100 / 500 / 1,000 deterministic lines; compare COM sequential, HTTP sequential and HTTP batches of at most 200 operations.
 - **Query:** the same fixture and common geometry fields at each supported size. Identity-dependent ObjectID/Handle values are excluded from comparison; count, coordinates, layer and bounds must match at absolute tolerance `1e-8`.

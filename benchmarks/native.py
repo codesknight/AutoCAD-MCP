@@ -8,8 +8,10 @@ from pathlib import Path
 import secrets
 import socket
 import subprocess
+import sys
 import time
 from uuid import uuid4
+from concurrent.futures import ThreadPoolExecutor
 
 import httpx
 from autocad_mcp.config import HTTPConfig, load_config
@@ -20,6 +22,9 @@ def wait_for(callback, timeout=30, interval=.1):
     deadline=time.monotonic()+timeout
     last=None
     while time.monotonic()<deadline:
+        pump=getattr(sys.modules.get("pythoncom"),"PumpWaitingMessages",None)
+        if pump:
+            pump()
         try:
             value=callback()
             if value:
@@ -39,6 +44,17 @@ def memory(pid):
         handle.Close()
     return {"working_set_bytes":info["WorkingSetSize"],
             "private_bytes":info.get("PrivateUsage",info["PagefileUsage"])}
+
+def listening(pid,port):
+    """OS listener ownership, independent of Windows loopback timeout/refusal timing."""
+    table=subprocess.check_output(["netstat","-ano","-p","tcp"],text=True,
+                                  creationflags=subprocess.CREATE_NO_WINDOW)
+    for line in table.splitlines():
+        values=line.split()
+        if len(values)>=5 and values[0]=="TCP" and values[3]=="LISTENING" and values[4]==str(pid):
+            if values[1].rsplit(":",1)[-1]==str(port):
+                return True
+    return False
 
 class Traffic(httpx.BaseTransport):
     def __init__(self):
@@ -79,7 +95,7 @@ class Traffic(httpx.BaseTransport):
             bridge_queue_ms=sum(m["queue_ms"] for m in self.metrics.values()))
 
 class Native:
-    def __init__(self, records, owned_pid=None, preserve_existing=False):
+    def __init__(self, records, owned_pid=None, preserve_existing=False, busy_helper=None):
         import pythoncom
         import win32com.client
         import win32process
@@ -98,7 +114,7 @@ class Native:
         self.app=win32com.client.GetActiveObject(self.config.prog_id)
         if cad_read(lambda:win32process.GetWindowThreadProcessId(self.app.HWND)[1])!=self.pid:
             raise RuntimeError("Unexpected COM target")
-        self.original_names=cad_read(lambda:[d.Name for d in self.app.Documents])
+        self.original_names=self.document_names()
         self.original_active=cad_read(lambda:self.app.ActiveDocument.Name) if self.original_names else None
         if self.original_names and not preserve_existing:
             raise RuntimeError("Qualification requires an empty dedicated instance, with no user drawings open")
@@ -106,6 +122,9 @@ class Native:
         self.original_settings=None
         self.settings_written=False
         self.running=False
+        self.busy_future=None
+        self.busy_pool=None
+        self.busy_helper=busy_helper
         self.bundle=Path(os.environ["APPDATA"])/"Autodesk/ApplicationPlugins/AutoCADMCPBridge.bundle/Contents/Windows/AutoCADBridge.dll"
         if not self.bundle.exists():
             raise RuntimeError("Install the Bridge first")
@@ -125,12 +144,17 @@ class Native:
         self.owned.add(self.bootstrap)
         self.settings.write_text(json.dumps({"token":self.token,"port":self.port}),encoding="utf-8")
         self.settings_written=True
-        self.command('(command "_NETLOAD" "'+self.bundle.as_posix()+'")\nMCPBRIDGE_STOP\nMCPBRIDGE_START\n')
+        bootstrap='(command "_NETLOAD" "'+self.bundle.as_posix()+'")\n'
+        if busy_helper:
+            bootstrap+='(command "_NETLOAD" "'+busy_helper.resolve().as_posix()+'")\n'
+        self.command(bootstrap+'MCPBRIDGE_STOP\nMCPBRIDGE_START\n')
         print("NETLOAD submitted. If AutoCAD asks, manually choose Load Once; security settings are unchanged.",flush=True)
         self.start(wait=600,submitted=True)
     def command(self, text):
         # The script targets only its own instance and drawing; never arbitrary remote input.
         cad_read(lambda:self.app.ActiveDocument).SendCommand(text)
+    def document_names(self):
+        return cad_read(lambda:[self.app.Documents.Item(i).Name for i in range(self.app.Documents.Count)])
     def start(self, wait=30, submitted=False):
         try:
             response=self.raw.get("/v1/health",timeout=.5)
@@ -149,13 +173,7 @@ class Native:
         self.running=True
     def stop(self):
         self.command("MCPBRIDGE_STOP\n")
-        def stopped():
-            try:
-                self.raw.get("/v1/health",timeout=.2)
-                return False
-            except httpx.ConnectError:
-                return True
-        wait_for(stopped,timeout=15)
+        wait_for(lambda:not listening(self.pid,self.port),timeout=15)
         self.running=False
     def restart(self):
         self.stop()
@@ -175,32 +193,87 @@ class Native:
         doc=cad_read(lambda:self.app.Documents.Item(name))
         if cad_read(lambda:doc.ModelSpace.Count):
             raise RuntimeError("Fixture document is not blank")
+        wait_for(lambda:cad_read(lambda:self.app.GetAcadState().IsQuiescent),timeout=30)
         doc.SetVariable("INSUNITS",4)
         doc.SetVariable("GRIDMODE",0)
         job=backend.get_job(request_id)
         print(f"Scratch target: {name}",flush=True)
         return name,job.document_id
-    def activate(self, name):
-        if name not in self.owned:
+    def activate(self, name, restore=False):
+        if name not in self.owned and not (restore and name in self.original_names):
             raise RuntimeError("Refusing to activate an unowned document")
-        self.app.ActiveDocument=cad_read(lambda:self.app.Documents.Item(name))
+        if cad_read(lambda:self.app.ActiveDocument.Name)!=name:
+            wait_for(lambda:cad_read(lambda:self.app.GetAcadState().IsQuiescent),timeout=30)
+            self.app.ActiveDocument=cad_read(lambda:self.app.Documents.Item(name))
     def close_document(self, name):
         if name not in self.owned:
             raise RuntimeError("Refusing to close an unowned document")
-        names=cad_read(lambda:[d.Name for d in self.app.Documents])
+        names=self.document_names()
         if name in names:
-            cad_read(lambda:self.app.Documents.Item(name)).Close(False)
-            wait_for(lambda:name not in cad_read(lambda:[d.Name for d in self.app.Documents]))
+            deadline=time.monotonic()+15
+            while name in self.document_names():
+                wait_for(lambda:cad_read(lambda:self.app.GetAcadState().IsQuiescent),timeout=15)
+                doc=cad_read(lambda:self.app.Documents.Item(name))
+                if cad_read(lambda:doc.FullName):
+                    raise RuntimeError("Scratch drawing was saved externally; preserve it")
+                try:
+                    doc.Close(False)
+                    break
+                except Exception as exc:
+                    if name not in self.document_names():
+                        break
+                    if time.monotonic()>=deadline or not (isinstance(exc,AttributeError) or getattr(exc,"hresult",None)==-2147418111):
+                        raise
+                    time.sleep(.25)  # Only an explicitly rejected close of this owned document is retried.
+            wait_for(lambda:name not in self.document_names())
         self.owned.discard(name)
     def poll(self, rid, timeout=30):
         def terminal():
             data=self.raw.get("/v1/jobs/"+rid).json()
             return data if data.get("status") not in ("queued","running") else None
         return wait_for(terminal,timeout)
-    def busy(self):
-        self.command("_.LINE\n")
-        wait_for(lambda:bool(cad_read(lambda:self.app.ActiveDocument.GetVariable("CMDACTIVE"),timeout=2)),timeout=5)
+    def busy(self,stop=False):
+        if not self.busy_helper:
+            raise RuntimeError("Build/load the opt-in native busy fixture before fault qualification")
+        import win32event
+        import win32api
+        name=cad_read(lambda:self.app.ActiveDocument.Name)
+        if name not in self.owned:
+            raise RuntimeError("Refusing busy injection outside owned scratch document")
+        def run():
+            import pythoncom,win32com.client,win32process
+            pythoncom.CoInitialize()
+            try:
+                app=win32com.client.GetActiveObject(self.config.prog_id)
+                if cad_read(lambda:win32process.GetWindowThreadProcessId(app.HWND)[1])!=self.pid or cad_read(lambda:app.ActiveDocument.Name)!=name:
+                    raise RuntimeError("Busy worker target changed")
+                app.ActiveDocument.SendCommand("CAD09_BUSY5_STOP\n" if stop else "CAD09_BUSY5\n")
+            finally:
+                app=None
+                pythoncom.CoUninitialize()
+        self.busy_pool=ThreadPoolExecutor(max_workers=1)
+        self.busy_future=self.busy_pool.submit(run)
+        def entered():
+            if self.busy_future.done():
+                self.busy_future.result()
+                raise RuntimeError("Busy fixture did not signal entry")
+            try:
+                event=win32event.OpenEvent(0x100000,False,"Local\\AutoCADMCP-CAD09-"+str(self.pid))
+            except win32api.error:
+                return False
+            try:
+                return win32event.WaitForSingleObject(event,0)==win32event.WAIT_OBJECT_0
+            finally:
+                event.Close()
+        wait_for(entered,timeout=10)
     def idle(self):
+        if self.busy_future is not None:
+            self.busy_future.result(timeout=15)
+            self.busy_pool.shutdown(wait=True)
+            self.busy_future=None
+            self.busy_pool=None
+            wait_for(lambda:cad_read(lambda:self.app.GetAcadState().IsQuiescent),timeout=15)
+            return
         if not cad_read(lambda:self.app.ActiveDocument.GetVariable("CMDACTIVE"),timeout=2):
             return
         self.command("\x03\x03")
@@ -233,12 +306,12 @@ class Native:
             logical_cpus=os.cpu_count(),backend_default=self.config.backend,launch="normal_desktop_then_attach",
             fixture="fresh Bridge-created acadiso.dwt document; INSUNITS=4; no save; no explicit timed regen",
             units="millimetres",numeric_tolerance=1e-8,query_limit=1000,batch_limit=200,
-            journal_capacity=2048,journal_ttl_seconds=600,poll_interval_seconds=.05,
+            journal_capacity=2048,journal_ttl_seconds=600,poll_interval_seconds=.05,bridge_port=self.port,
             existing_documents_preserved=len(self.original_names),pid=self.pid,memory_start=memory(self.pid))
     def close(self):
         report={"closed_documents":[],"remaining_documents":[],"listener_stopped":False,"cad_process_closed":False}
         try:
-            candidates=self.owned & set(cad_read(lambda:[d.Name for d in self.app.Documents]))
+            candidates=self.owned & set(self.document_names())
             if candidates:
                 # Never cancel an interactive command in an original/user document.
                 self.activate(sorted(candidates)[0])
@@ -259,8 +332,8 @@ class Native:
                     report["closed_documents"].append(name)
                 except Exception as exc:
                     report["remaining_documents"].append(name)
-            if self.original_active and self.original_active in cad_read(lambda:[d.Name for d in self.app.Documents]):
-                self.app.ActiveDocument=cad_read(lambda:self.app.Documents.Item(self.original_active))
+            if self.original_active and self.original_active in self.document_names():
+                self.activate(self.original_active,restore=True)
                 report["original_active_restored"]=True
             if not report["remaining_documents"] and not self.original_names and self.owned_pid==self.pid:
                 self.app.Quit()

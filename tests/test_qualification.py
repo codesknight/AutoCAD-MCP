@@ -67,7 +67,12 @@ def test_cleanup_activates_only_owned_scratch_before_cancelling_commands(tmp_pat
         def __init__(self,name):
             self.Name=name
     class Documents(list):
+        @property
+        def Count(self):
+            return len(self)
         def Item(self,name):
+            if isinstance(name,int):
+                return self[name]
             return next(d for d in self if d.Name==name)
     class App:
         def __init__(self):
@@ -75,6 +80,8 @@ def test_cleanup_activates_only_owned_scratch_before_cancelling_commands(tmp_pat
             self.ActiveDocument=self.Documents[0]
         def Quit(self):
             raise AssertionError("User-owned CAD must not be quit")
+        def GetAcadState(self):
+            return SimpleNamespace(IsQuiescent=True)
     native=Native.__new__(Native)
     native.app=App()
     native.owned={"scratch.dwg"}

@@ -15,6 +15,7 @@ def render(root,output):
             raw=folder/"cases.jsonl"
             runs.append(dict(name=folder.name,folder=folder,plan=load(folder/"plan.json"),
                 result=load(folder/"qualification.json"),env=load(folder/"environment.json"),
+                recovery=load(folder/"cleanup-recovery.json"),
                 extra=load(folder/"environment-extra.json"),
                 faults=load(folder/"faults.json"),soak=load(folder/"soak.json"),
                 restart=load(folder/"restart.json"),
@@ -28,7 +29,7 @@ def render(root,output):
     def number(value):
         return "—" if value is None else f"{value:,.2f}"
     def choose(phase):
-        matches=[r for r in runs if r.get(phase,{}).get("completed") and r["result"].get("completed")]
+        matches=[r for r in runs if r.get(phase,{}).get("completed") and (r["result"].get("completed") or r["recovery"].get("completed"))]
         return matches[-1] if matches else None
     lines=["# CAD-09 故障测试与双后端性能报告","",
         f"记录日期：{root.name}（Asia/Shanghai）。COM 继续为默认后端。",
@@ -45,7 +46,10 @@ def render(root,output):
         "| --- | --- | --- | --- | --- |"]
     for r in runs:
         q=r["result"]
-        status=q.get("error_type") or ("完成" if q.get("completed") else "进行中/未完成")
+        phase=r.get(r["plan"]["mode"],{})
+        status=q.get("error_type") or ("完成，但有失败" if q.get("completed") and phase.get("passed") is False else "完成" if q.get("completed") else "进行中/未完成")
+        if not q.get("completed") and r["recovery"].get("completed"):
+            status+="；后续独立复核清理完成（原始失败保留）"
         lines.append(f"| {r['name']} | {r['plan']['mode']} | {q.get('completed',False)} | {status} | [JSONL]({link(r['folder']/'cases.jsonl')}) |")
     envrun=next((r for r in reversed(runs) if r["env"]),None)
     if envrun:
@@ -85,6 +89,8 @@ def render(root,output):
             f"- 混合调用描述性 P50 / P95：{number(s['p50_ms'])} / {number(s['p95_ms'])} ms；不同操作混合，不用于后端速度对比。",
             f"- CAD 私有内存：{start['private_bytes']/1048576:.1f} → {end['private_bytes']/1048576:.1f} MiB。",
             "- 每分钟资源原始值保留在 JSONL 中。单次 30 分钟结果不能证明长期无泄漏。"]
+        if soakrun["recovery"].get("completed"):
+            lines += ["- 初次收尾探测超时，原 qualification.json 保留 completed=false；后续独立 COM/TCP 复核确认自建图纸与监听已清理。详见该运行 cleanup-recovery.json，不能把原始失败改写为全程无故障。"]
     else:
         lines += ["尚无完整且完成清理的连续测试；不得记为验收通过。"]
     bench=choose("benchmark")

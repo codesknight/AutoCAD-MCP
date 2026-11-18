@@ -18,6 +18,8 @@ def main():
     parser.add_argument("--heavy-threshold",type=float,default=5,help="Seconds; classify the whole paired group from warmups")
     parser.add_argument("--warmups",type=int,default=3)
     parser.add_argument("--seed",type=int,default=190019)
+    parser.add_argument("--fault-cases",nargs="+",help="Optional exact case names for focused native debugging; omissions remain not_run")
+    parser.add_argument("--busy-helper",type=Path,help="Optional path to the opt-in native test fixture DLL")
     args=parser.parse_args()
     if args.soak_seconds<0 or args.interval<0 or args.samples<1 or args.heavy_samples<1 or args.warmups<1 or args.heavy_threshold<=0 or any(n<1 or n>1000 for n in args.sizes):
         parser.error("Invalid sample counts, durations or supported fixture sizes")
@@ -28,11 +30,16 @@ def main():
     completed=False
     result={"completed":False}
     try:
-        native.__init__(records,args.owned_pid,args.preserve_existing)
+        helper=args.busy_helper
+        if args.mode in ("all","faults"):
+            helper=helper or Path("plugin/AutoCADBridge.NativeTests/bin/Release/net8.0-windows/AutoCADBridge.NativeTests.dll")
+            if not helper.is_file():
+                raise RuntimeError("Build AutoCADBridge.NativeTests with the local AutoCADDir first")
+        native.__init__(records,args.owned_pid,args.preserve_existing,helper)
         records.json("environment.json",native.environment())
         if args.mode in ("all","faults"):
             from .faults import faults
-            result["faults"]=faults(native)
+            result["faults"]=faults(native,args.fault_cases)
         if args.mode in ("all","benchmark"):
             from .performance import benchmark
             result["benchmark"]=benchmark(native,args)

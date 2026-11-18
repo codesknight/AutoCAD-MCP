@@ -11,7 +11,7 @@ from .common import LAYER
 
 LINE={"start":[0,0,0],"end":[10,0,0],"layer":LAYER}
 
-def faults(native):
+def faults(native,selected=None):
     results=[]
     def fresh(timeout=30):
         backend,traffic=native.backend(timeout)
@@ -31,8 +31,12 @@ def faults(native):
             return exc
         raise AssertionError("Expected error was not raised")
     def case(name,callback):
+        if selected is not None and name not in selected:
+            results.append(dict(case=name,status="not_run",reason="Not selected for this focused run"))
+            return
         initial=set(native.owned)
         start=time.perf_counter()
+        cleanup_error=None
         try:
             evidence=callback()
             row=dict(case=name,status="passed",evidence=evidence)
@@ -41,14 +45,21 @@ def faults(native):
             if isinstance(exc,(AssertionError,ValueError)):
                 row["detail"]=str(exc)[:500]
         finally:
-            native.idle()
-            for name2 in sorted(native.owned-initial,reverse=True):
-                native.close_document(name2)
+            try:
+                native.idle()
+                for name2 in sorted(native.owned-initial,reverse=True):
+                    native.close_document(name2)
+            except Exception as exc:
+                cleanup_error=exc
+                row["execution_status"]=row["status"]
+                row.update(status="failed",error_phase="cleanup",cleanup_error_type=type(exc).__name__)
         row["elapsed_ms"]=(time.perf_counter()-start)*1000
         native.records.add("fault",**row)
         results.append(row)
         native.records.json("faults.json",{"cases":results,"completed":False})
         print(json.dumps({"phase":"fault","case":name,"status":row["status"]}),flush=True)
+        if cleanup_error:
+            raise RuntimeError("Fault cleanup failed; see preserved case evidence") from cleanup_error
         native.restart()
     def authentication():
         a=native.raw.get("/v1/health",headers={"Authorization":"Bearer invalid"})
@@ -225,19 +236,19 @@ def faults(native):
         h,traffic,name,docid=fresh()
         rid=uuid4().hex
         try:
-            native.busy()
+            native.busy(stop=True)
             traffic.reset()
             with ThreadPoolExecutor(max_workers=1) as pool:
                 pending=pool.submit(h.execute,"draw_line",LINE,request_id=rid)
                 wait_for(lambda:traffic.posts==1)
                 queued=wait_for(lambda:(lambda r:r if r.get("status")=="queued" else None)(native.raw.get("/v1/jobs/"+rid).json()))
-                native.command("\x03\x03MCPBRIDGE_STOP\n")
+                native.idle()  # The fixed-duration test command stops Bridge before returning to Idle.
                 try:
                     pending.result(timeout=10)
                     outcome="succeeded_before_stop"
                 except BridgeRemoteError as exc:
-                    assert exc.code=="OUTCOME_UNKNOWN"
-                    outcome="outcome_unknown"
+                    assert exc.code=="OUTCOME_UNKNOWN" or (exc.code=="CAD_BUSY" and exc.outcome=="not_executed")
+                    outcome=exc.outcome
             assert traffic.posts==1
             native.start()
             readback,_=native.backend()
