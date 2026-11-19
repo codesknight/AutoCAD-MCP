@@ -38,6 +38,8 @@
 
 **44 registered MCP tools.** Default COM provides the existing CAD tool surface. Eight additive tools expose runtime status, atomic batches, pagination and controlled working drawings with saved-artifact reopening. Experimental HTTP supports a smaller, documented subset. See the [tool migration matrix](docs/design/tool-migration-matrix.md).
 
+**Cader integration:** an explicit seven-tool [`cader-cad/1` stdio profile](docs/design/cader-managed-profile.md) provides versioned DTOs, native job identity and revision tracking. Two actual Cader CLI runs passed drawing → DWG save → read-only reopen → independent verification for the reviewed line/circle/text fixture. [Evidence and limits](docs/validation/2026-11-19-cader-managed-profile.md).
+
 ## Quick start
 
 ### 1. Prepare the environment

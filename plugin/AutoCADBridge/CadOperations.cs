@@ -62,6 +62,12 @@ public sealed partial class CadOperations : IDisposable
             throw new BridgeException("DOCUMENT_NOT_FOUND", "Document session is missing or closed");
         return state;
     }
+    // Called only by the CAD-thread dispatcher after Execute has unwound/aborted.
+    // A missing/closed document has no authoritative observation; never echo the
+    // submitted expected revision as if it were a current observation.
+    public long? ObserveRevision(string? id) {
+        try { return Target(id).Revision; } catch (Exception) { return null; }
+    }
     public (JsonNode? Result, string? DocumentId, long? Revision) Execute(Request request) {
         if (request.Operation == "_status") {
             var active = AcApp.DocumentManager.MdiActiveDocument;
@@ -81,8 +87,8 @@ public sealed partial class CadOperations : IDisposable
         }
         var target = Target(request.DocumentId);
         if (Writes.Contains(request.Operation) && !target.Managed) throw new BridgeException("FORBIDDEN", "Writes require a Bridge-created document");
-        if (request.ExpectedRevision is { } revision && revision != target.Revision) throw new BridgeException("REVISION_CONFLICT", "Read the document revision again before applying changes");
         using var documentLock = target.Document.LockDocument();
+        if (request.ExpectedRevision is { } revision && revision != target.Revision) throw new BridgeException("REVISION_CONFLICT", "Read the document revision again before applying changes");
         using var transaction = target.Document.Database.TransactionManager.StartTransaction();
         string? failedId = null;
         try {

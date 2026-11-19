@@ -1,0 +1,19 @@
+{
+  "contract_version": "cader-cad/1",
+  "draft_revision": 2,
+  "mapping_revision": 1,
+  "status": "implemented_fixed_geometry_cli_qualified",
+  "entrypoint": "python -m autocad_mcp.managed_server",
+  "transport": "stdio",
+  "tool_count": 7,
+  "schema_sha256": "e239266ee97ccd64284f6a6b5896eb57532b0f18eb5769dad3899e614191dd28",
+  "native_request_records": true,
+  "revision_mode": "observed_database_events",
+  "legacy_tool_count": 44,
+  "default_backend": "com",
+  "cader_commit": "266c6895048f1ce97a5517265a7f14f29bfa5e1c",
+  "joint_dwg_acceptance": "passed_two_fixed_geometry_cli_runs",
+  "image_redrawing_acceptance": "not_run",
+  "bilateral_release_frozen": false,
+  "report": "docs/validation/2026-11-19-cader-managed-profile.md"
+}

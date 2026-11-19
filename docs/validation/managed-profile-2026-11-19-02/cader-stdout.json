@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "contract_version": "cader-task/1",
+  "ok": true,
+  "run_status": "succeeded",
+  "task_status": "succeeded",
+  "cad_contract": {
+    "contract_version": "cader-cad/1",
+    "draft_revision": 2,
+    "revision_mode": "observed_database_events"
+  },
+  "blocked_reasons": [],
+  "performed_actions": [
+    {
+      "operation": "get_backend_status",
+      "status": "succeeded"
+    },
+    {
+      "operation": "create_working_document",
+      "status": "confirmed",
+      "request_id": "83ca26c7-c093-4867-914f-2532caf3efaa"
+    },
+    {
+      "operation": "query_entities_page",
+      "status": "succeeded",
+      "document_id": "a57cd4066301456f99ade1cc907ded1c",
+      "revision": 0
+    },
+    {
+      "operation": "execute_atomic_batch",
+      "status": "confirmed",
+      "request_id": "c3a13e07-2d80-4d5b-bad6-2c2eaaf4dc0d",
+      "document_id": "a57cd4066301456f99ade1cc907ded1c",
+      "revision": 0
+    },
+    {
+      "operation": "query_entities_page",
+      "status": "succeeded",
+      "document_id": "a57cd4066301456f99ade1cc907ded1c",
+      "revision": 16
+    },
+    {
+      "operation": "save_document_as",
+      "status": "confirmed",
+      "request_id": "9e08b657-e192-4950-a458-b6456ad3e627",
+      "document_id": "a57cd4066301456f99ade1cc907ded1c",
+      "revision": 16
+    },
+    {
+      "operation": "reopen_document",
+      "status": "confirmed",
+      "request_id": "553d8271-0e87-47d8-b830-86e91c22c31b"
+    },
+    {
+      "operation": "query_entities_page",
+      "status": "succeeded",
+      "document_id": "2e892706c2fb46e1b174a6cd614e55c7",
+      "revision": 0
+    }
+  ],
+  "authorization": {
+    "user_task_authorized": true,
+    "write_authorized": true,
+    "runtime_write_available": true
+  },
+  "stages": {
+    "recognition": "not_performed",
+    "planning": "succeeded",
+    "execution": "succeeded",
+    "saving": "succeeded",
+    "reopening": "succeeded"
+  },
+  "artifact": {
+    "artifact_id": "07876e99292845b49b09a0881fd7794e",
+    "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+    "document_id": "a57cd4066301456f99ade1cc907ded1c",
+    "revision": 16,
+    "path": "<CADER_WORKSPACE>\\.cader\\artifacts\\joint-mcp-d23cb449da1d47579e54fdcc1836bce2.dwg",
+    "sha256": "e55352c93da44148fbc2905e7f42199607740836f5edc0c3a175cc8bc677f784",
+    "byte_size": 31988
+  },
+  "verification": "passed",
+  "runId": "managed-f09333e2-623e-4db9-8436-7cf8f5bc9f48",
+  "runDirectory": "<CADER_WORKSPACE>\\.cader\\runs\\managed-f09333e2-623e-4db9-8436-7cf8f5bc9f48"
+}

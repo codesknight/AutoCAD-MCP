@@ -1,0 +1,127 @@
+{
+  "passed": true,
+  "completed": true,
+  "cader_code_unchanged": true,
+  "owned_pid": 33564,
+  "cader_commit": "266c6895048f1ce97a5517265a7f14f29bfa5e1c",
+  "mcp_base_commit": "4d4b5a7f81d9555a795cee64fb3d7581b3fc6e14",
+  "schema_sha256": "e239266ee97ccd64284f6a6b5896eb57532b0f18eb5769dad3899e614191dd28",
+  "bridge_sha256": "dd8321e2aae125354e9cdaa4170873332539c849ff47b1acf45ba239d284a642",
+  "rollback_observation": {
+    "before": 0,
+    "after": 6,
+    "no_entity_layer_style_residue": true
+  },
+  "fresh_python_reconciliation": {
+    "contract_version": "cader-cad/1",
+    "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+    "request_id": "45e56d991cc74e3ea9cfb87709f69b1a",
+    "operation": "execute_atomic_batch",
+    "request_document_id": "a51ffb40d5044cfcb90ef4c872b5bc15",
+    "result_document_id": null,
+    "source_artifact_id": null,
+    "status": "failed",
+    "outcome": "rolled_back",
+    "revision": 6
+  },
+  "native_profile_passed": true,
+  "cli_arguments": [
+    "apps/cli/dist/index.js",
+    "cad-test",
+    "--backend",
+    "http",
+    "--mcp",
+    ".cader\\joint-mcp-profile-0ade8a189d7344d6bc31f02ffc9aa68a.json",
+    "--plan",
+    "benchmark/fixtures/managed-geometry.plan.json",
+    "--output",
+    ".cader/artifacts/joint-mcp-d23cb449da1d47579e54fdcc1836bce2.dwg",
+    "--authorize-write"
+  ],
+  "cader_exit_code": 0,
+  "cader_report": {
+    "version": 1,
+    "contract_version": "cader-task/1",
+    "ok": true,
+    "run_status": "succeeded",
+    "task_status": "succeeded",
+    "cad_contract": {
+      "contract_version": "cader-cad/1",
+      "draft_revision": 2,
+      "revision_mode": "observed_database_events"
+    },
+    "blocked_reasons": [],
+    "performed_actions": [
+      {
+        "operation": "get_backend_status",
+        "status": "succeeded"
+      },
+      {
+        "operation": "create_working_document",
+        "status": "confirmed",
+        "request_id": "83ca26c7-c093-4867-914f-2532caf3efaa"
+      },
+      {
+        "operation": "query_entities_page",
+        "status": "succeeded",
+        "document_id": "a57cd4066301456f99ade1cc907ded1c",
+        "revision": 0
+      },
+      {
+        "operation": "execute_atomic_batch",
+        "status": "confirmed",
+        "request_id": "c3a13e07-2d80-4d5b-bad6-2c2eaaf4dc0d",
+        "document_id": "a57cd4066301456f99ade1cc907ded1c",
+        "revision": 0
+      },
+      {
+        "operation": "query_entities_page",
+        "status": "succeeded",
+        "document_id": "a57cd4066301456f99ade1cc907ded1c",
+        "revision": 16
+      },
+      {
+        "operation": "save_document_as",
+        "status": "confirmed",
+        "request_id": "9e08b657-e192-4950-a458-b6456ad3e627",
+        "document_id": "a57cd4066301456f99ade1cc907ded1c",
+        "revision": 16
+      },
+      {
+        "operation": "reopen_document",
+        "status": "confirmed",
+        "request_id": "553d8271-0e87-47d8-b830-86e91c22c31b"
+      },
+      {
+        "operation": "query_entities_page",
+        "status": "succeeded",
+        "document_id": "2e892706c2fb46e1b174a6cd614e55c7",
+        "revision": 0
+      }
+    ],
+    "authorization": {
+      "user_task_authorized": true,
+      "write_authorized": true,
+      "runtime_write_available": true
+    },
+    "stages": {
+      "recognition": "not_performed",
+      "planning": "succeeded",
+      "execution": "succeeded",
+      "saving": "succeeded",
+      "reopening": "succeeded"
+    },
+    "artifact": {
+      "artifact_id": "07876e99292845b49b09a0881fd7794e",
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "document_id": "a57cd4066301456f99ade1cc907ded1c",
+      "revision": 16,
+      "path": "<CADER_WORKSPACE>\\.cader\\artifacts\\joint-mcp-d23cb449da1d47579e54fdcc1836bce2.dwg",
+      "sha256": "e55352c93da44148fbc2905e7f42199607740836f5edc0c3a175cc8bc677f784",
+      "byte_size": 31988
+    },
+    "verification": "passed",
+    "runId": "managed-f09333e2-623e-4db9-8436-7cf8f5bc9f48",
+    "runDirectory": "<CADER_WORKSPACE>\\.cader\\runs\\managed-f09333e2-623e-4db9-8436-7cf8f5bc9f48"
+  }
+}

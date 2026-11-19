@@ -1,0 +1,19 @@
+{
+  "mcp_base_commit": "4d4b5a7f81d9555a795cee64fb3d7581b3fc6e14",
+  "files": {
+    "src/autocad_mcp/managed_server.py": "7d78a2a5e4920d73e84a5da004c81d2c50143a76c3bfaf1b59eb6292ade5484f",
+    "src/autocad_mcp/cad/managed_profile.py": "c548786ea48e1b2463d44e853383c87dd7a7ced5762be3a4227a99d322ed2114",
+    "src/autocad_mcp/cad/managed_contract.py": "4813ab8a59690324230cb9482623a63b9020ab632242127fcfde02c3eae32b2b",
+    "src/autocad_mcp/cad/backends/http_backend.py": "06c9926d19070d7005a7f4366537d89b0e3759ae5e9d69e7915a1b54e16f7c1c",
+    "plugin/AutoCADBridge/Contracts.cs": "9b209eee5975e2547cac6416419f8ccdac3db023ef4615910e596e3719331f66",
+    "plugin/AutoCADBridge/BridgeServer.cs": "8a2f5c649a7d5b883cbe22d1e29bb41be648f904df1c5b0d42632a24ec3b79f5",
+    "plugin/AutoCADBridge/CadOperations.cs": "d49749c17062c78736e1a81a939cdbe8c2ee403b5c73b97fc14f21d4423d14d5",
+    "plugin/AutoCADBridge/VerificationFields.cs": "78d820fd387699a423cbf46a2317f32ae81ecdd83936c6f4916de105d5857514",
+    "scripts/verify_cader_cli.py": "b66ec647d431ba5de13ed212848d8a10a1153c4dcaf44173f7124052636ffdb0"
+  },
+  "bridge_sha256": "dd8321e2aae125354e9cdaa4170873332539c849ff47b1acf45ba239d284a642",
+  "cader_source_commit": "266c6895048f1ce97a5517265a7f14f29bfa5e1c",
+  "cader_tracked_files_checked": 128,
+  "cader_tracked_files_unchanged": true,
+  "schema_sha256": "e239266ee97ccd64284f6a6b5896eb57532b0f18eb5769dad3899e614191dd28"
+}

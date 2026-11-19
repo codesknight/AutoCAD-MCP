@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "server_name": "autocad",
+  "transport": "stdio",
+  "command": "D:\\path\\python.exe",
+  "args": ["-m", "autocad_mcp.managed_server"],
+  "cwd": "D:\\path\\AutoCAD_MCP",
+  "startup_timeout_ms": 30000,
+  "tool_timeout_ms": 90000,
+  "env_refs": {
+    "AUTOCAD_MCP_CONFIG": "CADER_TEST_MCP_HTTP_CONFIG",
+    "AUTOCAD_BRIDGE_TOKEN": "CADER_TEST_MCP_TOKEN",
+    "PYTHONPATH": "CADER_TEST_MCP_PYTHONPATH"
+  }
+}

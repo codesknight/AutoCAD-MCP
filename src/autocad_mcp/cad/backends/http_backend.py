@@ -99,7 +99,7 @@ class HTTPBackend:
             self._connect()
             return copy_data(self._capabilities)
 
-    def _submit(self, path, payload):
+    def _submit(self, path, payload, *, allow_failure=False):
         request_id = payload["request_id"]
         if not re.fullmatch(r"[A-Za-z0-9._-]{1,128}", request_id):
             raise ValueError("Invalid Bridge request ID")
@@ -115,7 +115,7 @@ class HTTPBackend:
             if job.request_id != request_id:
                 raise BridgeRemoteError("OUTCOME_UNKNOWN", "Job identity mismatch", request_id=request_id, outcome="outcome_unknown")
             if job.status not in {"queued", "running"}:
-                if job.status != "succeeded":
+                if job.status != "succeeded" and not allow_failure:
                     error = job.error
                     raise BridgeRemoteError(error.code, error.message, request_id=request_id, outcome=error.outcome)
                 if payload.get("document_id") is not None and job.document_id != payload["document_id"]:
@@ -232,6 +232,63 @@ class HTTPBackend:
             return self._submit("/v1/execute",{"request_id":uuid4().hex,"document_id":document_id,
                 "expected_revision":None,"operation":"query_entities_page",
                 "args":{"entity_type":entity_type,"layer":layer,"fields":fields,"limit":limit,"cursor":cursor}}).result
+
+    def submit_managed(self, operation, args, *, instance_id, request_id, document_id=None, expected_revision=None):
+        with self._lock:
+            self._connect()
+            if instance_id != self._instance:
+                raise BridgeRemoteError("INSTANCE_MISMATCH", "Managed request targets another Bridge instance")
+            if not self._capabilities.get("request_records"):
+                raise UnsupportedOperationError("BRIDGE_UPGRADE_REQUIRED: authoritative request records are unavailable")
+            if operation != "_batch" and operation not in self._capabilities["operations"]:
+                raise UnsupportedOperationError("Managed operation is unavailable")
+            payload = {"request_id": request_id, "document_id": document_id,
+                "expected_revision": expected_revision, "client_profile": "cader-cad/1"}
+            if operation == "_batch":
+                payload.update(atomic=True, operations=copy_data(args["operations"]))
+            else:
+                payload.update(operation=operation, args=copy_data(args))
+            return self._submit("/v1/batch" if operation == "_batch" else "/v1/execute", payload, allow_failure=True)
+
+    def request_record(self, request_id):
+        if not re.fullmatch(r"[A-Za-z0-9._-]{1,128}", request_id):
+            raise ValueError("Invalid Bridge request ID")
+        with self._lock:
+            self._connect()
+            if not self._capabilities.get("request_records"):
+                raise UnsupportedOperationError("BRIDGE_UPGRADE_REQUIRED: authoritative request records are unavailable")
+            try:
+                data = self._request("GET", f"/v1/requests/{request_id}", request_id=request_id)
+            except BridgeRemoteError as error:
+                error.outcome = "outcome_unknown"
+                raise BridgeRemoteError(error.code, "Cannot recover authoritative request identity", request_id=request_id, outcome="outcome_unknown") from None
+            try:
+                if data["request_id"] != request_id or data["client_profile"] != "cader-cad/1":
+                    raise ValueError("Request record identity differs")
+                native = dict(data["job"])
+                native.setdefault("instance_id", data["instance_id"])
+                job = BridgeJob.model_validate(native)
+                if job.request_id != request_id or job.instance_id != self._instance:
+                    raise ValueError("Recorded job identity differs")
+                if not re.fullmatch(r"[A-Fa-f0-9]{64}", data["native_request_hash"]):
+                    raise ValueError("Missing native request hash")
+                return {**data, "job": job}
+            except (KeyError, TypeError, ValueError, ValidationError):
+                raise BridgeRemoteError("PROTOCOL_ERROR", "Invalid authoritative request record", request_id=request_id, outcome="outcome_unknown") from None
+
+    def query_page_guarded(self, instance_id, document_id, expected_revision, *, limit=1000, cursor=""):
+        with self._lock:
+            self._connect()
+            if instance_id != self._instance:
+                raise BridgeRemoteError("INSTANCE_MISMATCH", "Query targets another Bridge instance")
+            if not self._capabilities.get("query_pagination"):
+                raise UnsupportedOperationError("Guarded pagination is unavailable")
+            job = self._submit("/v1/execute", {"request_id": uuid4().hex, "document_id": document_id,
+                "expected_revision": expected_revision, "operation": "query_entities_page",
+                "args": {"entity_type": "", "layer": "", "fields": None, "limit": limit, "cursor": cursor}})
+            if job.revision != expected_revision or job.result.get("revision") != expected_revision or job.result.get("document_id") != document_id:
+                raise BridgeRemoteError("REVISION_CONFLICT", "Query revision/document changed")
+            return copy_data(job.result)
 
     def close(self):
         with self._lock:

@@ -6,12 +6,19 @@ namespace AutoCADBridge;
 public sealed partial class CadOperations
 {
     public static readonly string[] VerificationFields = ["linetype", "linetype_scale", "lineweight", "color_index", "layer_properties",
-        "normal", "start_angle", "end_angle", "arc_length", "elevation", "bulges", "text_override", "geometry_complete"];
+        "normal", "start_angle", "end_angle", "arc_length", "elevation", "bulges", "text_override", "geometry_complete",
+        "visible", "thickness", "width_factor", "oblique", "horizontal_mode", "vertical_mode", "mirrored_x", "mirrored_y", "font"];
     private static bool GeometrySupported(Entity entity) => entity is Line or Circle or Arc or DBText or MText or AlignedDimension ||
         entity is Polyline2d { PolyType: Poly2dType.SimplePoly };
     private static void AddVerificationFields(JsonObject result, Entity entity, Transaction tr, Func<string, bool> want) {
         JsonArray Vector(Autodesk.AutoCAD.Geometry.Vector3d v) => new(v.X, v.Y, v.Z);
         if (want("geometry_complete")) result["geometry_complete"] = GeometrySupported(entity);
+        if (want("visible")) result["visible"] = entity.Visible;
+        if (want("thickness")) {
+            if (entity is Line l) result["thickness"] = l.Thickness;
+            if (entity is Circle c) result["thickness"] = c.Thickness;
+            if (entity is DBText t) result["thickness"] = t.Thickness;
+        }
         if (want("linetype")) result["linetype"] = entity.Linetype;
         if (want("linetype_scale")) result["linetype_scale"] = entity.LinetypeScale;
         if (want("lineweight")) result["lineweight"] = (int)entity.LineWeight;
@@ -33,7 +40,21 @@ public sealed partial class CadOperations
             if (want("arc_length")) result["arc_length"] = arc.Length;
         }
         if (entity is Circle circle && want("normal")) result["normal"] = Vector(circle.Normal);
-        if (entity is DBText text && want("normal")) result["normal"] = Vector(text.Normal);
+        if (entity is DBText text) {
+            if (want("normal")) result["normal"] = Vector(text.Normal);
+            if (want("width_factor")) result["width_factor"] = text.WidthFactor;
+            if (want("oblique")) result["oblique"] = text.Oblique * 180 / Math.PI;
+            if (want("horizontal_mode")) result["horizontal_mode"] = (int)text.HorizontalMode;
+            if (want("vertical_mode")) result["vertical_mode"] = (int)text.VerticalMode;
+            if (want("mirrored_x")) result["mirrored_x"] = text.IsMirroredInX;
+            if (want("mirrored_y")) result["mirrored_y"] = text.IsMirroredInY;
+            if (want("font")) {
+                var style = (TextStyleTableRecord)tr.GetObject(text.TextStyleId, OpenMode.ForRead);
+                var font = style.Font;
+                result["font"] = new JsonObject { ["typeface"] = font.TypeFace, ["bold"] = font.Bold,
+                    ["italic"] = font.Italic, ["big_font"] = style.BigFontFileName };
+            }
+        }
         if (entity is MText mtext && want("normal")) result["normal"] = Vector(mtext.Normal);
         if (entity is Polyline2d poly) {
             if (want("normal")) result["normal"] = Vector(poly.Normal);

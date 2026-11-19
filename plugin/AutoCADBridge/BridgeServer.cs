@@ -59,6 +59,8 @@ public sealed class BridgeServer : IDisposable
             if (method == "GET" && path == "/v1/capabilities") {
                 await Write(context, new JsonObject { ["protocol_version"] = "1", ["operations"] = new JsonArray(Operations.Select(x => (JsonNode?)JsonValue.Create(x)).ToArray()),
                     ["controlled_documents"] = true, ["document_units"] = true,
+                    ["request_records"] = true, ["failure_revision"] = "cad_thread_observed",
+                    ["client_profiles"] = new JsonArray("cader-cad/1"),
                     ["batch_operations"] = new JsonArray(CadOperations.BatchOperations.Select(x => (JsonNode?)JsonValue.Create(x)).ToArray()),
                     ["file_operations"] = new JsonArray("save_document", "reopen_artifact"),
                     ["file_overwrite"] = false, ["file_operations_atomic_with_entities"] = false,
@@ -78,6 +80,9 @@ public sealed class BridgeServer : IDisposable
             if (method == "GET" && path.StartsWith("/v1/jobs/", StringComparison.Ordinal)) {
                 await Write(context, journal.Get(path[9..]).Snapshot()); return;
             }
+            if (method == "GET" && path.StartsWith("/v1/requests/", StringComparison.Ordinal)) {
+                await Write(context, journal.Get(path[13..]).Record()); return;
+            }
             if (method == "POST" && path is "/v1/execute" or "/v1/batch") {
                 if (context.Request.ContentType?.Split(';')[0] != "application/json") throw new BridgeException("INVALID_ARGUMENT", "application/json is required");
                 JsonObject data;
@@ -91,7 +96,9 @@ public sealed class BridgeServer : IDisposable
                 if (instance is not null && instance != InstanceId) throw new BridgeException("INSTANCE_MISMATCH", "Request targets another Bridge instance");
                 if (CadOperations.DocumentOperations.Contains(operation) && instance != InstanceId) throw new BridgeException("INVALID_ARGUMENT", "Controlled document operations require instance_id");
                 var args = path == "/v1/batch" ? new JsonObject { ["operations"] = data["operations"]?.DeepClone(), ["atomic"] = data["atomic"]?.DeepClone() } : data["args"]?.AsObject() ?? new JsonObject();
-                var request = new Request(id, data["document_id"]?.GetValue<string>(), data["expected_revision"]?.GetValue<long>(), operation, args);
+                var profile = data["client_profile"]?.GetValue<string>();
+                if (profile is not null && profile != "cader-cad/1") throw new BridgeException("UNSUPPORTED_OPERATION", "Unknown client profile");
+                var request = new Request(id, data["document_id"]?.GetValue<string>(), data["expected_revision"]?.GetValue<long>(), operation, args, profile);
                 var job = Accept(request);
                 await Write(context, job.Snapshot(), job.Completion.Task.IsCompleted ? 200 : 202); return;
             }
@@ -145,9 +152,9 @@ public sealed class BridgeServer : IDisposable
                     ["document_id"] = documentId, ["revision"] = revision, ["result"] = result, ["error"] = null,
                     ["metrics"] = new JsonObject { ["execution_ms"] = clock.Elapsed.TotalMilliseconds,
                         ["queue_ms"] = (DateTime.UtcNow - job.Created).TotalMilliseconds - clock.Elapsed.TotalMilliseconds } });
-            } catch (CadFailure ex) { job.Finish(Failure(job.Request, ex.Code, ex.Message, ex.Outcome, ex.FailedOperationId)); }
-            catch (BridgeException ex) { job.Finish(Failure(job.Request, ex.Code, ex.Message, "not_executed")); }
-            catch (Exception) { job.Finish(Failure(job.Request, "TRANSACTION_FAILED", "CAD operation failed", "outcome_unknown")); }
+            } catch (CadFailure ex) { job.Finish(Failure(job.Request, ex.Code, ex.Message, ex.Outcome, ex.FailedOperationId, cad.ObserveRevision(job.Request.DocumentId))); }
+            catch (BridgeException ex) { job.Finish(Failure(job.Request, ex.Code, ex.Message, "not_executed", revision: cad.ObserveRevision(job.Request.DocumentId))); }
+            catch (Exception) { job.Finish(Failure(job.Request, "TRANSACTION_FAILED", "CAD operation failed", "outcome_unknown", revision: cad.ObserveRevision(job.Request.DocumentId))); }
         }
     }
 
@@ -155,9 +162,10 @@ public sealed class BridgeServer : IDisposable
         ["error"] = new JsonObject { ["code"] = code, ["message"] = message,
             ["retryable"] = code is "CAD_BUSY" or "QUEUE_FULL", ["outcome"] = outcome, ["failed_operation_id"] = failedId }
     };
-    private static JsonObject Failure(Request req, string code, string message, string outcome, string? failedId = null) {
+    private static JsonObject Failure(Request req, string code, string message, string outcome, string? failedId = null, long? revision = null) {
         var result = Error(code, message, outcome, failedId);
         result["request_id"] = req.RequestId; result["document_id"] = req.DocumentId;
+        result["revision"] = revision;
         result["status"] = outcome == "rolled_back" ? "rolled_back" : "failed"; return result;
     }
     private async Task Write(HttpContext context, JsonObject value, int status = 200) {

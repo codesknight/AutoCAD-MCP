@@ -1,0 +1,159 @@
+{
+  "document_id": "7efae6fab437444a9059c9cb053c6458",
+  "revision": 16,
+  "items": [
+    {
+      "object_id": 1,
+      "type": "AcDbLine",
+      "layer": "0",
+      "geometry_complete": true,
+      "visible": true,
+      "thickness": 0,
+      "linetype": "ByLayer",
+      "linetype_scale": 1,
+      "lineweight": -1,
+      "color_index": 256,
+      "layer_properties": {
+        "name": "0",
+        "color_index": 7,
+        "linetype": "Continuous",
+        "lineweight": -3,
+        "is_off": false,
+        "is_frozen": false,
+        "is_locked": false
+      },
+      "handle": "2D0",
+      "start_point": [
+        0,
+        0,
+        0
+      ],
+      "end_point": [
+        20,
+        0,
+        0
+      ],
+      "bounding_box": {
+        "min": [
+          0,
+          0,
+          0
+        ],
+        "max": [
+          20,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "object_id": 2,
+      "type": "AcDbCircle",
+      "layer": "0",
+      "geometry_complete": true,
+      "visible": true,
+      "thickness": 0,
+      "linetype": "ByLayer",
+      "linetype_scale": 1,
+      "lineweight": -1,
+      "color_index": 256,
+      "layer_properties": {
+        "name": "0",
+        "color_index": 7,
+        "linetype": "Continuous",
+        "lineweight": -3,
+        "is_off": false,
+        "is_frozen": false,
+        "is_locked": false
+      },
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "handle": "2D1",
+      "center": [
+        10,
+        10,
+        0
+      ],
+      "radius": 3,
+      "bounding_box": {
+        "min": [
+          7,
+          7,
+          0
+        ],
+        "max": [
+          13,
+          13,
+          0
+        ]
+      }
+    },
+    {
+      "object_id": 3,
+      "type": "AcDbText",
+      "layer": "0",
+      "geometry_complete": true,
+      "visible": true,
+      "thickness": 0,
+      "linetype": "ByLayer",
+      "linetype_scale": 1,
+      "lineweight": -1,
+      "color_index": 256,
+      "layer_properties": {
+        "name": "0",
+        "color_index": 7,
+        "linetype": "Continuous",
+        "lineweight": -3,
+        "is_off": false,
+        "is_frozen": false,
+        "is_locked": false
+      },
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "width_factor": 1,
+      "oblique": 0,
+      "horizontal_mode": 0,
+      "vertical_mode": 0,
+      "mirrored_x": false,
+      "mirrored_y": false,
+      "font": {
+        "typeface": "宋体",
+        "bold": false,
+        "italic": false,
+        "big_font": ""
+      },
+      "handle": "2D3",
+      "text_string": "CADER FIXTURE",
+      "insertion_point": [
+        0,
+        15,
+        0
+      ],
+      "height": 2,
+      "rotation": 0,
+      "text_style": "MCP_CJK",
+      "bounding_box": {
+        "min": [
+          0,
+          15,
+          0
+        ],
+        "max": [
+          18.592178770949722,
+          16.955307262569832,
+          0
+        ]
+      }
+    }
+  ],
+  "count": 3,
+  "has_more": false,
+  "next_cursor": null,
+  "unsupported_geometry_types": []
+}

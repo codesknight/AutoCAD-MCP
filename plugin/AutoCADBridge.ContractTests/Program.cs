@@ -37,4 +37,15 @@ try {
     journal.Get("missing");
     throw new Exception("Unknown job was found");
 } catch (BridgeException ex) { Check(ex.Code == "JOB_NOT_FOUND"); }
+var compact = new Job(new Request("reopen", null, null, "reopen_artifact",
+    new JsonObject { ["artifact_id"] = "saved-1" }, "cader-cad/1"), new string('A',64));
+Check(compact.Record()["source_artifact_id"]!.GetValue<string>() == "saved-1");
+compact.Finish(new JsonObject { ["request_id"]="reopen", ["status"]="succeeded", ["document_id"]="verification-1", ["revision"]=7 });
+Check(compact.Request.Args.Count == 0);
+var requestSnapshot=compact.Record();
+Check(requestSnapshot["operation"]!.GetValue<string>() == "reopen_artifact");
+Check(requestSnapshot["request_document_id"] is null && requestSnapshot["source_artifact_id"]!.GetValue<string>() == "saved-1");
+Check(requestSnapshot["client_profile"]!.GetValue<string>() == "cader-cad/1");
+requestSnapshot["job"]!["document_id"]="tampered";
+Check(compact.Record()["job"]!["document_id"]!.GetValue<string>() == "verification-1");
 Console.WriteLine($"{assertions} Bridge contract assertions passed");
