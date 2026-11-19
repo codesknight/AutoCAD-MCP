@@ -88,7 +88,7 @@ POST /v1/execute、/v1/batch。
   终态保留十分钟并释放请求体。没有持久恢复，不承诺跨实例 exactly-once。
 - POST 202 后只轮询 job。写响应丢失、轮询失败、实例/文档身份不符返回 OUTCOME_UNKNOWN；
   不重发，不回退；需要重读校验。
-- 模型空间查询最多 1000 项，超出明确报错；分页、布局、字段裁剪尚未实现。
+- 旧模型空间查询最多 1000 项，超出明确报错；新增 query_entities_page 每页最多 1000 项，支持类型/图层/字段裁剪及签名游标。布局查询尚未实现。
 - HTTP 停服/释放在后台完成，主线程不等待网络异步释放。
   原生事件和退出边界捕获异常，本地日志为 %LOCALAPPDATA%\AutoCAD-MCP\Logs\bridge.log，1 MiB 轮换。
 
@@ -127,6 +127,6 @@ Python 离线 77 passed / 33 skipped；C# journal 断言 11 项、无 UI 消息�
 
 ## 后续
 
-其余工具迁移、批处理 MCP 工具、持久恢复、取消、分页、长期故障/资源测试、
+新增 MCP 批处理、后端/job 状态和分页接口，使用与限制见 [mcp-runtime-tools.md](mcp-runtime-tools.md)。其余工具迁移、持久恢复、取消、
 安装卸载矩阵与完整双后端性能基准仍待完成。
 本轮是最小闭环验收，不发 v0.2，不切默认 COM，不声称 HTTP 性能胜出。

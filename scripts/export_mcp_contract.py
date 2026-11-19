@@ -15,6 +15,7 @@ async def collect() -> list[dict]:
     parameters = StdioServerParameters(
         command=sys.executable, args=["-m", "autocad_mcp.server"],
         cwd=str(Path(__file__).resolve().parents[1]),
+        env={"PYTHONPATH":str(Path(__file__).resolve().parents[1]/"src")},
     )
     async with stdio_client(parameters) as (read, write):
         async with ClientSession(read, write) as session:

@@ -35,3 +35,5 @@ jobs:
         run: dotnet run --project plugin/AutoCADBridge.ContractTests -c Release
       - name: Verify embedded Kestrel lifecycle without a UI message pump
         run: dotnet run --project plugin/AutoCADBridge.HostingTests -c Release
+      - name: Verify pagination cursor integrity and lifetime
+        run: dotnet run --project plugin/AutoCADBridge.CursorTests -c Release

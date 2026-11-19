@@ -42,4 +42,13 @@
 | `validate_block_attributes` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `vqa_service_status` | 独立 VQA HTTP 转发 | schema；未调用外部服务 | 不适用 |
 
-最新 HTTP 验收见 [http-bridge.md](http-bridge.md)。批处理目前仅内部 Python API，未新增 MCP 工具。
+最新 HTTP 验收见 [http-bridge.md](http-bridge.md)。新增四项运行时工具，旧 36 项 schema 保持不变：
+
+| MCP 工具 | COM | HTTP |
+| --- | --- | --- |
+| `get_backend_status` | 不启动 CAD 的生命周期元数据 | 实例、能力、文档和 revision |
+| `get_job_status` | 明确不支持 | 查询 job，不重放写入 |
+| `execute_atomic_batch` | 明确不支持 | 显式文档、1–200 步事务 |
+| `query_entities_page` | 明确不支持 | 显式文档、过滤/字段裁剪、签名游标 |
+
+设计与验证边界见 [mcp-runtime-tools.md](mcp-runtime-tools.md)。

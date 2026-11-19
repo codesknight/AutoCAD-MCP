@@ -31,7 +31,16 @@ def test_actual_stdio_tool_discovery_matches_baseline(tmp_path):
                    cwd=Path(__file__).resolve().parents[1], check=True, timeout=30,
                    capture_output=True)
     actual = json.loads(target.read_text(encoding="utf-8"))
-    assert [stable_schema(tool) for tool in actual] == [stable_schema(tool) for tool in TOOLS]
+    baseline={tool['name']:stable_schema(tool) for tool in TOOLS}
+    discovered={tool['name']:stable_schema(tool) for tool in actual}
+    assert {name:discovered[name] for name in baseline} == baseline
+    assert set(discovered)-set(baseline) == {
+        'get_backend_status','get_job_status','execute_atomic_batch','query_entities_page',
+    }
+    runtime=json.loads((FIXTURES/'mcp-runtime-tools-v0.1.json').read_text(encoding='utf-8'))
+    assert {name:discovered[name] for name in set(discovered)-set(baseline)} == {
+        tool['name']:stable_schema(tool) for tool in runtime
+    }
 
 
 @pytest.mark.parametrize("case", CALLS, ids=lambda row: row["tool"])

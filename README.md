@@ -36,7 +36,7 @@
 | **Choose a model** | Streaming Web UI: Anthropic, OpenAI, OpenAI-compatible endpoints and Doubao |
 | **Extend understanding** | Optional local drawing VQA service |
 
-**36 registered MCP tools.** Default COM provides the existing CAD tool surface. Experimental HTTP supports a smaller, documented subset. See the [tool migration matrix](docs/design/tool-migration-matrix.md).
+**40 registered MCP tools.** Default COM provides the existing CAD tool surface. Four additive runtime tools expose backend/job status, atomic batches and paginated queries. Experimental HTTP supports a smaller, documented subset. See the [tool migration matrix](docs/design/tool-migration-matrix.md).
 
 ## Quick start
 
@@ -149,12 +149,15 @@ Call `POST /api/chat/stream` or `POST /api/chat` from the script. Never commit r
 | --- | --- | --- |
 | CAD execution | Python COM adapter on one STA worker | AutoCAD plugin, main-thread queue and transactions |
 | Current scope | Existing CAD tools | Seven CAD tools: new drawing, line/circle, create/list layers, query/get entity |
-| Atomic batch | Not supported | Internal Python API for transactional layer/line/circle operations |
+| Atomic batch | Not supported | MCP tool for 1–200 transactional layer/line/circle operations |
+| Query pagination | Existing legacy query | MCP pages of up to 1,000 items, filters, field projection and revision-bound cursors |
 | Setup | Python + running AutoCAD | Matching .NET SDK, plugin build/NETLOAD, local token |
 | Write behavior | Existing COM workflow; one write entry point | Bridge-created documents only; explicit document binding |
 | Details | [COM foundation](docs/design/backend-foundation.md) | [Install, configure & validate](docs/design/http-bridge.md) |
 
 Both paths keep the MCP tool layer. Unsupported HTTP operations return an explicit error; writes never fall back to COM.
+
+See [runtime tool examples and recovery rules](docs/design/mcp-runtime-tools.md) for explicit document IDs, batch steps and cursor handling.
 
 **MCP HTTP and the CAD Bridge are separate interfaces.** `--http` selects MCP Streamable HTTP on port **8931**. `backend: "http"` selects the CAD Bridge on port **8765**. The default remains COM.
 

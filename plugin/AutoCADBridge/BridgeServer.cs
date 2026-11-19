@@ -28,7 +28,7 @@ public sealed class BridgeServer : IDisposable
     private nint window;
     [DllImport("user32.dll")]
     private static extern bool PostMessage(nint hwnd, uint message, nint wparam, nint lparam);
-    public static readonly string[] Operations = ["new_document", "draw_line", "draw_circle", "create_layer", "list_layers", "query_entities", "get_entity"];
+    public static readonly string[] Operations = ["new_document", "draw_line", "draw_circle", "create_layer", "list_layers", "query_entities", "get_entity", "query_entities_page"];
 
     public BridgeServer(string token, int port) { this.token = token; this.port = port; }
     public void Start()
@@ -59,6 +59,7 @@ public sealed class BridgeServer : IDisposable
             if (method == "GET" && path == "/v1/capabilities") {
                 await Write(context, new JsonObject { ["protocol_version"] = "1", ["operations"] = new JsonArray(Operations.Select(x => (JsonNode?)JsonValue.Create(x)).ToArray()),
                     ["atomic_batch"] = true, ["max_batch_operations"] = 200, ["max_query_entities"] = 1000,
+                    ["query_pagination"] = true,["max_query_page_entities"] = 1000,["cursor_ttl_seconds"] = 600,
                     ["legacy_object_ids"] = "document_session_aliases", ["job_ttl_seconds"] = 600 }); return;
             }
             if (method == "GET" && path == "/v1/status") {
@@ -158,7 +159,8 @@ public sealed class BridgeServer : IDisposable
     private static int StatusCode(string code) => code switch {
         "UNAUTHORIZED" => 401, "FORBIDDEN" => 403,
         "DOCUMENT_NOT_FOUND" or "ENTITY_NOT_FOUND" or "JOB_NOT_FOUND" => 404,
-        "REQUEST_ID_CONFLICT" or "REVISION_CONFLICT" or "DOCUMENT_MISMATCH" => 409,
+        "REQUEST_ID_CONFLICT" or "REVISION_CONFLICT" or "DOCUMENT_MISMATCH" or "CURSOR_STALE" => 409,
+        "CURSOR_EXPIRED" => 410,
         "UNSUPPORTED_OPERATION" => 422, "QUEUE_FULL" => 429, "CAD_BUSY" => 503, _ => 400
     };
     public void Dispose() {

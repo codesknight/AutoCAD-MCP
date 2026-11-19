@@ -32,7 +32,8 @@
         "create_layer",
         "list_layers",
         "query_entities",
-        "get_entity"
+        "get_entity",
+        "query_entities_page"
       ]
     },
     "args": {

@@ -47,6 +47,7 @@ public sealed class DocumentSession : IDisposable
 
 public sealed class CadOperations : IDisposable
 {
+    private readonly QueryCursor cursors = new();
     private readonly Dictionary<string, DocumentSession> sessions = new();
     private static readonly string[] Writes = ["draw_line", "draw_circle", "create_layer", "_batch"];
     private DocumentSession Session(Document document, bool managed = false) {
@@ -100,7 +101,8 @@ public sealed class CadOperations : IDisposable
                     results.Add(new JsonObject { ["id"] = failedId, ["result"] = value });
                 }
                 result = results;
-            } else result = Run(target, transaction, request.Operation, request.Args);
+            } else if (request.Operation == "query_entities_page") result = Page(target,transaction,request.Args);
+            else result = Run(target, transaction, request.Operation, request.Args);
             transaction.Commit();
             return (result, target.Id, target.Revision);
         } catch (BridgeException ex) {
@@ -152,7 +154,7 @@ public sealed class CadOperations : IDisposable
             foreach (ObjectId id in model) {
                 var entity = (Entity)tr.GetObject(id, OpenMode.ForRead);
                 if (!string.IsNullOrEmpty(type) && entity.GetRXClass().Name != type) continue;
-                if (result.Count == 1000) throw new BridgeException("RESULT_TOO_LARGE", "Legacy query exceeds 1000 entities; pagination is not implemented yet");
+                if (result.Count == 1000) throw new BridgeException("RESULT_TOO_LARGE", "Legacy query exceeds 1000 entities; use query_entities_page");
                 result.Add(Summary(state, entity));
             }
             return result;
@@ -175,12 +177,68 @@ public sealed class CadOperations : IDisposable
             return JsonValue.Create(state.Alias(id));
         }
     }
-    private static JsonObject Summary(DocumentSession state, Entity entity) {
+
+    private JsonObject Page(DocumentSession state,Transaction tr,JsonObject args) {
+        var allowed=new HashSet<string>(["entity_type","layer","fields","limit","cursor"],StringComparer.Ordinal);
+        var all=new HashSet<string>(["object_id","type","layer","handle","start_point","end_point","center","radius","bounding_box"],StringComparer.Ordinal);
+        int limit;
+        string type,layer,token;
+        HashSet<string> wanted;
+        try {
+            if (args.Any(p=>!allowed.Contains(p.Key))) throw new BridgeException("INVALID_ARGUMENT","Unknown page argument");
+            limit=args["limit"]?.GetValue<int>() ?? 200;
+            type=args["entity_type"]?.GetValue<string>() ?? "";
+            layer=args["layer"]?.GetValue<string>() ?? "";
+            token=args["cursor"]?.GetValue<string>() ?? "";
+            if (limit is <1 or >1000 || type.Length>128 || layer.Length>255 || token.Length>2048)
+                throw new BridgeException("INVALID_ARGUMENT","Invalid page limit or filter length");
+            var values=args["fields"]?.AsArray();
+            wanted=values is null || values.Count==0 ? new HashSet<string>(all,StringComparer.Ordinal) : new(StringComparer.Ordinal);
+            if (values is not null && values.Count>0) {
+                if (values.Count>all.Count) throw new BridgeException("INVALID_ARGUMENT","Too many fields");
+                foreach(var field in values) {
+                    var name=field?.GetValue<string>() ?? "";
+                    if (!all.Contains(name) || !wanted.Add(name))
+                        throw new BridgeException("INVALID_ARGUMENT","Fields must be supported and unique");
+                }
+            }
+        } catch (Exception ex) when (ex is InvalidOperationException or FormatException or OverflowException) {
+            throw new BridgeException("INVALID_ARGUMENT","Invalid page argument types");
+        }
+        wanted.UnionWith(["object_id","type","layer"]);
+        var fieldArray=new JsonArray(wanted.OrderBy(x=>x,StringComparer.Ordinal).Select(x=>(JsonNode?)JsonValue.Create(x)).ToArray());
+        var query=new JsonObject { ["entity_type"]=type,["layer"]=layer,["fields"]=fieldArray,["limit"]=limit };
+        var fingerprint=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(Journal.Canonical(query))));
+        var offset=string.IsNullOrEmpty(token) ? 0 : cursors.Read(token,state.Id,state.Revision,fingerprint);
+        var blocks=(BlockTable)tr.GetObject(state.Document.Database.BlockTableId,OpenMode.ForRead);
+        var model=(BlockTableRecord)tr.GetObject(blocks[BlockTableRecord.ModelSpace],OpenMode.ForRead);
+        var items=new JsonArray();
+        var unsupported=new HashSet<string>(StringComparer.Ordinal);
+        var matched=0;
+        var more=false;
+        foreach(ObjectId id in model) {
+            var entity=(Entity)tr.GetObject(id,OpenMode.ForRead);
+            var name=entity.GetRXClass().Name;
+            if (type.Length>0 && name!=type) continue;
+            if (layer.Length>0 && !string.Equals(entity.Layer,layer,StringComparison.OrdinalIgnoreCase)) continue;
+            if (matched++<offset) continue;
+            if (items.Count==limit) { more=true;break; }
+            items.Add(Summary(state,entity,wanted));
+            if (entity is not (Line or Circle)) unsupported.Add(name);
+        }
+        return new JsonObject { ["document_id"]=state.Id,["revision"]=state.Revision,
+            ["items"]=items,["count"]=items.Count,["has_more"]=more,
+            ["next_cursor"]=more ? cursors.Create(state.Id,state.Revision,offset+items.Count,fingerprint) : null,
+            ["unsupported_geometry_types"]=new JsonArray(unsupported.OrderBy(x=>x,StringComparer.Ordinal).Select(x=>(JsonNode?)JsonValue.Create(x)).ToArray()) };
+    }
+    private static JsonObject Summary(DocumentSession state, Entity entity, HashSet<string>? fields=null) {
+        bool Want(string name)=>fields is null || fields.Contains(name);
         var result = new JsonObject { ["object_id"] = state.Alias(entity.ObjectId), ["type"] = entity.GetRXClass().Name,
-            ["layer"] = entity.Layer, ["handle"] = entity.Handle.ToString() };
-        if (entity is Line line) { result["start_point"] = XYZ(line.StartPoint); result["end_point"] = XYZ(line.EndPoint); }
-        if (entity is Circle circle) { result["center"] = XYZ(circle.Center); result["radius"] = circle.Radius; }
-        try { var bounds = entity.GeometricExtents; result["bounding_box"] = new JsonObject { ["min"] = XYZ(bounds.MinPoint), ["max"] = XYZ(bounds.MaxPoint) }; } catch (Exception) { }
+            ["layer"] = entity.Layer };
+        if (Want("handle")) result["handle"]=entity.Handle.ToString();
+        if (entity is Line line) { if(Want("start_point"))result["start_point"] = XYZ(line.StartPoint); if(Want("end_point"))result["end_point"] = XYZ(line.EndPoint); }
+        if (entity is Circle circle) { if(Want("center"))result["center"] = XYZ(circle.Center); if(Want("radius"))result["radius"] = circle.Radius; }
+        if (Want("bounding_box")) try { var bounds = entity.GeometricExtents; result["bounding_box"] = new JsonObject { ["min"] = XYZ(bounds.MinPoint), ["max"] = XYZ(bounds.MaxPoint) }; } catch (Exception) { }
         return result;
     }
     public void Dispose() { foreach (var session in sessions.Values) session.Dispose(); sessions.Clear(); }

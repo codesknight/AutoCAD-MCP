@@ -80,3 +80,34 @@ def server_session_stopped() -> None:
 
 
 atexit.register(close_backend)
+
+
+def runtime_status() -> dict:
+    return get_backend().runtime_status()
+
+
+def job_status(request_id):
+    from autocad_mcp.cad.errors import UnsupportedOperationError
+    backend=get_backend()
+    method=getattr(backend,"get_job",None)
+    if method is None:
+        raise UnsupportedOperationError("COM has no Bridge job journal; no fallback was attempted")
+    return method(request_id)
+
+
+def atomic_batch(document_id,operations,request_id,expected_revision):
+    from autocad_mcp.cad.errors import UnsupportedOperationError
+    backend=get_backend()
+    method=getattr(backend,"execute_batch_job",None)
+    if method is None:
+        raise UnsupportedOperationError("COM has no atomic batch capability; no fallback was attempted")
+    return method(operations,document_id=document_id,request_id=request_id,expected_revision=expected_revision)
+
+
+def query_page(document_id,entity_type,layer,fields,limit,cursor):
+    from autocad_mcp.cad.errors import UnsupportedOperationError
+    backend=get_backend()
+    method=getattr(backend,"query_page",None)
+    if method is None:
+        raise UnsupportedOperationError("COM has no revision-bound pagination; no fallback was attempted")
+    return method(document_id,entity_type=entity_type,layer=layer,fields=fields,limit=limit,cursor=cursor)
