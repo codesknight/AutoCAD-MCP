@@ -2,8 +2,9 @@
 
 These additive HTTP-only tools preserve the original 36 tool schemas and leave
 COM as the default. The MCP server now registers 44 tools. Selecting HTTP is an
-explicit MCP-server configuration choice; no Cader code or configuration changes
-are needed in this repository. Cader still needs its own controlled-write client.
+explicit MCP-server configuration choice. The versioned contract consumed by Cader requires separate
+alignment; standalone MCP qualification is not Cader joint acceptance. See the
+[MCP-side contract review](../contracts/cader-managed-cad-v1-alignment.md).
 
 ## Tools and identities
 

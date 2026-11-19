@@ -1,0 +1,439 @@
+{
+  "contract_version": "cader-cad/1",
+  "schema_sha256": "9deaed1b0786b0e45711415401bdd23dc89f22904744dc39cff2f4f7f3216ccc",
+  "mcp_commit": "5fbd007af64aaf490bc12a4a3fb33c2b9bc81d04",
+  "cader_commit": "be2887fbb75651ee5686025e9968c19af9359431",
+  "actual_stdio": {
+    "config": "repository_default",
+    "tool_count": 44,
+    "backend_status": {
+      "backend": "com",
+      "state": "not_started",
+      "capabilities": {
+        "backend": "com",
+        "operations": [
+          "add_dimension",
+          "analyze_reference_drawing",
+          "bulk_get_block_attributes",
+          "bulk_set_block_attributes",
+          "copy_entity",
+          "create_layer",
+          "delete_entity",
+          "draw_arc",
+          "draw_circle",
+          "draw_hatch",
+          "draw_line",
+          "draw_mtext",
+          "draw_polyline",
+          "draw_rectangle",
+          "draw_text",
+          "export_current_view",
+          "get_block_attributes",
+          "get_entity",
+          "insert_block",
+          "list_blocks",
+          "list_layers",
+          "mirror_entity",
+          "move_entity",
+          "new_document",
+          "query_entities",
+          "query_entities_in_region",
+          "rotate_entity",
+          "save_drawing",
+          "scale_entity",
+          "set_block_attribute",
+          "set_layer_properties",
+          "validate_block_attributes"
+        ],
+        "atomic_batch": false,
+        "query_pagination": false,
+        "execution": "serial_sta"
+      },
+      "documents": [],
+      "connection_state": "not_probed",
+      "queue_depth": 0,
+      "instance_id": null,
+      "active_document_id": null,
+      "bound_document_id": null,
+      "cad_version": null,
+      "revision_mode": null
+    },
+    "cader_status_schema_errors": [
+      {
+        "path": "backend",
+        "rule": "const",
+        "message": "'http' was expected"
+      },
+      {
+        "path": "instance_id",
+        "rule": "type",
+        "message": "None is not of type 'string'"
+      },
+      {
+        "path": "capabilities",
+        "rule": "required",
+        "message": "'managed_documents' is a required property"
+      },
+      {
+        "path": "capabilities",
+        "rule": "required",
+        "message": "'atomic_operations' is a required property"
+      },
+      {
+        "path": "capabilities",
+        "rule": "required",
+        "message": "'save_as' is a required property"
+      },
+      {
+        "path": "capabilities",
+        "rule": "required",
+        "message": "'reopen' is a required property"
+      },
+      {
+        "path": "capabilities",
+        "rule": "required",
+        "message": "'job_status' is a required property"
+      },
+      {
+        "path": "capabilities",
+        "rule": "required",
+        "message": "'query_entities' is a required property"
+      },
+      {
+        "path": "capabilities",
+        "rule": "required",
+        "message": "'max_batch_operations' is a required property"
+      },
+      {
+        "path": "capabilities",
+        "rule": "additionalProperties",
+        "message": "Additional properties are not allowed ('atomic_batch', 'backend', 'execution', 'operations', 'query_pagination' were unexpected)"
+      },
+      {
+        "path": "",
+        "rule": "required",
+        "message": "'contract_version' is a required property"
+      },
+      {
+        "path": "",
+        "rule": "additionalProperties",
+        "message": "Additional properties are not allowed ('active_document_id', 'bound_document_id', 'cad_version', 'connection_state', 'queue_depth', 'revision_mode', 'state' were unexpected)"
+      }
+    ]
+  },
+  "requests": [
+    {
+      "tool": "get_backend_status",
+      "available": true,
+      "compatible": true,
+      "schema_errors": [],
+      "fields_not_declared": []
+    },
+    {
+      "tool": "create_working_document",
+      "available": false,
+      "compatible": false
+    },
+    {
+      "tool": "execute_atomic_batch",
+      "available": true,
+      "compatible": false,
+      "schema_errors": [
+        {
+          "path": "operations/2",
+          "rule": "oneOf",
+          "message": "{'id': 'label', 'operation': 'draw_text', 'args': {'point': [0, 15, 0], 'text': 'CADER FIXTURE', 'height': 2, 'layer': '0'}} is not valid under any of the given schemas"
+        }
+      ],
+      "fields_not_declared": []
+    },
+    {
+      "tool": "get_job_status",
+      "available": true,
+      "compatible": true,
+      "schema_errors": [],
+      "fields_not_declared": []
+    },
+    {
+      "tool": "query_entities_page",
+      "available": true,
+      "compatible": false,
+      "schema_errors": [
+        {
+          "path": "cursor",
+          "rule": "type",
+          "message": "None is not of type 'string'"
+        }
+      ],
+      "fields_not_declared": [
+        "instance_id",
+        "expected_revision"
+      ]
+    },
+    {
+      "tool": "save_document_as",
+      "available": false,
+      "compatible": false
+    },
+    {
+      "tool": "reopen_document",
+      "available": false,
+      "compatible": false
+    }
+  ],
+  "historical_http_responses": [
+    {
+      "mcp_tool": "get_backend_status",
+      "cader_schema": "status",
+      "compatible": false,
+      "schema_errors": [
+        {
+          "path": "documents/0/units",
+          "rule": "type",
+          "message": "{'code': 4, 'name': 'Millimeters'} is not of type 'string'"
+        },
+        {
+          "path": "documents/0/managed",
+          "rule": "const",
+          "message": "True was expected"
+        },
+        {
+          "path": "documents/0",
+          "rule": "required",
+          "message": "'instance_id' is a required property"
+        },
+        {
+          "path": "documents/0",
+          "rule": "additionalProperties",
+          "message": "Additional properties are not allowed ('active', 'name', 'output_directory', 'read_only', 'source_artifact_id' were unexpected)"
+        },
+        {
+          "path": "capabilities",
+          "rule": "required",
+          "message": "'managed_documents' is a required property"
+        },
+        {
+          "path": "capabilities",
+          "rule": "required",
+          "message": "'atomic_operations' is a required property"
+        },
+        {
+          "path": "capabilities",
+          "rule": "required",
+          "message": "'save_as' is a required property"
+        },
+        {
+          "path": "capabilities",
+          "rule": "required",
+          "message": "'reopen' is a required property"
+        },
+        {
+          "path": "capabilities",
+          "rule": "required",
+          "message": "'job_status' is a required property"
+        },
+        {
+          "path": "capabilities",
+          "rule": "required",
+          "message": "'query_entities' is a required property"
+        },
+        {
+          "path": "capabilities",
+          "rule": "additionalProperties",
+          "message": "Additional properties are not allowed ('angles', 'artifact_reopen_mode', 'artifact_scope', 'atomic_batch', 'batch_operations', 'controlled_documents', 'cursor_ttl_seconds', 'document_units', 'file_operations', 'file_operations_atomic_with_entities', 'file_overwrite', 'geometry_fields', 'instance_id', 'job_ttl_seconds', 'legacy_object_ids', 'max_query_entities', 'max_query_page_entities', 'operations', 'polyline_coordinates', 'protocol_version', 'query_pagination' were unexpected)"
+        },
+        {
+          "path": "",
+          "rule": "required",
+          "message": "'contract_version' is a required property"
+        },
+        {
+          "path": "",
+          "rule": "additionalProperties",
+          "message": "Additional properties are not allowed ('active_document_id', 'bound_document_id', 'cad_version', 'connection_state', 'queue_depth', 'revision_mode', 'state' were unexpected)"
+        }
+      ]
+    },
+    {
+      "mcp_tool": "create_working_drawing",
+      "cader_schema": "create",
+      "compatible": false,
+      "schema_errors": [
+        {
+          "path": "",
+          "rule": "required",
+          "message": "'contract_version' is a required property"
+        },
+        {
+          "path": "",
+          "rule": "required",
+          "message": "'document' is a required property"
+        },
+        {
+          "path": "",
+          "rule": "additionalProperties",
+          "message": "Additional properties are not allowed ('document_id', 'error', 'instance_id', 'metrics', 'result', 'revision' were unexpected)"
+        }
+      ]
+    },
+    {
+      "mcp_tool": "execute_atomic_batch",
+      "cader_schema": "job",
+      "compatible": false,
+      "schema_errors": [
+        {
+          "path": "",
+          "rule": "required",
+          "message": "'contract_version' is a required property"
+        },
+        {
+          "path": "",
+          "rule": "required",
+          "message": "'outcome' is a required property"
+        },
+        {
+          "path": "",
+          "rule": "additionalProperties",
+          "message": "Additional properties are not allowed ('error', 'metrics', 'result' were unexpected)"
+        }
+      ]
+    },
+    {
+      "mcp_tool": "save_working_drawing",
+      "cader_schema": "save",
+      "compatible": false,
+      "schema_errors": [
+        {
+          "path": "",
+          "rule": "required",
+          "message": "'contract_version' is a required property"
+        },
+        {
+          "path": "",
+          "rule": "required",
+          "message": "'artifact' is a required property"
+        },
+        {
+          "path": "",
+          "rule": "additionalProperties",
+          "message": "Additional properties are not allowed ('document_id', 'error', 'instance_id', 'metrics', 'result', 'revision' were unexpected)"
+        }
+      ]
+    },
+    {
+      "mcp_tool": "reopen_saved_drawing",
+      "cader_schema": "reopen",
+      "compatible": false,
+      "schema_errors": [
+        {
+          "path": "",
+          "rule": "required",
+          "message": "'contract_version' is a required property"
+        },
+        {
+          "path": "",
+          "rule": "required",
+          "message": "'source_artifact_id' is a required property"
+        },
+        {
+          "path": "",
+          "rule": "required",
+          "message": "'document' is a required property"
+        },
+        {
+          "path": "",
+          "rule": "additionalProperties",
+          "message": "Additional properties are not allowed ('document_id', 'error', 'instance_id', 'metrics', 'result', 'revision' were unexpected)"
+        }
+      ]
+    },
+    {
+      "mcp_tool": "query_entities_page",
+      "cader_schema": "query",
+      "compatible": false,
+      "schema_errors": [
+        {
+          "path": "items/0/object_id",
+          "rule": "type",
+          "message": "13 is not of type 'string'"
+        },
+        {
+          "path": "items/0",
+          "rule": "required",
+          "message": "'operation' is a required property"
+        },
+        {
+          "path": "items/0",
+          "rule": "required",
+          "message": "'args' is a required property"
+        },
+        {
+          "path": "items/0",
+          "rule": "additionalProperties",
+          "message": "Additional properties are not allowed ('bounding_box', 'color_index', 'end_point', 'geometry_complete', 'handle', 'layer', 'layer_properties', 'linetype', 'linetype_scale', 'lineweight', 'start_point', 'type' were unexpected)"
+        },
+        {
+          "path": "items/1/object_id",
+          "rule": "type",
+          "message": "14 is not of type 'string'"
+        },
+        {
+          "path": "items/1",
+          "rule": "required",
+          "message": "'operation' is a required property"
+        },
+        {
+          "path": "items/1",
+          "rule": "required",
+          "message": "'args' is a required property"
+        },
+        {
+          "path": "items/1",
+          "rule": "additionalProperties",
+          "message": "Additional properties are not allowed ('bounding_box', 'center', 'color_index', 'geometry_complete', 'handle', 'layer', 'layer_properties', 'linetype', 'linetype_scale', 'lineweight', 'normal', 'radius', 'type' were unexpected)"
+        },
+        {
+          "path": "items/2/object_id",
+          "rule": "type",
+          "message": "15 is not of type 'string'"
+        },
+        {
+          "path": "items/2",
+          "rule": "required",
+          "message": "'operation' is a required property"
+        },
+        {
+          "path": "items/2",
+          "rule": "required",
+          "message": "'args' is a required property"
+        },
+        {
+          "path": "items/2",
+          "rule": "additionalProperties",
+          "message": "Additional properties are not allowed ('arc_length', 'bounding_box', 'center', 'color_index', 'end_angle', 'end_point', 'geometry_complete', 'handle', 'layer', 'layer_properties', 'linetype', 'linetype_scale', 'lineweight', 'normal', 'radius', 'start_angle', 'start_point', 'type' were unexpected)"
+        },
+        {
+          "path": "",
+          "rule": "required",
+          "message": "'contract_version' is a required property"
+        },
+        {
+          "path": "",
+          "rule": "required",
+          "message": "'instance_id' is a required property"
+        },
+        {
+          "path": "",
+          "rule": "additionalProperties",
+          "message": "Additional properties are not allowed ('count', 'has_more' were unexpected)"
+        }
+      ]
+    }
+  ],
+  "historical_source": "calls.jsonl",
+  "historical_source_sha256": "6ae408ab26dacdc981ff633768dc84580ad9e27b242b8f3377fa6fca492c6412",
+  "compatible": false,
+  "cad_calls_performed": false,
+  "cad_writes_performed": false,
+  "dwg_acceptance": "not_run"
+}

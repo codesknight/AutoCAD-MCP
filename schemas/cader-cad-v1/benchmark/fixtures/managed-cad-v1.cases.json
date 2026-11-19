@@ -1,0 +1,615 @@
+{
+  "contract_version": "cader-cad/1",
+  "draft_revision": 2,
+  "status": "synthetic shared vectors; not MCP or DWG acceptance",
+  "schema_cases": [
+    {
+      "name": "working-writable",
+      "schema": "working_binding",
+      "valid": true,
+      "value": {
+        "instance_id": "fixture-instance",
+        "document_id": "work-1",
+        "revision": 7,
+        "units": "unitless",
+        "managed": true,
+        "read_only": false,
+        "output_directory": "C:/cader/.cader/artifacts"
+      }
+    },
+    {
+      "name": "verification-readonly",
+      "schema": "verification_binding",
+      "valid": true,
+      "value": {
+        "instance_id": "fixture-instance",
+        "document_id": "verification-1",
+        "revision": 2,
+        "units": "unitless",
+        "managed": false,
+        "read_only": true,
+        "source_artifact_id": "artifact-1"
+      }
+    },
+    {
+      "name": "verification-cannot-write",
+      "schema": "verification_binding",
+      "valid": false,
+      "value": {
+        "instance_id": "fixture-instance",
+        "document_id": "verification-1",
+        "revision": 2,
+        "units": "unitless",
+        "managed": true,
+        "read_only": false,
+        "source_artifact_id": "artifact-1"
+      }
+    },
+    {
+      "name": "working-cannot-be-readonly",
+      "schema": "working_binding",
+      "valid": false,
+      "value": {
+        "instance_id": "fixture-instance",
+        "document_id": "work-1",
+        "revision": 7,
+        "units": "unitless",
+        "managed": true,
+        "read_only": true,
+        "output_directory": "C:/cader/.cader/artifacts"
+      }
+    },
+    {
+      "name": "canonical-mm-unit",
+      "schema": "working_binding",
+      "valid": true,
+      "value": {
+        "instance_id": "fixture-instance",
+        "document_id": "work-1",
+        "revision": 7,
+        "units": "mm",
+        "managed": true,
+        "read_only": false,
+        "output_directory": "C:/cader/.cader/artifacts"
+      }
+    },
+    {
+      "name": "native-unit-needs-mapping",
+      "schema": "working_binding",
+      "valid": false,
+      "value": {
+        "instance_id": "fixture-instance",
+        "document_id": "work-1",
+        "revision": 7,
+        "units": "millimeters",
+        "managed": true,
+        "read_only": false,
+        "output_directory": "C:/cader/.cader/artifacts"
+      }
+    },
+    {
+      "name": "observed-revision-mode",
+      "schema": "status",
+      "valid": true,
+      "value": {
+        "contract_version": "cader-cad/1",
+        "backend": "http",
+        "instance_id": "fixture-instance",
+        "revision_mode": "observed_database_events",
+        "documents": [
+          {
+            "instance_id": "fixture-instance",
+            "document_id": "work-1",
+            "revision": 7,
+            "units": "unitless",
+            "managed": true,
+            "read_only": false,
+            "output_directory": "C:/cader/.cader/artifacts"
+          }
+        ],
+        "capabilities": {
+          "managed_documents": true,
+          "atomic_operations": [
+            "draw_line",
+            "draw_circle",
+            "draw_text"
+          ],
+          "save_as": true,
+          "reopen": true,
+          "job_status": true,
+          "query_entities": true,
+          "max_batch_operations": 100
+        }
+      }
+    },
+    {
+      "name": "no-silent-revision-mode-change",
+      "schema": "status",
+      "valid": false,
+      "value": {
+        "contract_version": "cader-cad/1",
+        "backend": "http",
+        "instance_id": "fixture-instance",
+        "revision_mode": "committed_transactions",
+        "documents": [
+          {
+            "instance_id": "fixture-instance",
+            "document_id": "work-1",
+            "revision": 7,
+            "units": "unitless",
+            "managed": true,
+            "read_only": false,
+            "output_directory": "C:/cader/.cader/artifacts"
+          }
+        ],
+        "capabilities": {
+          "managed_documents": true,
+          "atomic_operations": [
+            "draw_line",
+            "draw_circle",
+            "draw_text"
+          ],
+          "save_as": true,
+          "reopen": true,
+          "job_status": true,
+          "query_entities": true,
+          "max_batch_operations": 100
+        }
+      }
+    },
+    {
+      "name": "create-directory-bound",
+      "schema": "create_working_document_request",
+      "valid": true,
+      "value": {
+        "instance_id": "fixture-instance",
+        "request_id": "create-1",
+        "units": "unitless",
+        "managed": true,
+        "output_directory": "C:/cader/.cader/artifacts"
+      }
+    },
+    {
+      "name": "create-directory-required",
+      "schema": "create_working_document_request",
+      "valid": false,
+      "value": {
+        "instance_id": "fixture-instance",
+        "request_id": "create-1",
+        "units": "unitless",
+        "managed": true
+      }
+    },
+    {
+      "name": "query-null-cursor-and-revision",
+      "schema": "query_entities_page_request",
+      "valid": true,
+      "value": {
+        "instance_id": "fixture-instance",
+        "document_id": "verification-1",
+        "expected_revision": 2,
+        "cursor": null,
+        "limit": 1000
+      }
+    },
+    {
+      "name": "query-revision-required",
+      "schema": "query_entities_page_request",
+      "valid": false,
+      "value": {
+        "instance_id": "fixture-instance",
+        "document_id": "verification-1",
+        "cursor": null,
+        "limit": 1000
+      }
+    },
+    {
+      "name": "request-id-intersection",
+      "schema": "get_job_status_request",
+      "valid": true,
+      "value": {
+        "request_id": "request_01-a.b"
+      }
+    },
+    {
+      "name": "request-id-colon-rejected",
+      "schema": "get_job_status_request",
+      "valid": false,
+      "value": {
+        "request_id": "request:01"
+      }
+    },
+    {
+      "name": "readonly-reopen-envelope",
+      "schema": "reopen",
+      "valid": true,
+      "value": {
+        "contract_version": "cader-cad/1",
+        "request_id": "reopen-1",
+        "status": "succeeded",
+        "source_artifact_id": "artifact-1",
+        "document": {
+          "instance_id": "fixture-instance",
+          "document_id": "verification-1",
+          "revision": 2,
+          "units": "unitless",
+          "managed": false,
+          "read_only": true,
+          "source_artifact_id": "artifact-1"
+        }
+      }
+    },
+    {
+      "name": "reopen-job-identities",
+      "schema": "job",
+      "valid": true,
+      "value": {
+        "contract_version": "cader-cad/1",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "operation": "reopen_document",
+        "request_document_id": null,
+        "result_document_id": "verification-1",
+        "source_artifact_id": "artifact-1",
+        "revision": 2,
+        "status": "succeeded",
+        "outcome": "committed"
+      }
+    },
+    {
+      "name": "legacy-job-needs-mapping",
+      "schema": "job",
+      "valid": false,
+      "value": {
+        "contract_version": "cader-cad/1",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "operation": "reopen_document",
+        "source_artifact_id": "artifact-1",
+        "revision": 2,
+        "status": "succeeded",
+        "outcome": "committed",
+        "document_id": "work-1"
+      }
+    },
+    {
+      "name": "rollback-revision-can-advance",
+      "schema": "job",
+      "valid": true,
+      "value": {
+        "contract_version": "cader-cad/1",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "operation": "execute_atomic_batch",
+        "request_document_id": "work-1",
+        "result_document_id": "work-1",
+        "source_artifact_id": null,
+        "revision": 10,
+        "status": "failed",
+        "outcome": "rolled_back"
+      }
+    }
+  ],
+  "reconciliation_cases": [
+    {
+      "name": "reopen-output-is-new-document",
+      "valid": true,
+      "intent": {
+        "draft_revision": 2,
+        "operation": "reopen_document",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "request_document_id": null,
+        "source_artifact_id": "artifact-1",
+        "prior_working_document_id": "work-1",
+        "existing_document_ids": [
+          "old-work"
+        ]
+      },
+      "job": {
+        "contract_version": "cader-cad/1",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "operation": "reopen_document",
+        "request_document_id": null,
+        "result_document_id": "verification-1",
+        "source_artifact_id": "artifact-1",
+        "revision": 2,
+        "status": "succeeded",
+        "outcome": "committed"
+      }
+    },
+    {
+      "name": "wrong-input-document",
+      "valid": false,
+      "intent": {
+        "draft_revision": 2,
+        "operation": "reopen_document",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "request_document_id": null,
+        "source_artifact_id": "artifact-1",
+        "prior_working_document_id": "work-1",
+        "existing_document_ids": [
+          "old-work"
+        ]
+      },
+      "job": {
+        "contract_version": "cader-cad/1",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "operation": "reopen_document",
+        "request_document_id": "work-1",
+        "result_document_id": "verification-1",
+        "source_artifact_id": "artifact-1",
+        "revision": 2,
+        "status": "succeeded",
+        "outcome": "committed"
+      }
+    },
+    {
+      "name": "wrong-artifact",
+      "valid": false,
+      "intent": {
+        "draft_revision": 2,
+        "operation": "reopen_document",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "request_document_id": null,
+        "source_artifact_id": "artifact-1",
+        "prior_working_document_id": "work-1",
+        "existing_document_ids": [
+          "old-work"
+        ]
+      },
+      "job": {
+        "contract_version": "cader-cad/1",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "operation": "reopen_document",
+        "request_document_id": null,
+        "result_document_id": "verification-1",
+        "source_artifact_id": "artifact-2",
+        "revision": 2,
+        "status": "succeeded",
+        "outcome": "committed"
+      }
+    },
+    {
+      "name": "reopen-cannot-reuse-working-document",
+      "valid": false,
+      "intent": {
+        "draft_revision": 2,
+        "operation": "reopen_document",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "request_document_id": null,
+        "source_artifact_id": "artifact-1",
+        "prior_working_document_id": "work-1",
+        "existing_document_ids": [
+          "old-work"
+        ]
+      },
+      "job": {
+        "contract_version": "cader-cad/1",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "operation": "reopen_document",
+        "request_document_id": null,
+        "result_document_id": "work-1",
+        "source_artifact_id": "artifact-1",
+        "revision": 2,
+        "status": "succeeded",
+        "outcome": "committed"
+      }
+    },
+    {
+      "name": "reopen-cannot-reuse-existing-document",
+      "valid": false,
+      "intent": {
+        "draft_revision": 2,
+        "operation": "reopen_document",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "request_document_id": null,
+        "source_artifact_id": "artifact-1",
+        "prior_working_document_id": "work-1",
+        "existing_document_ids": [
+          "old-work"
+        ]
+      },
+      "job": {
+        "contract_version": "cader-cad/1",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "operation": "reopen_document",
+        "request_document_id": null,
+        "result_document_id": "old-work",
+        "source_artifact_id": "artifact-1",
+        "revision": 2,
+        "status": "succeeded",
+        "outcome": "committed"
+      }
+    },
+    {
+      "name": "wrong-instance",
+      "valid": false,
+      "intent": {
+        "draft_revision": 2,
+        "operation": "reopen_document",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "request_document_id": null,
+        "source_artifact_id": "artifact-1",
+        "prior_working_document_id": "work-1",
+        "existing_document_ids": [
+          "old-work"
+        ]
+      },
+      "job": {
+        "contract_version": "cader-cad/1",
+        "instance_id": "other-instance",
+        "request_id": "reopen-1",
+        "operation": "reopen_document",
+        "request_document_id": null,
+        "result_document_id": "verification-1",
+        "source_artifact_id": "artifact-1",
+        "revision": 2,
+        "status": "succeeded",
+        "outcome": "committed"
+      }
+    },
+    {
+      "name": "wrong-operation",
+      "valid": false,
+      "intent": {
+        "draft_revision": 2,
+        "operation": "reopen_document",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "request_document_id": null,
+        "source_artifact_id": "artifact-1",
+        "prior_working_document_id": "work-1",
+        "existing_document_ids": [
+          "old-work"
+        ]
+      },
+      "job": {
+        "contract_version": "cader-cad/1",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "operation": "save_document_as",
+        "request_document_id": null,
+        "result_document_id": "verification-1",
+        "source_artifact_id": "artifact-1",
+        "revision": 2,
+        "status": "succeeded",
+        "outcome": "committed"
+      }
+    },
+    {
+      "name": "create-output-has-no-input-document",
+      "valid": true,
+      "intent": {
+        "draft_revision": 2,
+        "operation": "create_working_document",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "request_document_id": null,
+        "source_artifact_id": null,
+        "prior_working_document_id": null,
+        "existing_document_ids": [
+          "old-work"
+        ]
+      },
+      "job": {
+        "contract_version": "cader-cad/1",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "operation": "create_working_document",
+        "request_document_id": null,
+        "result_document_id": "new-work",
+        "source_artifact_id": null,
+        "revision": 2,
+        "status": "succeeded",
+        "outcome": "committed"
+      }
+    },
+    {
+      "name": "batch-must-return-target-document",
+      "valid": true,
+      "intent": {
+        "draft_revision": 2,
+        "operation": "execute_atomic_batch",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "request_document_id": "work-1",
+        "source_artifact_id": null,
+        "prior_working_document_id": "work-1",
+        "existing_document_ids": [
+          "old-work"
+        ]
+      },
+      "job": {
+        "contract_version": "cader-cad/1",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "operation": "execute_atomic_batch",
+        "request_document_id": "work-1",
+        "result_document_id": "work-1",
+        "source_artifact_id": null,
+        "revision": 2,
+        "status": "succeeded",
+        "outcome": "committed"
+      }
+    },
+    {
+      "name": "batch-wrong-output-document",
+      "valid": false,
+      "intent": {
+        "draft_revision": 2,
+        "operation": "execute_atomic_batch",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "request_document_id": "work-1",
+        "source_artifact_id": null,
+        "prior_working_document_id": "work-1",
+        "existing_document_ids": [
+          "old-work"
+        ]
+      },
+      "job": {
+        "contract_version": "cader-cad/1",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "operation": "execute_atomic_batch",
+        "request_document_id": "work-1",
+        "result_document_id": "verification-1",
+        "source_artifact_id": null,
+        "revision": 2,
+        "status": "succeeded",
+        "outcome": "committed"
+      }
+    },
+    {
+      "name": "batch-pending-has-no-result-yet",
+      "valid": true,
+      "intent": {
+        "draft_revision": 2,
+        "operation": "execute_atomic_batch",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "request_document_id": "work-1",
+        "source_artifact_id": null,
+        "prior_working_document_id": "work-1",
+        "existing_document_ids": [
+          "old-work"
+        ]
+      },
+      "job": {
+        "contract_version": "cader-cad/1",
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "operation": "execute_atomic_batch",
+        "request_document_id": "work-1",
+        "result_document_id": null,
+        "source_artifact_id": null,
+        "revision": 2,
+        "status": "pending",
+        "outcome": "unknown"
+      }
+    }
+  ],
+  "audit_vectors": [
+    {
+      "operation": "reopen_document",
+      "args": {
+        "instance_id": "fixture-instance",
+        "request_id": "reopen-1",
+        "artifact_id": "artifact-1"
+      },
+      "request_json": "{\"operation\":\"reopen_document\",\"arguments\":{\"instance_id\":\"fixture-instance\",\"request_id\":\"reopen-1\",\"artifact_id\":\"artifact-1\"}}",
+      "request_sha256": "d232f1b280d268fd79fb18b2b532335d026e0872bedeb4ae056ece1ed482d26d"
+    }
+  ]
+}
