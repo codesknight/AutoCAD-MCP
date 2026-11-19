@@ -11,7 +11,7 @@ from pydantic import ValidationError
 from autocad_mcp.config import Config
 from autocad_mcp.cad.backends.base import copy_data, operation_signature
 from autocad_mcp.cad.errors import BackendClosedError, BackendError, UnsupportedOperationError
-from autocad_mcp.cad.models import BridgeJob
+from autocad_mcp.cad.models import BridgeJob, WorkingDocumentJob, SavedArtifactJob
 
 class BridgeRemoteError(BackendError):
     def __init__(self, code, message, *, request_id=None, outcome="not_executed"):
@@ -103,6 +103,7 @@ class HTTPBackend:
         request_id = payload["request_id"]
         if not re.fullmatch(r"[A-Za-z0-9._-]{1,128}", request_id):
             raise ValueError("Invalid Bridge request ID")
+        payload = {**payload, "instance_id": self._instance}
         data = self._request("POST", path, payload=payload, request_id=request_id)
         deadline = time.monotonic() + self._config.request_timeout_seconds
         while True:
@@ -168,9 +169,13 @@ class HTTPBackend:
     def execute_batch(self, operations, *, request_id=None, expected_revision=None):
         return self.execute_batch_job(operations,request_id=request_id,expected_revision=expected_revision).result
 
-    def execute_batch_job(self, operations, *, document_id=None,request_id=None,expected_revision=None):
+    def execute_batch_job(self, operations, *, document_id=None,request_id=None,expected_revision=None,instance_id=None):
         with self._lock:
             self._connect()
+            if instance_id is not None and instance_id != self._instance:
+                raise BridgeRemoteError("INSTANCE_MISMATCH", "Batch targets another Bridge instance")
+            if instance_id is not None and (not request_id or expected_revision is None):
+                raise ValueError("Controlled batch requires request_id and expected_revision")
             if not self._capabilities.get("atomic_batch"):
                 raise UnsupportedOperationError("HTTP Bridge has no atomic batch capability")
             target=self._document if document_id is None else document_id
@@ -178,9 +183,38 @@ class HTTPBackend:
                 raise BridgeRemoteError("DOCUMENT_NOT_FOUND", "Call new_drawing to create a managed document")
             if not 1 <= len(operations) <= self._capabilities.get("max_batch_operations", 200):
                 raise ValueError("Invalid Bridge batch length")
+            allowed = self._capabilities.get("batch_operations", ["create_layer", "draw_line", "draw_circle"])
+            if any(step.get("operation") not in allowed for step in operations):
+                raise UnsupportedOperationError("Operation is not advertised as batch-safe; no fallback was attempted")
             return self._submit("/v1/batch", {"request_id":request_id or uuid4().hex,
                 "document_id":target, "expected_revision":expected_revision,
                 "atomic":True, "operations":copy_data(operations)})
+
+    def document_job(self, operation, args, *, instance_id, document_id=None, request_id=None, expected_revision=None):
+        if operation not in {"create_working_document", "get_document_info", "save_document", "reopen_artifact"}:
+            raise UnsupportedOperationError("Unsupported controlled document operation")
+        with self._lock:
+            self._connect()
+            if instance_id != self._instance:
+                raise BridgeRemoteError("INSTANCE_MISMATCH", "Read the current Bridge instance before submitting")
+            if not self._capabilities.get("controlled_documents") or operation not in self._capabilities["operations"]:
+                raise UnsupportedOperationError(f"HTTP Bridge does not support {operation}; no fallback was attempted")
+            # Explicit APIs never alter the legacy current-document binding.
+            job = self._submit("/v1/execute", {"request_id": request_id or uuid4().hex,
+                "document_id": document_id, "expected_revision": expected_revision,
+                "operation": operation, "args": copy_data(args)})
+            try:
+                model = SavedArtifactJob if operation == "save_document" else WorkingDocumentJob
+                verified = model.model_validate(job.model_dump())
+                if operation == "create_working_document" and (not verified.result.managed or not verified.result.output_directory):
+                    raise ValueError("New working document is not managed")
+                if operation == "reopen_artifact" and (verified.result.managed or verified.result.artifact is None or
+                    verified.result.artifact.artifact_id != args["artifact_id"] or verified.result.source_artifact_id != args["artifact_id"]):
+                    raise ValueError("Reopened artifact identity or permissions differ")
+                return verified.model_dump()
+            except (ValidationError, ValueError):
+                raise BridgeRemoteError("OUTCOME_UNKNOWN", "Controlled document result is invalid; inspect the job before continuing",
+                    request_id=job.request_id, outcome="outcome_unknown") from None
 
     def runtime_status(self):
         with self._lock:

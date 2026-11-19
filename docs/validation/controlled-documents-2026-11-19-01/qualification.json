@@ -1,0 +1,991 @@
+{
+  "passed": true,
+  "calls": 42,
+  "completed": true,
+  "process_id": 57436,
+  "instance_id": "16c2762a2d44435bb195223debbc2537",
+  "bridge_sha256": "5023de565ca2fa033e1948dd7d9dd3f5dd8cd03182dcf4a3f84813fb36e65a2c",
+  "server_instance_guard": true,
+  "rollback_positions": [
+    "first",
+    "middle",
+    "last"
+  ],
+  "source_entities": [
+    {
+      "object_id": 13,
+      "type": "AcDbLine",
+      "layer": "Controlled",
+      "geometry_complete": true,
+      "linetype": "ByLayer",
+      "linetype_scale": 1,
+      "lineweight": -1,
+      "color_index": 256,
+      "layer_properties": {
+        "name": "Controlled",
+        "color_index": 3,
+        "linetype": "Continuous",
+        "lineweight": -3,
+        "is_off": false,
+        "is_frozen": false,
+        "is_locked": false
+      },
+      "handle": "2EE",
+      "start_point": [
+        0,
+        0,
+        0
+      ],
+      "end_point": [
+        10,
+        0,
+        0
+      ],
+      "bounding_box": {
+        "min": [
+          0,
+          0,
+          0
+        ],
+        "max": [
+          10,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "object_id": 14,
+      "type": "AcDbCircle",
+      "layer": "Controlled",
+      "geometry_complete": true,
+      "linetype": "ByLayer",
+      "linetype_scale": 1,
+      "lineweight": -1,
+      "color_index": 256,
+      "layer_properties": {
+        "name": "Controlled",
+        "color_index": 3,
+        "linetype": "Continuous",
+        "lineweight": -3,
+        "is_off": false,
+        "is_frozen": false,
+        "is_locked": false
+      },
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "handle": "2EF",
+      "center": [
+        20,
+        0,
+        0
+      ],
+      "radius": 2,
+      "bounding_box": {
+        "min": [
+          18,
+          -2,
+          0
+        ],
+        "max": [
+          22,
+          2,
+          0
+        ]
+      }
+    },
+    {
+      "object_id": 15,
+      "type": "AcDbArc",
+      "layer": "Controlled",
+      "geometry_complete": true,
+      "linetype": "ByLayer",
+      "linetype_scale": 1,
+      "lineweight": -1,
+      "color_index": 256,
+      "layer_properties": {
+        "name": "Controlled",
+        "color_index": 3,
+        "linetype": "Continuous",
+        "lineweight": -3,
+        "is_off": false,
+        "is_frozen": false,
+        "is_locked": false
+      },
+      "center": [
+        30,
+        0,
+        0
+      ],
+      "radius": 3,
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "start_point": [
+        33,
+        0,
+        0
+      ],
+      "end_point": [
+        30,
+        3,
+        0
+      ],
+      "start_angle": 0,
+      "end_angle": 90,
+      "arc_length": 4.71238898038469,
+      "handle": "2F0",
+      "bounding_box": {
+        "min": [
+          30,
+          0,
+          0
+        ],
+        "max": [
+          33,
+          3,
+          0
+        ]
+      }
+    },
+    {
+      "object_id": 16,
+      "type": "AcDb2dPolyline",
+      "layer": "Controlled",
+      "geometry_complete": true,
+      "linetype": "ByLayer",
+      "linetype_scale": 1,
+      "lineweight": -1,
+      "color_index": 256,
+      "layer_properties": {
+        "name": "Controlled",
+        "color_index": 3,
+        "linetype": "Continuous",
+        "lineweight": -3,
+        "is_off": false,
+        "is_frozen": false,
+        "is_locked": false
+      },
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "elevation": 0,
+      "bulges": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "handle": "2F1",
+      "closed": true,
+      "points": [
+        [
+          0,
+          10,
+          0
+        ],
+        [
+          10,
+          10,
+          0
+        ],
+        [
+          10,
+          15,
+          0
+        ],
+        [
+          0,
+          15,
+          0
+        ]
+      ],
+      "bounding_box": {
+        "min": [
+          0,
+          10,
+          0
+        ],
+        "max": [
+          10,
+          15,
+          0
+        ]
+      }
+    },
+    {
+      "object_id": 17,
+      "type": "AcDb2dPolyline",
+      "layer": "Controlled",
+      "geometry_complete": true,
+      "linetype": "ByLayer",
+      "linetype_scale": 1,
+      "lineweight": -1,
+      "color_index": 256,
+      "layer_properties": {
+        "name": "Controlled",
+        "color_index": 3,
+        "linetype": "Continuous",
+        "lineweight": -3,
+        "is_off": false,
+        "is_frozen": false,
+        "is_locked": false
+      },
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "elevation": 0,
+      "bulges": [
+        0,
+        0,
+        0
+      ],
+      "handle": "2F7",
+      "closed": true,
+      "points": [
+        [
+          20,
+          10,
+          0
+        ],
+        [
+          25,
+          10,
+          0
+        ],
+        [
+          25,
+          15,
+          0
+        ]
+      ],
+      "bounding_box": {
+        "min": [
+          20,
+          10,
+          0
+        ],
+        "max": [
+          25,
+          15,
+          0
+        ]
+      }
+    },
+    {
+      "object_id": 18,
+      "type": "AcDbText",
+      "layer": "Controlled",
+      "geometry_complete": true,
+      "linetype": "ByLayer",
+      "linetype_scale": 1,
+      "lineweight": -1,
+      "color_index": 256,
+      "layer_properties": {
+        "name": "Controlled",
+        "color_index": 3,
+        "linetype": "Continuous",
+        "lineweight": -3,
+        "is_off": false,
+        "is_frozen": false,
+        "is_locked": false
+      },
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "handle": "2FD",
+      "text_string": "受控 MCP 文字",
+      "insertion_point": [
+        0,
+        20,
+        0
+      ],
+      "height": 2.5,
+      "rotation": 29.999999999999996,
+      "text_style": "MCP_CJK",
+      "bounding_box": {
+        "min": [
+          -1.4734636871508378,
+          19.685521501419057,
+          0
+        ],
+        "max": [
+          20.308188154990308,
+          34.1722257010966,
+          0
+        ]
+      }
+    },
+    {
+      "object_id": 19,
+      "type": "AcDbMText",
+      "layer": "Controlled",
+      "geometry_complete": true,
+      "linetype": "ByLayer",
+      "linetype_scale": 1,
+      "lineweight": -1,
+      "color_index": 256,
+      "layer_properties": {
+        "name": "Controlled",
+        "color_index": 3,
+        "linetype": "Continuous",
+        "lineweight": -3,
+        "is_off": false,
+        "is_frozen": false,
+        "is_locked": false
+      },
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "handle": "2FE",
+      "text_string": "第一行\\P第二行",
+      "insertion_point": [
+        20,
+        20,
+        0
+      ],
+      "height": 3,
+      "width": 40,
+      "rotation": 0,
+      "text_style": "MCP_CJK",
+      "bounding_box": {
+        "min": [
+          20,
+          10.558659217877095,
+          0
+        ],
+        "max": [
+          60,
+          20,
+          0
+        ]
+      }
+    },
+    {
+      "object_id": 20,
+      "type": "AcDbAlignedDimension",
+      "layer": "0",
+      "geometry_complete": true,
+      "linetype": "ByLayer",
+      "linetype_scale": 1,
+      "lineweight": -1,
+      "color_index": 256,
+      "layer_properties": {
+        "name": "0",
+        "color_index": 7,
+        "linetype": "Continuous",
+        "lineweight": -3,
+        "is_off": false,
+        "is_frozen": false,
+        "is_locked": false
+      },
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "text_override": "",
+      "handle": "2FF",
+      "start_point": [
+        0,
+        0,
+        0
+      ],
+      "end_point": [
+        10,
+        0,
+        0
+      ],
+      "dimension_line_point": [
+        10,
+        5,
+        0
+      ],
+      "measurement": 10,
+      "bounding_box": {
+        "min": [
+          0,
+          0,
+          0
+        ],
+        "max": [
+          10,
+          8.177864938608458,
+          0
+        ]
+      }
+    }
+  ],
+  "reopened_entities": [
+    {
+      "object_id": 1,
+      "type": "AcDbLine",
+      "layer": "Controlled",
+      "geometry_complete": true,
+      "linetype": "ByLayer",
+      "linetype_scale": 1,
+      "lineweight": -1,
+      "color_index": 256,
+      "layer_properties": {
+        "name": "Controlled",
+        "color_index": 3,
+        "linetype": "Continuous",
+        "lineweight": -3,
+        "is_off": false,
+        "is_frozen": false,
+        "is_locked": false
+      },
+      "handle": "2EE",
+      "start_point": [
+        0,
+        0,
+        0
+      ],
+      "end_point": [
+        10,
+        0,
+        0
+      ],
+      "bounding_box": {
+        "min": [
+          0,
+          0,
+          0
+        ],
+        "max": [
+          10,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "object_id": 2,
+      "type": "AcDbCircle",
+      "layer": "Controlled",
+      "geometry_complete": true,
+      "linetype": "ByLayer",
+      "linetype_scale": 1,
+      "lineweight": -1,
+      "color_index": 256,
+      "layer_properties": {
+        "name": "Controlled",
+        "color_index": 3,
+        "linetype": "Continuous",
+        "lineweight": -3,
+        "is_off": false,
+        "is_frozen": false,
+        "is_locked": false
+      },
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "handle": "2EF",
+      "center": [
+        20,
+        0,
+        0
+      ],
+      "radius": 2,
+      "bounding_box": {
+        "min": [
+          18,
+          -2,
+          0
+        ],
+        "max": [
+          22,
+          2,
+          0
+        ]
+      }
+    },
+    {
+      "object_id": 3,
+      "type": "AcDbArc",
+      "layer": "Controlled",
+      "geometry_complete": true,
+      "linetype": "ByLayer",
+      "linetype_scale": 1,
+      "lineweight": -1,
+      "color_index": 256,
+      "layer_properties": {
+        "name": "Controlled",
+        "color_index": 3,
+        "linetype": "Continuous",
+        "lineweight": -3,
+        "is_off": false,
+        "is_frozen": false,
+        "is_locked": false
+      },
+      "center": [
+        30,
+        0,
+        0
+      ],
+      "radius": 3,
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "start_point": [
+        33,
+        0,
+        0
+      ],
+      "end_point": [
+        30,
+        3,
+        0
+      ],
+      "start_angle": 0,
+      "end_angle": 90,
+      "arc_length": 4.71238898038469,
+      "handle": "2F0",
+      "bounding_box": {
+        "min": [
+          30,
+          0,
+          0
+        ],
+        "max": [
+          33,
+          3,
+          0
+        ]
+      }
+    },
+    {
+      "object_id": 4,
+      "type": "AcDb2dPolyline",
+      "layer": "Controlled",
+      "geometry_complete": true,
+      "linetype": "ByLayer",
+      "linetype_scale": 1,
+      "lineweight": -1,
+      "color_index": 256,
+      "layer_properties": {
+        "name": "Controlled",
+        "color_index": 3,
+        "linetype": "Continuous",
+        "lineweight": -3,
+        "is_off": false,
+        "is_frozen": false,
+        "is_locked": false
+      },
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "elevation": 0,
+      "bulges": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "handle": "2F1",
+      "closed": true,
+      "points": [
+        [
+          0,
+          10,
+          0
+        ],
+        [
+          10,
+          10,
+          0
+        ],
+        [
+          10,
+          15,
+          0
+        ],
+        [
+          0,
+          15,
+          0
+        ]
+      ],
+      "bounding_box": {
+        "min": [
+          0,
+          10,
+          0
+        ],
+        "max": [
+          10,
+          15,
+          0
+        ]
+      }
+    },
+    {
+      "object_id": 5,
+      "type": "AcDb2dPolyline",
+      "layer": "Controlled",
+      "geometry_complete": true,
+      "linetype": "ByLayer",
+      "linetype_scale": 1,
+      "lineweight": -1,
+      "color_index": 256,
+      "layer_properties": {
+        "name": "Controlled",
+        "color_index": 3,
+        "linetype": "Continuous",
+        "lineweight": -3,
+        "is_off": false,
+        "is_frozen": false,
+        "is_locked": false
+      },
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "elevation": 0,
+      "bulges": [
+        0,
+        0,
+        0
+      ],
+      "handle": "2F7",
+      "closed": true,
+      "points": [
+        [
+          20,
+          10,
+          0
+        ],
+        [
+          25,
+          10,
+          0
+        ],
+        [
+          25,
+          15,
+          0
+        ]
+      ],
+      "bounding_box": {
+        "min": [
+          20,
+          10,
+          0
+        ],
+        "max": [
+          25,
+          15,
+          0
+        ]
+      }
+    },
+    {
+      "object_id": 6,
+      "type": "AcDbText",
+      "layer": "Controlled",
+      "geometry_complete": true,
+      "linetype": "ByLayer",
+      "linetype_scale": 1,
+      "lineweight": -1,
+      "color_index": 256,
+      "layer_properties": {
+        "name": "Controlled",
+        "color_index": 3,
+        "linetype": "Continuous",
+        "lineweight": -3,
+        "is_off": false,
+        "is_frozen": false,
+        "is_locked": false
+      },
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "handle": "2FD",
+      "text_string": "受控 MCP 文字",
+      "insertion_point": [
+        0,
+        20,
+        0
+      ],
+      "height": 2.5,
+      "rotation": 29.999999999999996,
+      "text_style": "MCP_CJK",
+      "bounding_box": {
+        "min": [
+          -1.4734636871508378,
+          19.685521501419057,
+          0
+        ],
+        "max": [
+          20.308188154990308,
+          34.1722257010966,
+          0
+        ]
+      }
+    },
+    {
+      "object_id": 7,
+      "type": "AcDbMText",
+      "layer": "Controlled",
+      "geometry_complete": true,
+      "linetype": "ByLayer",
+      "linetype_scale": 1,
+      "lineweight": -1,
+      "color_index": 256,
+      "layer_properties": {
+        "name": "Controlled",
+        "color_index": 3,
+        "linetype": "Continuous",
+        "lineweight": -3,
+        "is_off": false,
+        "is_frozen": false,
+        "is_locked": false
+      },
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "handle": "2FE",
+      "text_string": "第一行\\P第二行",
+      "insertion_point": [
+        20,
+        20,
+        0
+      ],
+      "height": 3,
+      "width": 40,
+      "rotation": 0,
+      "text_style": "MCP_CJK",
+      "bounding_box": {
+        "min": [
+          20,
+          10.558659217877095,
+          0
+        ],
+        "max": [
+          60,
+          20,
+          0
+        ]
+      }
+    },
+    {
+      "object_id": 8,
+      "type": "AcDbAlignedDimension",
+      "layer": "0",
+      "geometry_complete": true,
+      "linetype": "ByLayer",
+      "linetype_scale": 1,
+      "lineweight": -1,
+      "color_index": 256,
+      "layer_properties": {
+        "name": "0",
+        "color_index": 7,
+        "linetype": "Continuous",
+        "lineweight": -3,
+        "is_off": false,
+        "is_frozen": false,
+        "is_locked": false
+      },
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "text_override": "",
+      "handle": "2FF",
+      "start_point": [
+        0,
+        0,
+        0
+      ],
+      "end_point": [
+        10,
+        0,
+        0
+      ],
+      "dimension_line_point": [
+        10,
+        5,
+        0
+      ],
+      "measurement": 10,
+      "bounding_box": {
+        "min": [
+          0,
+          0,
+          0
+        ],
+        "max": [
+          10,
+          8.177864938608458,
+          0
+        ]
+      }
+    }
+  ],
+  "artifact": {
+    "artifact_id": "32383d3c799f4e399f99576b0000a1ad",
+    "file_path": "<WORKSPACE>\\.git\\controlled-documents-20261119\\native-01\\dwg\\fixture.dwg",
+    "source_document_id": "16dcea1ff8a4413db29af641c1be40e8",
+    "saved_revision": 181,
+    "sha256": "510a7bafd7ec7f3905b90c979f0b0bad5b0c2b39f1f2c72c963254e2dec408f5",
+    "bytes": 33332,
+    "saved_at": "2026-11-19T06:33:20.1885733Z",
+    "units_code": 4,
+    "state": "saved"
+  },
+  "geometry_reopen_equal": true,
+  "no_overwrite_verified": true,
+  "read_only_reopen_verified": true,
+  "original_working_document_preserved": true,
+  "artifact_tamper_rejected": true,
+  "final_status": {
+    "backend": "http",
+    "state": "ready",
+    "capabilities": {
+      "protocol_version": "1",
+      "operations": [
+        "new_document",
+        "draw_line",
+        "draw_circle",
+        "create_layer",
+        "list_layers",
+        "query_entities",
+        "get_entity",
+        "query_entities_page",
+        "draw_arc",
+        "draw_rectangle",
+        "draw_polyline",
+        "draw_text",
+        "draw_mtext",
+        "add_dimension",
+        "create_working_document",
+        "get_document_info",
+        "save_document",
+        "reopen_artifact"
+      ],
+      "controlled_documents": true,
+      "document_units": true,
+      "batch_operations": [
+        "create_layer",
+        "draw_line",
+        "draw_circle",
+        "draw_arc",
+        "draw_rectangle",
+        "draw_polyline",
+        "draw_text",
+        "draw_mtext",
+        "add_dimension"
+      ],
+      "file_operations": [
+        "save_document",
+        "reopen_artifact"
+      ],
+      "file_overwrite": false,
+      "file_operations_atomic_with_entities": false,
+      "artifact_reopen_mode": "read_only_document",
+      "artifact_scope": "current_instance",
+      "geometry_fields": [
+        "linetype",
+        "linetype_scale",
+        "lineweight",
+        "color_index",
+        "layer_properties",
+        "normal",
+        "start_angle",
+        "end_angle",
+        "arc_length",
+        "elevation",
+        "bulges",
+        "text_override",
+        "geometry_complete"
+      ],
+      "polyline_coordinates": "legacy_ocs_xy_input_z_ignored",
+      "angles": "degrees_ccw_wcs_xy",
+      "atomic_batch": true,
+      "max_batch_operations": 200,
+      "max_query_entities": 1000,
+      "query_pagination": true,
+      "max_query_page_entities": 1000,
+      "cursor_ttl_seconds": 600,
+      "legacy_object_ids": "document_session_aliases",
+      "job_ttl_seconds": 600,
+      "instance_id": "16c2762a2d44435bb195223debbc2537"
+    },
+    "documents": [
+      {
+        "document_id": "109e74e001624be7943c515fb9dc0f69",
+        "name": "Drawing1.dwg",
+        "revision": 0,
+        "units": {
+          "code": 4,
+          "name": "Millimeters"
+        },
+        "managed": false,
+        "read_only": true,
+        "output_directory": null,
+        "source_artifact_id": null,
+        "active": false
+      },
+      {
+        "document_id": "16dcea1ff8a4413db29af641c1be40e8",
+        "name": "Drawing2.dwg",
+        "revision": 198,
+        "units": {
+          "code": 4,
+          "name": "Millimeters"
+        },
+        "managed": true,
+        "read_only": false,
+        "output_directory": "<WORKSPACE>\\.git\\controlled-documents-20261119\\native-01\\dwg",
+        "source_artifact_id": null,
+        "active": false
+      },
+      {
+        "document_id": "d2328a3c181b4b1e8797b8814bd91d3f",
+        "name": "<WORKSPACE>\\.git\\controlled-documents-20261119\\native-01\\dwg\\fixture.dwg",
+        "revision": 0,
+        "units": {
+          "code": 4,
+          "name": "Millimeters"
+        },
+        "managed": false,
+        "read_only": true,
+        "output_directory": null,
+        "source_artifact_id": "32383d3c799f4e399f99576b0000a1ad",
+        "active": true
+      }
+    ],
+    "connection_state": null,
+    "queue_depth": null,
+    "instance_id": "16c2762a2d44435bb195223debbc2537",
+    "active_document_id": "d2328a3c181b4b1e8797b8814bd91d3f",
+    "bound_document_id": "109e74e001624be7943c515fb9dc0f69",
+    "cad_version": "25.1s (LMS Tech)",
+    "revision_mode": "observed_database_events"
+  }
+}

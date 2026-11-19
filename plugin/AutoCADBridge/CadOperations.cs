@@ -20,6 +20,8 @@ public sealed class DocumentSession : IDisposable
     public Document Document { get; }
     public bool Managed { get; }
     public long Revision;
+    public string? OutputDirectory { get; set; }
+    public string? SourceArtifactId { get; set; }
     private long nextAlias;
     private readonly Dictionary<ObjectId, long> aliases = new();
     private readonly Dictionary<long, ObjectId> ids = new();
@@ -45,7 +47,7 @@ public sealed class DocumentSession : IDisposable
     }
 }
 
-public sealed class CadOperations : IDisposable
+public sealed partial class CadOperations : IDisposable
 {
     private readonly QueryCursor cursors = new();
     private readonly Dictionary<string, DocumentSession> sessions = new();
@@ -66,13 +68,12 @@ public sealed class CadOperations : IDisposable
             var documents = new JsonArray();
             foreach (Document document in AcApp.DocumentManager) {
                 var state = Session(document);
-                documents.Add(new JsonObject { ["document_id"] = state.Id, ["name"] = document.Name,
-                    ["managed"] = state.Managed, ["revision"] = state.Revision,
-                    ["active"] = ReferenceEquals(active, document) });
+                var info = DocumentInfo(state); info["active"] = ReferenceEquals(active, document); documents.Add(info);
             }
             return (new JsonObject { ["documents"] = documents, ["active_document_id"] = active is null ? null : Session(active).Id,
                 ["cad_version"] = Convert.ToString(AcApp.GetSystemVariable("ACADVER")), ["revision_mode"] = "observed_database_events" }, null, null);
         }
+        if (DocumentOperations.Contains(request.Operation)) return ExecuteDocument(request);
         if (request.Operation == "new_document") {
             var document = AcApp.DocumentManager.Add("acadiso.dwt");
             var state = Session(document, true);
@@ -96,7 +97,7 @@ public sealed class CadOperations : IDisposable
                     failedId = op["id"]?.GetValue<string>() ?? throw new BridgeException("INVALID_ARGUMENT", "Each batch operation needs an id");
                     if (failedId.Length is < 1 or > 128 || !operationIds.Add(failedId)) throw new BridgeException("INVALID_ARGUMENT", "Batch operation IDs must be nonempty and unique");
                     var name = op["operation"]?.GetValue<string>() ?? "";
-                    if (name is not ("draw_line" or "draw_circle" or "create_layer")) throw new BridgeException("UNSUPPORTED_OPERATION", "Operation is not transactional batch-safe");
+                    if (!BatchOperations.Contains(name)) throw new BridgeException("UNSUPPORTED_OPERATION", "Operation is not transactional batch-safe");
                     var value = Run(target, transaction, name, op["args"]?.AsObject() ?? new JsonObject());
                     results.Add(new JsonObject { ["id"] = failedId, ["result"] = value });
                 }
@@ -192,7 +193,7 @@ public sealed class CadOperations : IDisposable
 
     private JsonObject Page(DocumentSession state,Transaction tr,JsonObject args) {
         var allowed=new HashSet<string>(["entity_type","layer","fields","limit","cursor"],StringComparer.Ordinal);
-        var all=new HashSet<string>(["object_id","type","layer","handle","start_point","end_point","center","radius","bounding_box","points","closed","text_string","insertion_point","height","rotation","width","measurement","dimension_line_point","text_style"],StringComparer.Ordinal);
+        var all=new HashSet<string>(["object_id","type","layer","handle","start_point","end_point","center","radius","bounding_box","points","closed","text_string","insertion_point","height","rotation","width","measurement","dimension_line_point","text_style", .. VerificationFields],StringComparer.Ordinal);
         int limit;
         string type,layer,token;
         HashSet<string> wanted;
@@ -236,7 +237,7 @@ public sealed class CadOperations : IDisposable
             if (matched++<offset) continue;
             if (items.Count==limit) { more=true;break; }
             items.Add(Summary(state,entity,tr,wanted));
-            if (entity is not (Line or Circle or Polyline2d or DBText or MText or AlignedDimension)) unsupported.Add(name);
+            if (!GeometrySupported(entity)) unsupported.Add(name);
         }
         return new JsonObject { ["document_id"]=state.Id,["revision"]=state.Revision,
             ["items"]=items,["count"]=items.Count,["has_more"]=more,
@@ -247,6 +248,7 @@ public sealed class CadOperations : IDisposable
         bool Want(string name)=>fields is null || fields.Contains(name);
         var result = new JsonObject { ["object_id"] = state.Alias(entity.ObjectId), ["type"] = entity.GetRXClass().Name,
             ["layer"] = entity.Layer };
+        AddVerificationFields(result, entity, tr, Want);
         if (Want("handle")) result["handle"]=entity.Handle.ToString();
         if (entity is Line line) { if(Want("start_point"))result["start_point"] = XYZ(line.StartPoint); if(Want("end_point"))result["end_point"] = XYZ(line.EndPoint); }
         if (entity is Circle circle) { if(Want("center"))result["center"] = XYZ(circle.Center); if(Want("radius"))result["radius"] = circle.Radius; }
@@ -285,5 +287,5 @@ public sealed class CadOperations : IDisposable
         if (Want("bounding_box")) try { var bounds = entity.GeometricExtents; result["bounding_box"] = new JsonObject { ["min"] = XYZ(bounds.MinPoint), ["max"] = XYZ(bounds.MaxPoint) }; } catch (Exception) { }
         return result;
     }
-    public void Dispose() { foreach (var session in sessions.Values) session.Dispose(); sessions.Clear(); }
+    public void Dispose() { artifacts.Clear(); foreach (var session in sessions.Values) session.Dispose(); sessions.Clear(); }
 }

@@ -1,0 +1,18 @@
+{
+  "base_commit": "841d1206a9a5029cfc761a2ffe3a01a00c4c6956",
+  "bridge_sha256": "5023de565ca2fa033e1948dd7d9dd3f5dd8cd03182dcf4a3f84813fb36e65a2c",
+  "files": {
+    "plugin/AutoCADBridge/BridgeServer.cs": "2d5ebc3bebf0c16a93fa974c6196f100c5145feae892ac8148e747676a4c5901",
+    "plugin/AutoCADBridge/CadOperations.cs": "e62fb58522f5c85d06bfc44f2fd2e70d2f491d80b89f727402b2074b6c1029fd",
+    "plugin/AutoCADBridge/DrawingOperations.cs": "95f051ab3b0bfebe5b450f2aa60636a14ada1f6fcb7d0f4afe80834b1c2a3a52",
+    "plugin/AutoCADBridge/DocumentOperations.cs": "ff4b122419a25e81e7e2c62e7e437f2e3fb2b0f86c276642a4bd67756e27fc86",
+    "plugin/AutoCADBridge/VerificationFields.cs": "e75e4730c8c79675df1cae80291b9603acf8406c8af6175412450307fbc9073f",
+    "plugin/AutoCADBridge/ArtifactFiles.cs": "83675b262043a85121f7b55bddb5cab4126e1b92d2ddabd01db05cc7f986f645",
+    "plugin/AutoCADBridge/Contracts.cs": "2b21664d645dc1f5d02a203e6034f01208524f421415001353ead65b93e8da8e",
+    "src/autocad_mcp/tools/working_document_tools.py": "02cf2ab1073a76613d24baf7665b21d54d579152d40336f2bf5aebd9d8c818e5",
+    "src/autocad_mcp/tools/runtime_tools.py": "63e3579e20342212ca92b69301723233d3791cadd2d85a402f1114aee59ffe9a",
+    "src/autocad_mcp/cad/backends/http_backend.py": "738b9a1337f026958feb11b738e4610ecd03257ef38385e991ebf7e42ad99833",
+    "src/autocad_mcp/cad/models.py": "6764984430bb56c7ffb5af7fceb987a72ab80008cca91b75a93a1d24aaf1a68f",
+    "scripts/verify_working_documents.py": "11a220de014bdcc3bba2365e3aeece9c811bc7908ab167638a640355b7519fc1"
+  }
+}

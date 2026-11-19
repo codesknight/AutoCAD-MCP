@@ -28,7 +28,7 @@ public sealed class BridgeServer : IDisposable
     private nint window;
     [DllImport("user32.dll")]
     private static extern bool PostMessage(nint hwnd, uint message, nint wparam, nint lparam);
-    public static readonly string[] Operations = ["new_document", "draw_line", "draw_circle", "create_layer", "list_layers", "query_entities", "get_entity", "query_entities_page", .. DrawingOperations.Names];
+    public static readonly string[] Operations = ["new_document", "draw_line", "draw_circle", "create_layer", "list_layers", "query_entities", "get_entity", "query_entities_page", .. DrawingOperations.Names, .. CadOperations.DocumentOperations];
 
     public BridgeServer(string token, int port) { this.token = token; this.port = port; }
     public void Start()
@@ -58,6 +58,13 @@ public sealed class BridgeServer : IDisposable
             }
             if (method == "GET" && path == "/v1/capabilities") {
                 await Write(context, new JsonObject { ["protocol_version"] = "1", ["operations"] = new JsonArray(Operations.Select(x => (JsonNode?)JsonValue.Create(x)).ToArray()),
+                    ["controlled_documents"] = true, ["document_units"] = true,
+                    ["batch_operations"] = new JsonArray(CadOperations.BatchOperations.Select(x => (JsonNode?)JsonValue.Create(x)).ToArray()),
+                    ["file_operations"] = new JsonArray("save_document", "reopen_artifact"),
+                    ["file_overwrite"] = false, ["file_operations_atomic_with_entities"] = false,
+                    ["artifact_reopen_mode"] = "read_only_document", ["artifact_scope"] = "current_instance",
+                    ["geometry_fields"] = new JsonArray(CadOperations.VerificationFields.Select(x => (JsonNode?)JsonValue.Create(x)).ToArray()),
+                    ["polyline_coordinates"] = "legacy_ocs_xy_input_z_ignored", ["angles"] = "degrees_ccw_wcs_xy",
                     ["atomic_batch"] = true, ["max_batch_operations"] = 200, ["max_query_entities"] = 1000,
                     ["query_pagination"] = true,["max_query_page_entities"] = 1000,["cursor_ttl_seconds"] = 600,
                     ["legacy_object_ids"] = "document_session_aliases", ["job_ttl_seconds"] = 600 }); return;
@@ -80,6 +87,9 @@ public sealed class BridgeServer : IDisposable
                 if (!Regex.IsMatch(id, "^[A-Za-z0-9._-]{1,128}$")) throw new BridgeException("INVALID_ARGUMENT", "Invalid request_id");
                 var operation = path == "/v1/batch" ? "_batch" : data["operation"]?.GetValue<string>() ?? "";
                 if (operation != "_batch" && !Operations.Contains(operation)) throw new BridgeException("UNSUPPORTED_OPERATION", "Operation is not supported");
+                var instance = data["instance_id"]?.GetValue<string>();
+                if (instance is not null && instance != InstanceId) throw new BridgeException("INSTANCE_MISMATCH", "Request targets another Bridge instance");
+                if (CadOperations.DocumentOperations.Contains(operation) && instance != InstanceId) throw new BridgeException("INVALID_ARGUMENT", "Controlled document operations require instance_id");
                 var args = path == "/v1/batch" ? new JsonObject { ["operations"] = data["operations"]?.DeepClone(), ["atomic"] = data["atomic"]?.DeepClone() } : data["args"]?.AsObject() ?? new JsonObject();
                 var request = new Request(id, data["document_id"]?.GetValue<string>(), data["expected_revision"]?.GetValue<long>(), operation, args);
                 var job = Accept(request);

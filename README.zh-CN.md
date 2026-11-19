@@ -36,7 +36,7 @@
 | **选择模型** | 流式 Web UI：Anthropic、OpenAI、OpenAI 兼容接口与豆包 |
 | **扩展图纸理解** | 可选的本地图纸视觉问答（VQA）服务 |
 
-**共注册 40 个 MCP 工具。** 默认 COM 后端提供既有 CAD 工具能力；新增四个运行时工具提供后端/job 状态、原子批处理和分页查询。实验性 HTTP 后端目前支持其中一部分。逐项状态见[工具迁移矩阵](docs/design/tool-migration-matrix.md)。
+**共注册 44 个 MCP 工具。** 默认 COM 后端提供既有 CAD 工具能力；新增八项工具提供运行时状态、原子批处理、分页和受控工作图的保存重开。实验性 HTTP 后端目前支持其中一部分。逐项状态见[工具迁移矩阵](docs/design/tool-migration-matrix.md)。
 
 ## 快速开始
 
@@ -148,8 +148,8 @@ doubao_api_key=YOUR_KEY
 | | COM（默认） | .NET HTTP Bridge（实验性） |
 | --- | --- | --- |
 | CAD 执行方式 | Python COM 适配器，单个 STA 工作线程 | AutoCAD 插件、主线程队列与事务 |
-| 当前范围 | 既有 CAD 工具 | 12 项旧 CAD 工具，加运行时状态/job/批处理/分页工具；验证状态见迁移记录 |
-| 原子批处理 | 不支持 | MCP 工具，支持 1–200 步图层/直线/圆的事务操作 |
+| 当前范围 | 既有 CAD 工具 | 13 项旧 CAD 工具，加运行时与受控工作图工具；验证状态见迁移记录 |
+| 原子批处理 | 不支持 | MCP 工具，支持 1–200 步图层、线、圆、圆弧、多段线、文字和标注事务操作 |
 | 查询分页 | 既有查询接口 | MCP 每页最多 1000 项，支持过滤、字段裁剪与绑定 revision 的游标 |
 | 安装要求 | Python 与已打开的 AutoCAD | 匹配的 .NET SDK、编译/NETLOAD 插件、本地令牌 |
 | 写入行为 | 既有 COM 流程；保持单一写入入口 | 仅写入 Bridge 创建的图纸；显式绑定文档 |
@@ -157,7 +157,7 @@ doubao_api_key=YOUR_KEY
 
 两种后端共用 MCP 工具层。HTTP 后端不支持的操作会明确报错，写入不会回退到 COM。
 
-显式文档 ID、批处理步骤和游标恢复方式见[运行时工具示例](docs/design/mcp-runtime-tools.md)。
+工作图身份、单位、保存和只读重开见[受控工作图契约](docs/design/controlled-working-drawings.md)；显式文档 ID、批处理步骤和游标恢复方式见[运行时工具示例](docs/design/mcp-runtime-tools.md)。
 
 查看[原生故障与可复现性能报告](docs/validation/2026-11-19-cad09.md)，其中保留失败样本和验收限制。默认后端仍为 COM。
 
@@ -192,7 +192,7 @@ python -m pytest tests/test_backend_integration.py --cad-integration -q -s
 python scripts/export_mcp_contract.py --output tools.json
 ~~~
 
-最新[运行时与绘图验证报告](docs/validation/2026-11-19-mcp-runtime.md)包含 **103 项 Python 测试通过**、跳过 33 项 CAD 测试、34 项 C# 断言，以及真实 MCP stdio 的 1205 实体分页和五项原生绘图。原生失败、修复与清理复核均保留；早期 stdio / Streamable HTTP 验证见[初次记录](docs/validation/2026-11-18-http-bridge.json)。分支执行结果见 [CI 记录](https://github.com/codesknight/AutoCAD-MCP/actions)。
+新增[受控工作图实机报告](docs/validation/2026-11-19-controlled-documents.md)，验证 DWG 保存重开、扩展事务回滚及文件边界。此前[运行时与绘图验证报告](docs/validation/2026-11-19-mcp-runtime.md)包含 **103 项 Python 测试通过**、跳过 33 项 CAD 测试、34 项 C# 断言，以及真实 MCP stdio 的 1205 实体分页和五项原生绘图。原生失败、修复与清理复核均保留；早期 stdio / Streamable HTTP 验证见[初次记录](docs/validation/2026-11-18-http-bridge.json)。分支执行结果见 [CI 记录](https://github.com/codesknight/AutoCAD-MCP/actions)。
 
 原生验证采用**正常启动 AutoCAD 后再连接**的方式；自动启动兼容性仍在排查。验证脚本会关闭自己的测试图纸并停止监听。开发辅助程序应清理自己创建的 CAD 进程，同时保留用户原有实例。
 

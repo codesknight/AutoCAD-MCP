@@ -52,10 +52,88 @@ class LayerStep(Strict):
     operation: Literal["create_layer"]
     args: LayerArgs
 
-Step=Annotated[LineStep|CircleStep|LayerStep,Field(discriminator="operation")]
+class ArcArgs(CircleArgs):
+    start_angle: FiniteFloat
+    end_angle: FiniteFloat
+    @model_validator(mode="after")
+    def nonzero_sweep(self):
+        sweep = (self.end_angle-self.start_angle) % 360
+        if not 1e-10 <= sweep < 360:
+            raise ValueError("Arc must have a nonzero sweep less than 360 degrees")
+        return self
+
+class RectangleArgs(Strict):
+    corner1: Point
+    corner2: Point
+    layer: str | None = None
+    @model_validator(mode="after")
+    def nonzero_area(self):
+        if self.corner1[0] == self.corner2[0] or self.corner1[1] == self.corner2[1]:
+            raise ValueError("Rectangle must have nonzero width and height")
+        return self
+
+class PolylineArgs(Strict):
+    points: Annotated[list[Point], Field(min_length=2,max_length=10000)]
+    closed: bool = False
+    layer: str | None = None
+
+TextValue=Annotated[str,Field(min_length=1,max_length=16384,pattern=r"^[^\x00]*$")]
+Positive=Annotated[FiniteFloat,Field(gt=0)]
+class TextArgs(Strict):
+    position: Point
+    text: TextValue
+    height: Positive
+    rotation: FiniteFloat = 0
+    layer: str | None = None
+
+class MTextArgs(Strict):
+    position: Point
+    text: TextValue
+    width: Positive = 100
+    height: Positive = 2.5
+    layer: str | None = None
+
+class DimensionArgs(Strict):
+    start: Point
+    end: Point
+    text_position: Point
+    @model_validator(mode="after")
+    def planar_nonzero(self):
+        if self.start == self.end or not self.start[2] == self.end[2] == self.text_position[2]:
+            raise ValueError("Dimension requires distinct endpoints in one WCS Z plane")
+        return self
+
+class ArcStep(Strict):
+    id: StepId
+    operation: Literal["draw_arc"]
+    args: ArcArgs
+class RectangleStep(Strict):
+    id: StepId
+    operation: Literal["draw_rectangle"]
+    args: RectangleArgs
+class PolylineStep(Strict):
+    id: StepId
+    operation: Literal["draw_polyline"]
+    args: PolylineArgs
+class TextStep(Strict):
+    id: StepId
+    operation: Literal["draw_text"]
+    args: TextArgs
+class MTextStep(Strict):
+    id: StepId
+    operation: Literal["draw_mtext"]
+    args: MTextArgs
+class DimensionStep(Strict):
+    id: StepId
+    operation: Literal["add_dimension"]
+    args: DimensionArgs
+
+Step=Annotated[LineStep|CircleStep|LayerStep|ArcStep|RectangleStep|PolylineStep|TextStep|MTextStep|DimensionStep,Field(discriminator="operation")]
 Operations=Annotated[list[Step],Field(min_length=1,max_length=200)]
 Fields=Literal["object_id","type","layer","handle","start_point","end_point","center","radius","bounding_box",
-               "points","closed","text_string","insertion_point","height","rotation","width","measurement","dimension_line_point","text_style"]
+               "points","closed","text_string","insertion_point","height","rotation","width","measurement","dimension_line_point","text_style",
+               "linetype","linetype_scale","lineweight","color_index","layer_properties","normal","start_angle","end_angle","arc_length",
+               "elevation","bulges","text_override","geometry_complete"]
 
 class EntityPage(Strict):
     document_id: str
@@ -104,25 +182,30 @@ def register(mcp: FastMCP) -> None:
     def execute_atomic_batch(
         document_id: DocumentId, operations: Operations,
         request_id: RequestId = "", expected_revision: Annotated[int,Field(ge=0)] | None = None,
+        instance_id: str = "",
     ) -> BridgeJob:
         """在显式指定的 HTTP Bridge 自建文档中执行 1–200 项原子操作。
-        仅支持 create_layer/draw_line/draw_circle，坐标使用三元素 WCS 数组；
+        支持图层、直线、圆、圆弧、矩形、多段线、文字、多行文字及对齐标注；
+        圆弧与文字角度为度。矩形/多段线保持旧接口 OCS XY、忽略输入 Z 的语义；其他点为 WCS；
         step id 必须唯一，不支持跨步骤动态引用。失败整体回滚，不支持文件操作。
         返回 request_id、document_id、revision 和逐步结果。COM 明确不支持，无回退。
         相同 request_id 只在原实例有效窗口内去重；结果未知时用 get_job_status 查询。
+        受控客户端应传 instance_id、非空 request_id 和 expected_revision；instance_id 模式下三者均必需。
         """
         ids=[step.id for step in operations]
         if len(set(ids))!=len(ids):
             raise ValueError("Batch step IDs must be unique")
+        if instance_id and (not request_id or expected_revision is None):
+            raise ValueError("Controlled batch requires a preallocated request_id and expected_revision")
         return state.atomic_batch(document_id,[s.model_dump(exclude_none=True) for s in operations],
-                                  request_id or uuid4().hex,expected_revision)
+                                  request_id or uuid4().hex,expected_revision,instance_id or None)
 
     @mcp.tool()
     def query_entities_page(
         document_id: DocumentId,
         entity_type: Annotated[str,Field(max_length=128)] = "",
         layer: Annotated[str,Field(max_length=255)] = "",
-        fields: Annotated[list[Fields],Field(max_length=19)] | None = None,
+        fields: Annotated[list[Fields],Field(max_length=32)] | None = None,
         limit: Annotated[int,Field(ge=1,le=1000)] = 200,
         cursor: Annotated[str,Field(max_length=2048)] = "",
     ) -> EntityPage:

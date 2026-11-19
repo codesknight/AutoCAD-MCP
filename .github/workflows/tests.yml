@@ -37,3 +37,5 @@ jobs:
         run: dotnet run --project plugin/AutoCADBridge.HostingTests -c Release
       - name: Verify pagination cursor integrity and lifetime
         run: dotnet run --project plugin/AutoCADBridge.CursorTests -c Release
+      - name: Verify artifact paths and no-replace file publication
+        run: dotnet run --project plugin/AutoCADBridge.ArtifactTests -c Release

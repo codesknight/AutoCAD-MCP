@@ -1,0 +1,2594 @@
+[
+  {
+    "name": "create_working_drawing",
+    "description": "在指定 HTTP 实例中新建受控工作图，返回 instance_id/document_id/revision/units/managed。\n        先用 get_backend_status 取得实例；request_id 由客户端预先持久化，结果未知只查 job、不重放。\n        output_directory 必须为已存在的本地绝对目录且不经过链接；空值创建独立私有输出目录。\n        不修改旧工具的绑定；COM 不支持，不回退。示意图可明确选择 unitless。\n        ",
+    "inputSchema": {
+      "properties": {
+        "instance_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Instance Id",
+          "type": "string"
+        },
+        "request_id": {
+          "pattern": "^[A-Za-z0-9._-]{1,128}$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "units": {
+          "default": "millimeters",
+          "enum": [
+            "unitless",
+            "millimeters",
+            "centimeters",
+            "meters",
+            "inches",
+            "feet"
+          ],
+          "title": "Units",
+          "type": "string"
+        },
+        "output_directory": {
+          "default": "",
+          "maxLength": 1024,
+          "title": "Output Directory",
+          "type": "string"
+        }
+      },
+      "required": [
+        "instance_id",
+        "request_id"
+      ],
+      "title": "create_working_drawingArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "$defs": {
+        "BridgeError": {
+          "properties": {
+            "code": {
+              "title": "Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            },
+            "retryable": {
+              "default": false,
+              "title": "Retryable",
+              "type": "boolean"
+            },
+            "outcome": {
+              "default": "not_executed",
+              "title": "Outcome",
+              "type": "string"
+            },
+            "failed_operation_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Failed Operation Id"
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "title": "BridgeError",
+          "type": "object"
+        },
+        "DrawingUnits": {
+          "properties": {
+            "code": {
+              "minimum": 0,
+              "title": "Code",
+              "type": "integer"
+            },
+            "name": {
+              "title": "Name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "code",
+            "name"
+          ],
+          "title": "DrawingUnits",
+          "type": "object"
+        },
+        "SavedArtifactInfo": {
+          "properties": {
+            "artifact_id": {
+              "minLength": 1,
+              "title": "Artifact Id",
+              "type": "string"
+            },
+            "file_path": {
+              "minLength": 1,
+              "title": "File Path",
+              "type": "string"
+            },
+            "source_document_id": {
+              "minLength": 1,
+              "title": "Source Document Id",
+              "type": "string"
+            },
+            "saved_revision": {
+              "minimum": 0,
+              "title": "Saved Revision",
+              "type": "integer"
+            },
+            "sha256": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Sha256",
+              "type": "string"
+            },
+            "bytes": {
+              "exclusiveMinimum": 0,
+              "title": "Bytes",
+              "type": "integer"
+            },
+            "saved_at": {
+              "title": "Saved At",
+              "type": "string"
+            },
+            "units_code": {
+              "minimum": 0,
+              "title": "Units Code",
+              "type": "integer"
+            },
+            "state": {
+              "const": "saved",
+              "title": "State",
+              "type": "string"
+            }
+          },
+          "required": [
+            "artifact_id",
+            "file_path",
+            "source_document_id",
+            "saved_revision",
+            "sha256",
+            "bytes",
+            "saved_at",
+            "units_code",
+            "state"
+          ],
+          "title": "SavedArtifactInfo",
+          "type": "object"
+        },
+        "WorkingDocumentInfo": {
+          "properties": {
+            "document_id": {
+              "minLength": 1,
+              "title": "Document Id",
+              "type": "string"
+            },
+            "name": {
+              "title": "Name",
+              "type": "string"
+            },
+            "revision": {
+              "minimum": 0,
+              "title": "Revision",
+              "type": "integer"
+            },
+            "units": {
+              "$ref": "#/$defs/DrawingUnits"
+            },
+            "managed": {
+              "title": "Managed",
+              "type": "boolean"
+            },
+            "read_only": {
+              "title": "Read Only",
+              "type": "boolean"
+            },
+            "output_directory": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Output Directory"
+            },
+            "source_artifact_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Source Artifact Id"
+            },
+            "artifact": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/SavedArtifactInfo"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "model_space_count": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Model Space Count"
+            },
+            "layer_names": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Layer Names"
+            },
+            "text_style_names": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Text Style Names"
+            },
+            "catalogs_truncated": {
+              "default": false,
+              "title": "Catalogs Truncated",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "document_id",
+            "name",
+            "revision",
+            "units",
+            "managed",
+            "read_only"
+          ],
+          "title": "WorkingDocumentInfo",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "instance_id": {
+          "title": "Instance Id",
+          "type": "string"
+        },
+        "request_id": {
+          "title": "Request Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "rolled_back",
+            "cancelled",
+            "outcome_unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "document_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Document Id"
+        },
+        "revision": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Revision"
+        },
+        "result": {
+          "$ref": "#/$defs/WorkingDocumentInfo"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BridgeError"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "metrics": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "number"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metrics"
+        }
+      },
+      "required": [
+        "instance_id",
+        "request_id",
+        "status",
+        "result"
+      ],
+      "title": "WorkingDocumentJob",
+      "type": "object"
+    }
+  },
+  {
+    "name": "execute_atomic_batch",
+    "description": "在显式指定的 HTTP Bridge 自建文档中执行 1–200 项原子操作。\n        支持图层、直线、圆、圆弧、矩形、多段线、文字、多行文字及对齐标注；\n        圆弧与文字角度为度。矩形/多段线保持旧接口 OCS XY、忽略输入 Z 的语义；其他点为 WCS；\n        step id 必须唯一，不支持跨步骤动态引用。失败整体回滚，不支持文件操作。\n        返回 request_id、document_id、revision 和逐步结果。COM 明确不支持，无回退。\n        相同 request_id 只在原实例有效窗口内去重；结果未知时用 get_job_status 查询。\n        受控客户端应传 instance_id、非空 request_id 和 expected_revision；instance_id 模式下三者均必需。\n        ",
+    "inputSchema": {
+      "$defs": {
+        "ArcArgs": {
+          "additionalProperties": false,
+          "properties": {
+            "center": {
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "title": "Center",
+              "type": "array"
+            },
+            "radius": {
+              "exclusiveMinimum": 0,
+              "title": "Radius",
+              "type": "number"
+            },
+            "layer": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Layer"
+            },
+            "start_angle": {
+              "title": "Start Angle",
+              "type": "number"
+            },
+            "end_angle": {
+              "title": "End Angle",
+              "type": "number"
+            }
+          },
+          "required": [
+            "center",
+            "radius",
+            "start_angle",
+            "end_angle"
+          ],
+          "title": "ArcArgs",
+          "type": "object"
+        },
+        "ArcStep": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "pattern": "^[A-Za-z0-9._-]{1,128}$",
+              "title": "Id",
+              "type": "string"
+            },
+            "operation": {
+              "const": "draw_arc",
+              "title": "Operation",
+              "type": "string"
+            },
+            "args": {
+              "$ref": "#/$defs/ArcArgs"
+            }
+          },
+          "required": [
+            "id",
+            "operation",
+            "args"
+          ],
+          "title": "ArcStep",
+          "type": "object"
+        },
+        "CircleArgs": {
+          "additionalProperties": false,
+          "properties": {
+            "center": {
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "title": "Center",
+              "type": "array"
+            },
+            "radius": {
+              "exclusiveMinimum": 0,
+              "title": "Radius",
+              "type": "number"
+            },
+            "layer": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Layer"
+            }
+          },
+          "required": [
+            "center",
+            "radius"
+          ],
+          "title": "CircleArgs",
+          "type": "object"
+        },
+        "CircleStep": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "pattern": "^[A-Za-z0-9._-]{1,128}$",
+              "title": "Id",
+              "type": "string"
+            },
+            "operation": {
+              "const": "draw_circle",
+              "title": "Operation",
+              "type": "string"
+            },
+            "args": {
+              "$ref": "#/$defs/CircleArgs"
+            }
+          },
+          "required": [
+            "id",
+            "operation",
+            "args"
+          ],
+          "title": "CircleStep",
+          "type": "object"
+        },
+        "DimensionArgs": {
+          "additionalProperties": false,
+          "properties": {
+            "start": {
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "title": "Start",
+              "type": "array"
+            },
+            "end": {
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "title": "End",
+              "type": "array"
+            },
+            "text_position": {
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "title": "Text Position",
+              "type": "array"
+            }
+          },
+          "required": [
+            "start",
+            "end",
+            "text_position"
+          ],
+          "title": "DimensionArgs",
+          "type": "object"
+        },
+        "DimensionStep": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "pattern": "^[A-Za-z0-9._-]{1,128}$",
+              "title": "Id",
+              "type": "string"
+            },
+            "operation": {
+              "const": "add_dimension",
+              "title": "Operation",
+              "type": "string"
+            },
+            "args": {
+              "$ref": "#/$defs/DimensionArgs"
+            }
+          },
+          "required": [
+            "id",
+            "operation",
+            "args"
+          ],
+          "title": "DimensionStep",
+          "type": "object"
+        },
+        "LayerArgs": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Name",
+              "type": "string"
+            },
+            "color": {
+              "anyOf": [
+                {
+                  "maximum": 255,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Color"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "title": "LayerArgs",
+          "type": "object"
+        },
+        "LayerStep": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "pattern": "^[A-Za-z0-9._-]{1,128}$",
+              "title": "Id",
+              "type": "string"
+            },
+            "operation": {
+              "const": "create_layer",
+              "title": "Operation",
+              "type": "string"
+            },
+            "args": {
+              "$ref": "#/$defs/LayerArgs"
+            }
+          },
+          "required": [
+            "id",
+            "operation",
+            "args"
+          ],
+          "title": "LayerStep",
+          "type": "object"
+        },
+        "LineArgs": {
+          "additionalProperties": false,
+          "properties": {
+            "start": {
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "title": "Start",
+              "type": "array"
+            },
+            "end": {
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "title": "End",
+              "type": "array"
+            },
+            "layer": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Layer"
+            }
+          },
+          "required": [
+            "start",
+            "end"
+          ],
+          "title": "LineArgs",
+          "type": "object"
+        },
+        "LineStep": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "pattern": "^[A-Za-z0-9._-]{1,128}$",
+              "title": "Id",
+              "type": "string"
+            },
+            "operation": {
+              "const": "draw_line",
+              "title": "Operation",
+              "type": "string"
+            },
+            "args": {
+              "$ref": "#/$defs/LineArgs"
+            }
+          },
+          "required": [
+            "id",
+            "operation",
+            "args"
+          ],
+          "title": "LineStep",
+          "type": "object"
+        },
+        "MTextArgs": {
+          "additionalProperties": false,
+          "properties": {
+            "position": {
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "title": "Position",
+              "type": "array"
+            },
+            "text": {
+              "maxLength": 16384,
+              "minLength": 1,
+              "pattern": "^[^\\x00]*$",
+              "title": "Text",
+              "type": "string"
+            },
+            "width": {
+              "default": 100,
+              "exclusiveMinimum": 0,
+              "title": "Width",
+              "type": "number"
+            },
+            "height": {
+              "default": 2.5,
+              "exclusiveMinimum": 0,
+              "title": "Height",
+              "type": "number"
+            },
+            "layer": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Layer"
+            }
+          },
+          "required": [
+            "position",
+            "text"
+          ],
+          "title": "MTextArgs",
+          "type": "object"
+        },
+        "MTextStep": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "pattern": "^[A-Za-z0-9._-]{1,128}$",
+              "title": "Id",
+              "type": "string"
+            },
+            "operation": {
+              "const": "draw_mtext",
+              "title": "Operation",
+              "type": "string"
+            },
+            "args": {
+              "$ref": "#/$defs/MTextArgs"
+            }
+          },
+          "required": [
+            "id",
+            "operation",
+            "args"
+          ],
+          "title": "MTextStep",
+          "type": "object"
+        },
+        "PolylineArgs": {
+          "additionalProperties": false,
+          "properties": {
+            "points": {
+              "items": {
+                "items": {
+                  "type": "number"
+                },
+                "maxItems": 3,
+                "minItems": 3,
+                "type": "array"
+              },
+              "maxItems": 10000,
+              "minItems": 2,
+              "title": "Points",
+              "type": "array"
+            },
+            "closed": {
+              "default": false,
+              "title": "Closed",
+              "type": "boolean"
+            },
+            "layer": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Layer"
+            }
+          },
+          "required": [
+            "points"
+          ],
+          "title": "PolylineArgs",
+          "type": "object"
+        },
+        "PolylineStep": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "pattern": "^[A-Za-z0-9._-]{1,128}$",
+              "title": "Id",
+              "type": "string"
+            },
+            "operation": {
+              "const": "draw_polyline",
+              "title": "Operation",
+              "type": "string"
+            },
+            "args": {
+              "$ref": "#/$defs/PolylineArgs"
+            }
+          },
+          "required": [
+            "id",
+            "operation",
+            "args"
+          ],
+          "title": "PolylineStep",
+          "type": "object"
+        },
+        "RectangleArgs": {
+          "additionalProperties": false,
+          "properties": {
+            "corner1": {
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "title": "Corner1",
+              "type": "array"
+            },
+            "corner2": {
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "title": "Corner2",
+              "type": "array"
+            },
+            "layer": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Layer"
+            }
+          },
+          "required": [
+            "corner1",
+            "corner2"
+          ],
+          "title": "RectangleArgs",
+          "type": "object"
+        },
+        "RectangleStep": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "pattern": "^[A-Za-z0-9._-]{1,128}$",
+              "title": "Id",
+              "type": "string"
+            },
+            "operation": {
+              "const": "draw_rectangle",
+              "title": "Operation",
+              "type": "string"
+            },
+            "args": {
+              "$ref": "#/$defs/RectangleArgs"
+            }
+          },
+          "required": [
+            "id",
+            "operation",
+            "args"
+          ],
+          "title": "RectangleStep",
+          "type": "object"
+        },
+        "TextArgs": {
+          "additionalProperties": false,
+          "properties": {
+            "position": {
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "title": "Position",
+              "type": "array"
+            },
+            "text": {
+              "maxLength": 16384,
+              "minLength": 1,
+              "pattern": "^[^\\x00]*$",
+              "title": "Text",
+              "type": "string"
+            },
+            "height": {
+              "exclusiveMinimum": 0,
+              "title": "Height",
+              "type": "number"
+            },
+            "rotation": {
+              "default": 0,
+              "title": "Rotation",
+              "type": "number"
+            },
+            "layer": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Layer"
+            }
+          },
+          "required": [
+            "position",
+            "text",
+            "height"
+          ],
+          "title": "TextArgs",
+          "type": "object"
+        },
+        "TextStep": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "pattern": "^[A-Za-z0-9._-]{1,128}$",
+              "title": "Id",
+              "type": "string"
+            },
+            "operation": {
+              "const": "draw_text",
+              "title": "Operation",
+              "type": "string"
+            },
+            "args": {
+              "$ref": "#/$defs/TextArgs"
+            }
+          },
+          "required": [
+            "id",
+            "operation",
+            "args"
+          ],
+          "title": "TextStep",
+          "type": "object"
+        }
+      },
+      "properties": {
+        "document_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Document Id",
+          "type": "string"
+        },
+        "operations": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "add_dimension": "#/$defs/DimensionStep",
+                "create_layer": "#/$defs/LayerStep",
+                "draw_arc": "#/$defs/ArcStep",
+                "draw_circle": "#/$defs/CircleStep",
+                "draw_line": "#/$defs/LineStep",
+                "draw_mtext": "#/$defs/MTextStep",
+                "draw_polyline": "#/$defs/PolylineStep",
+                "draw_rectangle": "#/$defs/RectangleStep",
+                "draw_text": "#/$defs/TextStep"
+              },
+              "propertyName": "operation"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/LineStep"
+              },
+              {
+                "$ref": "#/$defs/CircleStep"
+              },
+              {
+                "$ref": "#/$defs/LayerStep"
+              },
+              {
+                "$ref": "#/$defs/ArcStep"
+              },
+              {
+                "$ref": "#/$defs/RectangleStep"
+              },
+              {
+                "$ref": "#/$defs/PolylineStep"
+              },
+              {
+                "$ref": "#/$defs/TextStep"
+              },
+              {
+                "$ref": "#/$defs/MTextStep"
+              },
+              {
+                "$ref": "#/$defs/DimensionStep"
+              }
+            ]
+          },
+          "maxItems": 200,
+          "minItems": 1,
+          "title": "Operations",
+          "type": "array"
+        },
+        "request_id": {
+          "default": "",
+          "pattern": "^$|^[A-Za-z0-9._-]{1,128}$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "expected_revision": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Revision"
+        },
+        "instance_id": {
+          "default": "",
+          "title": "Instance Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "document_id",
+        "operations"
+      ],
+      "title": "execute_atomic_batchArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "$defs": {
+        "BridgeError": {
+          "properties": {
+            "code": {
+              "title": "Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            },
+            "retryable": {
+              "default": false,
+              "title": "Retryable",
+              "type": "boolean"
+            },
+            "outcome": {
+              "default": "not_executed",
+              "title": "Outcome",
+              "type": "string"
+            },
+            "failed_operation_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Failed Operation Id"
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "title": "BridgeError",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "instance_id": {
+          "title": "Instance Id",
+          "type": "string"
+        },
+        "request_id": {
+          "title": "Request Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "rolled_back",
+            "cancelled",
+            "outcome_unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "document_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Document Id"
+        },
+        "revision": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Revision"
+        },
+        "result": {
+          "default": null,
+          "title": "Result"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BridgeError"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "metrics": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "number"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metrics"
+        }
+      },
+      "required": [
+        "instance_id",
+        "request_id",
+        "status"
+      ],
+      "title": "BridgeJob",
+      "type": "object"
+    }
+  },
+  {
+    "name": "get_backend_status",
+    "description": "查询后端生命周期、能力及 HTTP 文档会话。COM 状态查询不隐式启动 CAD；\n        HTTP 返回实例、活动/旧工具绑定文档及 revision。写入前从此处获取 document_id。\n        ",
+    "inputSchema": {
+      "properties": {},
+      "title": "get_backend_statusArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "backend": {
+          "enum": [
+            "com",
+            "http"
+          ],
+          "title": "Backend",
+          "type": "string"
+        },
+        "state": {
+          "title": "State",
+          "type": "string"
+        },
+        "capabilities": {
+          "additionalProperties": true,
+          "title": "Capabilities",
+          "type": "object"
+        },
+        "documents": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Documents",
+          "type": "array"
+        },
+        "connection_state": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Connection State"
+        },
+        "queue_depth": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Queue Depth"
+        },
+        "instance_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Instance Id"
+        },
+        "active_document_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Active Document Id"
+        },
+        "bound_document_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bound Document Id"
+        },
+        "cad_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cad Version"
+        },
+        "revision_mode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Revision Mode"
+        }
+      },
+      "required": [
+        "backend",
+        "state",
+        "capabilities",
+        "documents"
+      ],
+      "title": "BackendStatus",
+      "type": "object"
+    }
+  },
+  {
+    "name": "get_job_status",
+    "description": "查询 HTTP Bridge 请求状态。写入结果未知时只查询该 request_id，不自动重放；\n        journal 仅在当前实例的有界保留窗口内有效，JOB_NOT_FOUND 不证明写入从未执行。\n        ",
+    "inputSchema": {
+      "properties": {
+        "request_id": {
+          "pattern": "^[A-Za-z0-9._-]{1,128}$",
+          "title": "Request Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id"
+      ],
+      "title": "get_job_statusArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "$defs": {
+        "BridgeError": {
+          "properties": {
+            "code": {
+              "title": "Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            },
+            "retryable": {
+              "default": false,
+              "title": "Retryable",
+              "type": "boolean"
+            },
+            "outcome": {
+              "default": "not_executed",
+              "title": "Outcome",
+              "type": "string"
+            },
+            "failed_operation_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Failed Operation Id"
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "title": "BridgeError",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "instance_id": {
+          "title": "Instance Id",
+          "type": "string"
+        },
+        "request_id": {
+          "title": "Request Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "rolled_back",
+            "cancelled",
+            "outcome_unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "document_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Document Id"
+        },
+        "revision": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Revision"
+        },
+        "result": {
+          "default": null,
+          "title": "Result"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BridgeError"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "metrics": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "number"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metrics"
+        }
+      },
+      "required": [
+        "instance_id",
+        "request_id",
+        "status"
+      ],
+      "title": "BridgeJob",
+      "type": "object"
+    }
+  },
+  {
+    "name": "get_working_drawing",
+    "description": "只读取得指定 HTTP 文档的身份、当前 revision、单位及 Bridge 写权限，不依赖活动图纸。\n        read_only 指 Bridge 权限；普通用户图纸只读。不会创建、关闭或重绑定文档。\n        ",
+    "inputSchema": {
+      "properties": {
+        "instance_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Instance Id",
+          "type": "string"
+        },
+        "document_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Document Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "instance_id",
+        "document_id"
+      ],
+      "title": "get_working_drawingArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "$defs": {
+        "BridgeError": {
+          "properties": {
+            "code": {
+              "title": "Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            },
+            "retryable": {
+              "default": false,
+              "title": "Retryable",
+              "type": "boolean"
+            },
+            "outcome": {
+              "default": "not_executed",
+              "title": "Outcome",
+              "type": "string"
+            },
+            "failed_operation_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Failed Operation Id"
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "title": "BridgeError",
+          "type": "object"
+        },
+        "DrawingUnits": {
+          "properties": {
+            "code": {
+              "minimum": 0,
+              "title": "Code",
+              "type": "integer"
+            },
+            "name": {
+              "title": "Name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "code",
+            "name"
+          ],
+          "title": "DrawingUnits",
+          "type": "object"
+        },
+        "SavedArtifactInfo": {
+          "properties": {
+            "artifact_id": {
+              "minLength": 1,
+              "title": "Artifact Id",
+              "type": "string"
+            },
+            "file_path": {
+              "minLength": 1,
+              "title": "File Path",
+              "type": "string"
+            },
+            "source_document_id": {
+              "minLength": 1,
+              "title": "Source Document Id",
+              "type": "string"
+            },
+            "saved_revision": {
+              "minimum": 0,
+              "title": "Saved Revision",
+              "type": "integer"
+            },
+            "sha256": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Sha256",
+              "type": "string"
+            },
+            "bytes": {
+              "exclusiveMinimum": 0,
+              "title": "Bytes",
+              "type": "integer"
+            },
+            "saved_at": {
+              "title": "Saved At",
+              "type": "string"
+            },
+            "units_code": {
+              "minimum": 0,
+              "title": "Units Code",
+              "type": "integer"
+            },
+            "state": {
+              "const": "saved",
+              "title": "State",
+              "type": "string"
+            }
+          },
+          "required": [
+            "artifact_id",
+            "file_path",
+            "source_document_id",
+            "saved_revision",
+            "sha256",
+            "bytes",
+            "saved_at",
+            "units_code",
+            "state"
+          ],
+          "title": "SavedArtifactInfo",
+          "type": "object"
+        },
+        "WorkingDocumentInfo": {
+          "properties": {
+            "document_id": {
+              "minLength": 1,
+              "title": "Document Id",
+              "type": "string"
+            },
+            "name": {
+              "title": "Name",
+              "type": "string"
+            },
+            "revision": {
+              "minimum": 0,
+              "title": "Revision",
+              "type": "integer"
+            },
+            "units": {
+              "$ref": "#/$defs/DrawingUnits"
+            },
+            "managed": {
+              "title": "Managed",
+              "type": "boolean"
+            },
+            "read_only": {
+              "title": "Read Only",
+              "type": "boolean"
+            },
+            "output_directory": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Output Directory"
+            },
+            "source_artifact_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Source Artifact Id"
+            },
+            "artifact": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/SavedArtifactInfo"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "model_space_count": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Model Space Count"
+            },
+            "layer_names": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Layer Names"
+            },
+            "text_style_names": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Text Style Names"
+            },
+            "catalogs_truncated": {
+              "default": false,
+              "title": "Catalogs Truncated",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "document_id",
+            "name",
+            "revision",
+            "units",
+            "managed",
+            "read_only"
+          ],
+          "title": "WorkingDocumentInfo",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "instance_id": {
+          "title": "Instance Id",
+          "type": "string"
+        },
+        "request_id": {
+          "title": "Request Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "rolled_back",
+            "cancelled",
+            "outcome_unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "document_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Document Id"
+        },
+        "revision": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Revision"
+        },
+        "result": {
+          "$ref": "#/$defs/WorkingDocumentInfo"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BridgeError"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "metrics": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "number"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metrics"
+        }
+      },
+      "required": [
+        "instance_id",
+        "request_id",
+        "status",
+        "result"
+      ],
+      "title": "WorkingDocumentJob",
+      "type": "object"
+    }
+  },
+  {
+    "name": "query_entities_page",
+    "description": "分页查询显式 HTTP 文档，支持类型、图层和字段裁剪。身份字段始终包含。\n        每页最多 1000 项；继续查询须保留相同 document_id/过滤/fields/limit 并传 next_cursor。\n        游标绑定实例、文档和观察到的 revision，图纸变化或游标过期后需从第一页重读。\n        旧 query_entities 签名及 1000 项限制保持不变；COM 暂不支持此分页接口。\n        ",
+    "inputSchema": {
+      "properties": {
+        "document_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Document Id",
+          "type": "string"
+        },
+        "entity_type": {
+          "default": "",
+          "maxLength": 128,
+          "title": "Entity Type",
+          "type": "string"
+        },
+        "layer": {
+          "default": "",
+          "maxLength": 255,
+          "title": "Layer",
+          "type": "string"
+        },
+        "fields": {
+          "anyOf": [
+            {
+              "items": {
+                "enum": [
+                  "object_id",
+                  "type",
+                  "layer",
+                  "handle",
+                  "start_point",
+                  "end_point",
+                  "center",
+                  "radius",
+                  "bounding_box",
+                  "points",
+                  "closed",
+                  "text_string",
+                  "insertion_point",
+                  "height",
+                  "rotation",
+                  "width",
+                  "measurement",
+                  "dimension_line_point",
+                  "text_style",
+                  "linetype",
+                  "linetype_scale",
+                  "lineweight",
+                  "color_index",
+                  "layer_properties",
+                  "normal",
+                  "start_angle",
+                  "end_angle",
+                  "arc_length",
+                  "elevation",
+                  "bulges",
+                  "text_override",
+                  "geometry_complete"
+                ],
+                "type": "string"
+              },
+              "maxItems": 32,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fields"
+        },
+        "limit": {
+          "default": 200,
+          "maximum": 1000,
+          "minimum": 1,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "cursor": {
+          "default": "",
+          "maxLength": 2048,
+          "title": "Cursor",
+          "type": "string"
+        }
+      },
+      "required": [
+        "document_id"
+      ],
+      "title": "query_entities_pageArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "document_id": {
+          "title": "Document Id",
+          "type": "string"
+        },
+        "revision": {
+          "minimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "items": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "maxItems": 1000,
+          "title": "Items",
+          "type": "array"
+        },
+        "count": {
+          "maximum": 1000,
+          "minimum": 0,
+          "title": "Count",
+          "type": "integer"
+        },
+        "has_more": {
+          "title": "Has More",
+          "type": "boolean"
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Next Cursor"
+        },
+        "unsupported_geometry_types": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Unsupported Geometry Types",
+          "type": "array"
+        }
+      },
+      "required": [
+        "document_id",
+        "revision",
+        "items",
+        "count",
+        "has_more",
+        "next_cursor"
+      ],
+      "title": "EntityPage",
+      "type": "object"
+    }
+  },
+  {
+    "name": "reopen_saved_drawing",
+    "description": "校验本实例已登记保存件的哈希后，在 AutoCAD 中只读重开，返回新的文档身份。\n        只接受 artifact_id，不接受任意文件路径；原工作图保持不变。返回文档 managed=false，禁止写入。\n        用新的 document_id 调 query_entities_page 独立核验；不能按旧 object_id 跨文档寻址。\n        重开成功只证明文件可打开；内容仍须客户端验证。实例重启后旧 artifact_id 不可恢复。\n        ",
+    "inputSchema": {
+      "properties": {
+        "instance_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Instance Id",
+          "type": "string"
+        },
+        "artifact_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "request_id": {
+          "pattern": "^[A-Za-z0-9._-]{1,128}$",
+          "title": "Request Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "instance_id",
+        "artifact_id",
+        "request_id"
+      ],
+      "title": "reopen_saved_drawingArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "$defs": {
+        "BridgeError": {
+          "properties": {
+            "code": {
+              "title": "Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            },
+            "retryable": {
+              "default": false,
+              "title": "Retryable",
+              "type": "boolean"
+            },
+            "outcome": {
+              "default": "not_executed",
+              "title": "Outcome",
+              "type": "string"
+            },
+            "failed_operation_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Failed Operation Id"
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "title": "BridgeError",
+          "type": "object"
+        },
+        "DrawingUnits": {
+          "properties": {
+            "code": {
+              "minimum": 0,
+              "title": "Code",
+              "type": "integer"
+            },
+            "name": {
+              "title": "Name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "code",
+            "name"
+          ],
+          "title": "DrawingUnits",
+          "type": "object"
+        },
+        "SavedArtifactInfo": {
+          "properties": {
+            "artifact_id": {
+              "minLength": 1,
+              "title": "Artifact Id",
+              "type": "string"
+            },
+            "file_path": {
+              "minLength": 1,
+              "title": "File Path",
+              "type": "string"
+            },
+            "source_document_id": {
+              "minLength": 1,
+              "title": "Source Document Id",
+              "type": "string"
+            },
+            "saved_revision": {
+              "minimum": 0,
+              "title": "Saved Revision",
+              "type": "integer"
+            },
+            "sha256": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Sha256",
+              "type": "string"
+            },
+            "bytes": {
+              "exclusiveMinimum": 0,
+              "title": "Bytes",
+              "type": "integer"
+            },
+            "saved_at": {
+              "title": "Saved At",
+              "type": "string"
+            },
+            "units_code": {
+              "minimum": 0,
+              "title": "Units Code",
+              "type": "integer"
+            },
+            "state": {
+              "const": "saved",
+              "title": "State",
+              "type": "string"
+            }
+          },
+          "required": [
+            "artifact_id",
+            "file_path",
+            "source_document_id",
+            "saved_revision",
+            "sha256",
+            "bytes",
+            "saved_at",
+            "units_code",
+            "state"
+          ],
+          "title": "SavedArtifactInfo",
+          "type": "object"
+        },
+        "WorkingDocumentInfo": {
+          "properties": {
+            "document_id": {
+              "minLength": 1,
+              "title": "Document Id",
+              "type": "string"
+            },
+            "name": {
+              "title": "Name",
+              "type": "string"
+            },
+            "revision": {
+              "minimum": 0,
+              "title": "Revision",
+              "type": "integer"
+            },
+            "units": {
+              "$ref": "#/$defs/DrawingUnits"
+            },
+            "managed": {
+              "title": "Managed",
+              "type": "boolean"
+            },
+            "read_only": {
+              "title": "Read Only",
+              "type": "boolean"
+            },
+            "output_directory": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Output Directory"
+            },
+            "source_artifact_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Source Artifact Id"
+            },
+            "artifact": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/SavedArtifactInfo"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "model_space_count": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Model Space Count"
+            },
+            "layer_names": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Layer Names"
+            },
+            "text_style_names": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Text Style Names"
+            },
+            "catalogs_truncated": {
+              "default": false,
+              "title": "Catalogs Truncated",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "document_id",
+            "name",
+            "revision",
+            "units",
+            "managed",
+            "read_only"
+          ],
+          "title": "WorkingDocumentInfo",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "instance_id": {
+          "title": "Instance Id",
+          "type": "string"
+        },
+        "request_id": {
+          "title": "Request Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "rolled_back",
+            "cancelled",
+            "outcome_unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "document_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Document Id"
+        },
+        "revision": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Revision"
+        },
+        "result": {
+          "$ref": "#/$defs/WorkingDocumentInfo"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BridgeError"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "metrics": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "number"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metrics"
+        }
+      },
+      "required": [
+        "instance_id",
+        "request_id",
+        "status",
+        "result"
+      ],
+      "title": "WorkingDocumentJob",
+      "type": "object"
+    }
+  },
+  {
+    "name": "save_working_drawing",
+    "description": "把受控工作图保存为其绑定目录中的新 DWG 文件，不覆盖任何已有文件，不重命名编辑器文档。\n        返回 artifact_id、路径、SHA-256、字节数和保存时的源 revision。\n        文件发布独立于图元事务，不承诺文件与图元整体回滚；失败可能 outcome_unknown，先对账。\n        文件名不能含路径。保存成功不代表已重开或已通过几何验收。\n        ",
+    "inputSchema": {
+      "properties": {
+        "instance_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Instance Id",
+          "type": "string"
+        },
+        "document_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Document Id",
+          "type": "string"
+        },
+        "expected_revision": {
+          "minimum": 0,
+          "title": "Expected Revision",
+          "type": "integer"
+        },
+        "request_id": {
+          "pattern": "^[A-Za-z0-9._-]{1,128}$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "file_name": {
+          "maxLength": 200,
+          "minLength": 5,
+          "pattern": "^[^<>:\"/\\\\|?*\\x00-\\x1f]+\\.[dD][wW][gG]$",
+          "title": "File Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "instance_id",
+        "document_id",
+        "expected_revision",
+        "request_id",
+        "file_name"
+      ],
+      "title": "save_working_drawingArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "$defs": {
+        "BridgeError": {
+          "properties": {
+            "code": {
+              "title": "Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            },
+            "retryable": {
+              "default": false,
+              "title": "Retryable",
+              "type": "boolean"
+            },
+            "outcome": {
+              "default": "not_executed",
+              "title": "Outcome",
+              "type": "string"
+            },
+            "failed_operation_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Failed Operation Id"
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "title": "BridgeError",
+          "type": "object"
+        },
+        "SavedArtifactInfo": {
+          "properties": {
+            "artifact_id": {
+              "minLength": 1,
+              "title": "Artifact Id",
+              "type": "string"
+            },
+            "file_path": {
+              "minLength": 1,
+              "title": "File Path",
+              "type": "string"
+            },
+            "source_document_id": {
+              "minLength": 1,
+              "title": "Source Document Id",
+              "type": "string"
+            },
+            "saved_revision": {
+              "minimum": 0,
+              "title": "Saved Revision",
+              "type": "integer"
+            },
+            "sha256": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Sha256",
+              "type": "string"
+            },
+            "bytes": {
+              "exclusiveMinimum": 0,
+              "title": "Bytes",
+              "type": "integer"
+            },
+            "saved_at": {
+              "title": "Saved At",
+              "type": "string"
+            },
+            "units_code": {
+              "minimum": 0,
+              "title": "Units Code",
+              "type": "integer"
+            },
+            "state": {
+              "const": "saved",
+              "title": "State",
+              "type": "string"
+            }
+          },
+          "required": [
+            "artifact_id",
+            "file_path",
+            "source_document_id",
+            "saved_revision",
+            "sha256",
+            "bytes",
+            "saved_at",
+            "units_code",
+            "state"
+          ],
+          "title": "SavedArtifactInfo",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "instance_id": {
+          "title": "Instance Id",
+          "type": "string"
+        },
+        "request_id": {
+          "title": "Request Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "rolled_back",
+            "cancelled",
+            "outcome_unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "document_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Document Id"
+        },
+        "revision": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Revision"
+        },
+        "result": {
+          "$ref": "#/$defs/SavedArtifactInfo"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BridgeError"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "metrics": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "number"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metrics"
+        }
+      },
+      "required": [
+        "instance_id",
+        "request_id",
+        "status",
+        "result"
+      ],
+      "title": "SavedArtifactJob",
+      "type": "object"
+    }
+  }
+]
