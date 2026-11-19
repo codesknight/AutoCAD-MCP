@@ -22,6 +22,13 @@ def test_com_status_does_not_start_worker_or_cad():
     finally:
         backend.close()
 
+def test_native_cleanup_waits_for_process_exit_and_preserves_originals():
+    from scripts.verify_runtime_tools import wait_for_owned_exit
+    snapshots=iter([{10,20},{10,20},{10},{10}])
+    wait_for_owned_exit(20,{10},lambda:next(snapshots))
+    with pytest.raises(AssertionError,match='original'):
+        wait_for_owned_exit(20,{10},lambda:set())
+
 @pytest.mark.parametrize('tool,args',[
     ('execute_atomic_batch',{'document_id':'doc-a','operations':[]}),
     ('execute_atomic_batch',{'document_id':'doc-a','operations':[LINE]*201}),

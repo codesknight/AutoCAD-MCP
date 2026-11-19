@@ -1,0 +1,18 @@
+{
+  "completed": false,
+  "passed": false,
+  "bridge_sha256": "7cd57b213f47c4f73419a6d01abb937069ec1df4b0831fafa2c2c1c7003f611b",
+  "instance_id": "c0f943cf594946b285aebd228da0674d",
+  "pagination_items": 1205,
+  "page_counts": [
+    400,
+    400,
+    400,
+    5
+  ],
+  "no_duplicate_ids": true,
+  "geometry_sha256": "b01070ace7197a889487f95bd1825ecbdcb57ef9a76dd6a5e66de6bae1714f35",
+  "duplicate_batch_deduplicated": true,
+  "journal_identity_verified": true,
+  "error_type": "ExceptionGroup"
+}

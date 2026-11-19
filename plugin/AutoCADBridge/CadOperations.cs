@@ -49,7 +49,7 @@ public sealed class CadOperations : IDisposable
 {
     private readonly QueryCursor cursors = new();
     private readonly Dictionary<string, DocumentSession> sessions = new();
-    private static readonly string[] Writes = ["draw_line", "draw_circle", "create_layer", "_batch"];
+    private static readonly string[] Writes = ["draw_line", "draw_circle", "create_layer", "_batch", .. DrawingOperations.Names];
     private DocumentSession Session(Document document, bool managed = false) {
         var old = sessions.Values.FirstOrDefault(s => ReferenceEquals(s.Document, document));
         if (old is not null) return old;
@@ -145,21 +145,22 @@ public sealed class CadOperations : IDisposable
         }
         if (operation == "get_entity") {
             var alias = args["object_id"]?.GetValue<long>() ?? throw new BridgeException("INVALID_ARGUMENT", "object_id is required");
-            return Summary(state, (Entity)tr.GetObject(state.Find(alias), OpenMode.ForRead));
+            return Summary(state, (Entity)tr.GetObject(state.Find(alias), OpenMode.ForRead),tr);
         }
         var blocks = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
-        var model = (BlockTableRecord)tr.GetObject(blocks[BlockTableRecord.ModelSpace], operation.StartsWith("draw_", StringComparison.Ordinal) ? OpenMode.ForWrite : OpenMode.ForRead);
+        var model = (BlockTableRecord)tr.GetObject(blocks[BlockTableRecord.ModelSpace], Writes.Contains(operation) ? OpenMode.ForWrite : OpenMode.ForRead);
         if (operation == "query_entities") {
             var type = args["entity_type"]?.GetValue<string>(); var result = new JsonArray();
             foreach (ObjectId id in model) {
                 var entity = (Entity)tr.GetObject(id, OpenMode.ForRead);
                 if (!string.IsNullOrEmpty(type) && entity.GetRXClass().Name != type) continue;
                 if (result.Count == 1000) throw new BridgeException("RESULT_TOO_LARGE", "Legacy query exceeds 1000 entities; use query_entities_page");
-                result.Add(Summary(state, entity));
+                result.Add(Summary(state, entity,tr));
             }
             return result;
         }
         Entity created;
+        DrawingOperations.Created? drawing=null;
         if (operation == "draw_line") {
             var start = Point(args, "start"); var end = Point(args, "end");
             if (start.IsEqualTo(end)) throw new BridgeException("INVALID_ARGUMENT", "Line must have nonzero length");
@@ -168,19 +169,30 @@ public sealed class CadOperations : IDisposable
             var radius = args["radius"]?.GetValue<double>() ?? double.NaN;
             if (!double.IsFinite(radius) || radius <= 0) throw new BridgeException("INVALID_ARGUMENT", "Radius must be finite and positive");
             created = new Circle(Point(args, "center"), Vector3d.ZAxis, radius);
-        } else throw new BridgeException("UNSUPPORTED_OPERATION", "Operation is not supported by this Bridge");
+        } else if(DrawingOperations.Names.Contains(operation)) {
+            drawing=DrawingOperations.Create(operation,args,db,tr);created=drawing.Entity;
+        }
+        else throw new BridgeException("UNSUPPORTED_OPERATION", "Operation is not supported by this Bridge");
         using (created) {
-            var layerName = args["layer"]?.GetValue<string>() ?? "0";
+            var layerName = args["layer"]?.GetValue<string>() ?? (operation=="add_dimension" ? ((LayerTableRecord)tr.GetObject(db.Clayer,OpenMode.ForRead)).Name : "0");
             if (!layers.Has(layerName)) throw new BridgeException("INVALID_ARGUMENT", "Layer does not exist");
-            created.SetDatabaseDefaults(db); created.Layer = layerName;
+            if(!DrawingOperations.Names.Contains(operation)) created.SetDatabaseDefaults(db);
+            created.Layer = layerName;
             var id = model.AppendEntity(created); tr.AddNewlyCreatedDBObject(created, true);
+            if(created is Polyline2d poly && drawing?.Vertices is { } vertices) {
+                foreach(var point in vertices) {
+                    using var vertex=new Vertex2d(point,0,0,0,0);
+                    poly.AppendVertex(vertex);tr.AddNewlyCreatedDBObject(vertex,true);
+                }
+                poly.Closed=drawing.Closed;
+            }
             return JsonValue.Create(state.Alias(id));
         }
     }
 
     private JsonObject Page(DocumentSession state,Transaction tr,JsonObject args) {
         var allowed=new HashSet<string>(["entity_type","layer","fields","limit","cursor"],StringComparer.Ordinal);
-        var all=new HashSet<string>(["object_id","type","layer","handle","start_point","end_point","center","radius","bounding_box"],StringComparer.Ordinal);
+        var all=new HashSet<string>(["object_id","type","layer","handle","start_point","end_point","center","radius","bounding_box","points","closed","text_string","insertion_point","height","rotation","width","measurement","dimension_line_point","text_style"],StringComparer.Ordinal);
         int limit;
         string type,layer,token;
         HashSet<string> wanted;
@@ -223,21 +235,53 @@ public sealed class CadOperations : IDisposable
             if (layer.Length>0 && !string.Equals(entity.Layer,layer,StringComparison.OrdinalIgnoreCase)) continue;
             if (matched++<offset) continue;
             if (items.Count==limit) { more=true;break; }
-            items.Add(Summary(state,entity,wanted));
-            if (entity is not (Line or Circle)) unsupported.Add(name);
+            items.Add(Summary(state,entity,tr,wanted));
+            if (entity is not (Line or Circle or Polyline2d or DBText or MText or AlignedDimension)) unsupported.Add(name);
         }
         return new JsonObject { ["document_id"]=state.Id,["revision"]=state.Revision,
             ["items"]=items,["count"]=items.Count,["has_more"]=more,
             ["next_cursor"]=more ? cursors.Create(state.Id,state.Revision,offset+items.Count,fingerprint) : null,
             ["unsupported_geometry_types"]=new JsonArray(unsupported.OrderBy(x=>x,StringComparer.Ordinal).Select(x=>(JsonNode?)JsonValue.Create(x)).ToArray()) };
     }
-    private static JsonObject Summary(DocumentSession state, Entity entity, HashSet<string>? fields=null) {
+    private static JsonObject Summary(DocumentSession state, Entity entity, Transaction tr,HashSet<string>? fields=null) {
         bool Want(string name)=>fields is null || fields.Contains(name);
         var result = new JsonObject { ["object_id"] = state.Alias(entity.ObjectId), ["type"] = entity.GetRXClass().Name,
             ["layer"] = entity.Layer };
         if (Want("handle")) result["handle"]=entity.Handle.ToString();
         if (entity is Line line) { if(Want("start_point"))result["start_point"] = XYZ(line.StartPoint); if(Want("end_point"))result["end_point"] = XYZ(line.EndPoint); }
         if (entity is Circle circle) { if(Want("center"))result["center"] = XYZ(circle.Center); if(Want("radius"))result["radius"] = circle.Radius; }
+        if(entity is Polyline2d poly) {
+            if(Want("closed"))result["closed"]=poly.Closed;
+            if(Want("points")) {
+                var vertices=new JsonArray();
+                foreach(ObjectId id in poly) {
+                    var v=((Vertex2d)tr.GetObject(id,OpenMode.ForRead)).Position;
+                    vertices.Add(XYZ(new Point3d(v.X,v.Y,poly.Elevation)));
+                }
+                result["points"]=vertices;
+            }
+        }
+        if(entity is DBText text) {
+            if(Want("text_string"))result["text_string"]=text.TextString;
+            if(Want("insertion_point"))result["insertion_point"]=XYZ(text.Position);
+            if(Want("height"))result["height"]=text.Height;
+            if(Want("rotation"))result["rotation"]=text.Rotation*180/Math.PI;
+            if(Want("text_style"))result["text_style"]=((TextStyleTableRecord)tr.GetObject(text.TextStyleId,OpenMode.ForRead)).Name;
+        }
+        if(entity is MText mtext) {
+            if(Want("text_string"))result["text_string"]=mtext.Contents;
+            if(Want("insertion_point"))result["insertion_point"]=XYZ(mtext.Location);
+            if(Want("height"))result["height"]=mtext.TextHeight;
+            if(Want("width"))result["width"]=mtext.Width;
+            if(Want("rotation"))result["rotation"]=mtext.Rotation*180/Math.PI;
+            if(Want("text_style"))result["text_style"]=mtext.TextStyleName;
+        }
+        if(entity is AlignedDimension dim) {
+            if(Want("start_point"))result["start_point"]=XYZ(dim.XLine1Point);
+            if(Want("end_point"))result["end_point"]=XYZ(dim.XLine2Point);
+            if(Want("dimension_line_point"))result["dimension_line_point"]=XYZ(dim.DimLinePoint);
+            if(Want("measurement"))result["measurement"]=dim.Measurement;
+        }
         if (Want("bounding_box")) try { var bounds = entity.GeometricExtents; result["bounding_box"] = new JsonObject { ["min"] = XYZ(bounds.MinPoint), ["max"] = XYZ(bounds.MaxPoint) }; } catch (Exception) { }
         return result;
     }

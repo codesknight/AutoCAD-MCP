@@ -693,11 +693,21 @@
                   "end_point",
                   "center",
                   "radius",
-                  "bounding_box"
+                  "bounding_box",
+                  "points",
+                  "closed",
+                  "text_string",
+                  "insertion_point",
+                  "height",
+                  "rotation",
+                  "width",
+                  "measurement",
+                  "dimension_line_point",
+                  "text_style"
                 ],
                 "type": "string"
               },
-              "maxItems": 9,
+              "maxItems": 19,
               "type": "array"
             },
             {

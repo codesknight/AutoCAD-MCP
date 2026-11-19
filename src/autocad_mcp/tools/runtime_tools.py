@@ -54,7 +54,8 @@ class LayerStep(Strict):
 
 Step=Annotated[LineStep|CircleStep|LayerStep,Field(discriminator="operation")]
 Operations=Annotated[list[Step],Field(min_length=1,max_length=200)]
-Fields=Literal["object_id","type","layer","handle","start_point","end_point","center","radius","bounding_box"]
+Fields=Literal["object_id","type","layer","handle","start_point","end_point","center","radius","bounding_box",
+               "points","closed","text_string","insertion_point","height","rotation","width","measurement","dimension_line_point","text_style"]
 
 class EntityPage(Strict):
     document_id: str
@@ -121,7 +122,7 @@ def register(mcp: FastMCP) -> None:
         document_id: DocumentId,
         entity_type: Annotated[str,Field(max_length=128)] = "",
         layer: Annotated[str,Field(max_length=255)] = "",
-        fields: Annotated[list[Fields],Field(max_length=9)] | None = None,
+        fields: Annotated[list[Fields],Field(max_length=19)] | None = None,
         limit: Annotated[int,Field(ge=1,le=1000)] = 200,
         cursor: Annotated[str,Field(max_length=2048)] = "",
     ) -> EntityPage:

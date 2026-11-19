@@ -1,0 +1,207 @@
+{
+  "completed": false,
+  "passed": false,
+  "bridge_sha256": "11dfad2a309b0ac9e78bbbee05be4972d240843cd60e68bf68c24cff1c6ca5ec",
+  "source_sha256": {
+    "plugin/AutoCADBridge/BridgeServer.cs": "5034f43220c497bf42d7d8016442905cb71731596c6b65e9317ee1e26cdc6bc9",
+    "plugin/AutoCADBridge/CadOperations.cs": "02980e6b090bc70e6883e0a1e9d8fc7de9060b51a41c631d6cf38fce005ca5ee",
+    "plugin/AutoCADBridge/Contracts.cs": "2b21664d645dc1f5d02a203e6034f01208524f421415001353ead65b93e8da8e",
+    "plugin/AutoCADBridge/Diagnostics.cs": "97d845b93a436bd9f4ae8b9397d04ac966c82792025a5e6559bc25dd08e423d3",
+    "plugin/AutoCADBridge/DrawingOperations.cs": "e257b90cc0f42d04a5fc76c69ef6fc74fa0e39c2eb2bfe1c7d84413401fafd72",
+    "plugin/AutoCADBridge/EmbeddedHttpHost.cs": "931836a332ee677b58955feea112de3a59927f6d1c756dcbd85aa292640c997c",
+    "plugin/AutoCADBridge/Plugin.cs": "32ca52a36727b0f22adebb084936d8b1af528100887b436b9293e116ee9217b5",
+    "plugin/AutoCADBridge/QueryCursor.cs": "4f2f79a0828005498eaf7cd68bc6751e9df76e9329e858ba2316a9d47b713071",
+    "scripts/verify_runtime_tools.py": "1e580124511e2febeb8e22fe69e31035888615a6f2a4a489713e0710cd0d6352"
+  },
+  "instance_id": "a02bf8ab5bb044fbb907a4b8262b9efd",
+  "pagination_items": 1205,
+  "page_counts": [
+    400,
+    400,
+    400,
+    5
+  ],
+  "no_duplicate_ids": true,
+  "geometry_sha256": "b01070ace7197a889487f95bd1825ecbdcb57ef9a76dd6a5e66de6bae1714f35",
+  "duplicate_batch_deduplicated": true,
+  "journal_identity_verified": true,
+  "filter_projection_verified": true,
+  "cursor_errors_verified": true,
+  "rollback_reported": true,
+  "geometry_tools": [
+    {
+      "object_id": 1,
+      "type": "AcDb2dPolyline",
+      "layer": "0",
+      "handle": "2D0",
+      "closed": true,
+      "points": [
+        [
+          2,
+          3,
+          0
+        ],
+        [
+          12,
+          3,
+          0
+        ],
+        [
+          12,
+          8,
+          0
+        ],
+        [
+          2,
+          8,
+          0
+        ]
+      ],
+      "bounding_box": {
+        "min": [
+          2,
+          3,
+          0
+        ],
+        "max": [
+          12,
+          8,
+          0
+        ]
+      }
+    },
+    {
+      "object_id": 2,
+      "type": "AcDb2dPolyline",
+      "layer": "0",
+      "handle": "2D6",
+      "closed": true,
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          5,
+          4,
+          0
+        ]
+      ],
+      "bounding_box": {
+        "min": [
+          0,
+          0,
+          0
+        ],
+        "max": [
+          5,
+          4,
+          0
+        ]
+      }
+    },
+    {
+      "object_id": 3,
+      "type": "AcDbText",
+      "layer": "0",
+      "handle": "2DC",
+      "text_string": "中文 MCP 文字",
+      "insertion_point": [
+        10,
+        20,
+        0
+      ],
+      "height": 2.5,
+      "rotation": 29.999999999999996,
+      "text_style": "MCP_CJK",
+      "bounding_box": {
+        "min": [
+          8.526536312849162,
+          19.685521501419057,
+          0
+        ],
+        "max": [
+          30.308188154990308,
+          34.1722257010966,
+          0
+        ]
+      }
+    },
+    {
+      "object_id": 4,
+      "type": "AcDbMText",
+      "layer": "0",
+      "handle": "2DE",
+      "text_string": "第一行\\P第二行",
+      "insertion_point": [
+        20,
+        30,
+        0
+      ],
+      "height": 3,
+      "width": 40,
+      "rotation": 0,
+      "text_style": "MCP_CJK",
+      "bounding_box": {
+        "min": [
+          20,
+          20.558659217877093,
+          0
+        ],
+        "max": [
+          60,
+          30,
+          0
+        ]
+      }
+    },
+    {
+      "object_id": 5,
+      "type": "AcDbAlignedDimension",
+      "layer": "0",
+      "handle": "2E0",
+      "start_point": [
+        0,
+        0,
+        0
+      ],
+      "end_point": [
+        10,
+        0,
+        0
+      ],
+      "dimension_line_point": [
+        10,
+        5,
+        0
+      ],
+      "measurement": 10,
+      "bounding_box": {
+        "min": [
+          0,
+          0,
+          0
+        ],
+        "max": [
+          10,
+          8.177864938608458,
+          0
+        ]
+      }
+    }
+  ],
+  "scratch_documents": [
+    "Drawing1.dwg",
+    "Drawing2.dwg",
+    "Drawing3.dwg",
+    "Drawing4.dwg",
+    "Drawing5.dwg"
+  ],
+  "tests_passed": true
+}

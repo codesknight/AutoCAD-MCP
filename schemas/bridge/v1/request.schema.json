@@ -33,7 +33,12 @@
         "list_layers",
         "query_entities",
         "get_entity",
-        "query_entities_page"
+        "query_entities_page",
+        "draw_rectangle",
+        "draw_polyline",
+        "draw_text",
+        "draw_mtext",
+        "add_dimension"
       ]
     },
     "args": {

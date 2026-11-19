@@ -28,7 +28,7 @@ public sealed class BridgeServer : IDisposable
     private nint window;
     [DllImport("user32.dll")]
     private static extern bool PostMessage(nint hwnd, uint message, nint wparam, nint lparam);
-    public static readonly string[] Operations = ["new_document", "draw_line", "draw_circle", "create_layer", "list_layers", "query_entities", "get_entity", "query_entities_page"];
+    public static readonly string[] Operations = ["new_document", "draw_line", "draw_circle", "create_layer", "list_layers", "query_entities", "get_entity", "query_entities_page", .. DrawingOperations.Names];
 
     public BridgeServer(string token, int port) { this.token = token; this.port = port; }
     public void Start()

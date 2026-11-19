@@ -5,7 +5,7 @@
 
 | MCP 工具 | 当前 COM 路径 | 本轮验证 | HTTP Bridge |
 | --- | --- | --- | --- |
-| `add_dimension` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
+| `add_dimension` | 串行 STA adapter | 旧协议 fixture 保持 | 实机创建/定义点/测量值重读通过；共同 WCS Z 平面 |
 | `analyze_reference_drawing` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `ask_drawing_vqa` | 独立 VQA HTTP 转发 | schema；未调用外部服务 | 不适用 |
 | `bulk_get_block_attributes` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
@@ -17,10 +17,10 @@
 | `draw_circle` | 串行 STA adapter | 协议 fixture + 小规模实机 smoke | 实验支持；本轮实机重读通过 |
 | `draw_hatch` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `draw_line` | 串行 STA adapter | 协议 fixture + 小规模实机 smoke | 实验支持；本轮实机重读通过 |
-| `draw_mtext` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
-| `draw_polyline` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
-| `draw_rectangle` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
-| `draw_text` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
+| `draw_mtext` | 串行 STA adapter | 旧协议 fixture 保持 | 实机文字/宽高/样式重读通过 |
+| `draw_polyline` | 串行 STA adapter | 旧协议 fixture 保持 | 实机顶点/闭合重读通过；OCS XY/旧重量级类型 |
+| `draw_rectangle` | 串行 STA adapter | 旧协议 fixture 保持 | 首轮原生失败保留；修复后四顶点/闭合重读通过 |
+| `draw_text` | 串行 STA adapter | 旧协议 fixture 保持 | 实机文字/旋转/高度/MCP_CJK 重读通过 |
 | `export_current_view` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `get_block_attributes` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `get_entity` | 串行 STA adapter | 协议 fixture + 小规模实机 smoke | 实验支持；本轮实机重读通过 |
@@ -52,3 +52,5 @@
 | `query_entities_page` | 明确不支持 | 显式文档、过滤/字段裁剪、签名游标 |
 
 设计与验证边界见 [mcp-runtime-tools.md](mcp-runtime-tools.md)。
+
+首批绘图迁移及原生错误记录见 [http-drawing-migration.md](http-drawing-migration.md)。
