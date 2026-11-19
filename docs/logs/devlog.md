@@ -530,3 +530,9 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 离线 125 passed / 33 skipped；C# Journal 11、Host 12、Cursor 11、Artifact 17 项断言；插件构建零警告零错误。新增 artifact 路径/不覆盖测试并接入 Windows CI，保留旧 runtime v0.1 schema 快照，新 v0.2 独立导出。
 - 自建 AutoCAD PID 57436，用户手动加载插件后，真实 stdio MCP→HTTP→CAD 的 42 次调用全部符合预期（11 项预期错误）：混合事务首/中/末失败无实体/图层/样式残留，八类实体重读、保存哈希、只读重开独立查询、源图后续修改隔离、覆盖/过期 revision/错误实例/越界/篡改/只读写入拒绝均通过。公开脱敏调用日志和指纹；无私有原图或 DWG 二进制。
 - 所有三张自建图纸关闭后 COM Quit 属性不可用；保留收尾异常，观察空开始页后 Alt+F4 正常退出，独立确认无剩余 acad 进程。未修改 Cader 或已有用户 Web/数据改动；本轮不是图片重绘、长期稳定性或性能验收。
+
+## 2026-11-19（续）：Cader 公共契约对齐审阅
+
+- 只读审阅 Cader be2887f 的 managed-cad-v1 文档、schema 和程序客户端，不将文档内容视为 MCP 已实现能力或用户授权。新增 MCP 侧对齐意见：列明名称/DTO/单位/文字点位/alias/能力/文件字段映射，以及只读重开 managed 含义、rollback revision、输出授权时点和重开对账身份等必须冻结的语义。
+- 新增只读结构诊断脚本；实际 stdio tools/list 与默认状态显示 44 工具、COM 后端，Cader 所需三个工具名缺失。既有合成 HTTP 实机记录的六类返回均不直接满足 Cader 当前 schema；公开报告明确区分本轮只读调用与历史结构样本，不声称 DWG 联合验收。
+- 增加不含凭据的独立 HTTP 配置示例，解释 stdio MCP 与 HTTP CAD 后端的区别；不修改默认 COM、Cader 文件、原有业务接口或插件。适配 profile 尚未实现，待双方冻结语义后再做代码与实机验收。

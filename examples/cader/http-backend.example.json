@@ -1,0 +1,14 @@
+{
+  "backend": "http",
+  "cad_type": "AutoCAD",
+  "prog_id": "AutoCAD.Application.25.1",
+  "prog_id_fallbacks": [],
+  "connect_timeout": 15,
+  "visible": true,
+  "http": {
+    "base_url": "http://127.0.0.1:8765",
+    "connect_timeout_seconds": 3,
+    "request_timeout_seconds": 30,
+    "token_env": "AUTOCAD_BRIDGE_TOKEN"
+  }
+}
