@@ -542,3 +542,12 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 审阅 Cader 266c689 的回应，接受 Working/Verification Binding、observed_database_events、create 显式 output_directory、按操作对账和交集 ID 字符集；新图不要求初始 revision 为 0。此为 MCP 实施基线确认，不宣称双方发布已冻结或专用 profile 已实现。
 - 原字节保存共享 schema/examples/manifest，校验 SHA-256 分别 e239266e…dd28 / 9e33ab75…0e41，保留源 unfrozen 状态；快照禁用 Git 文本换行转换。新增独立 MCP 确认记录和确定性 DTO→原生映射约定，不改变既有 Journal.Canonical/hash 规则，不把审计 hash 当重放授权。
 - 新增离线共享向量验证：18 结构、11 操作身份、1 精确审计字符串，共 30 项通过；包含固定 manifest 与篡改拒绝的 32 项 pytest 通过。该结果不代替适配器、HTTP 或 DWG 实机验收；未修改 Cader、默认 COM、旧 44 接口或插件，也未启动 CAD/模型。
+
+## 2026-11-19（续）：版本化 Cader profile 与真实 DWG 联合闭环
+
+- 实现独立 `python -m autocad_mcp.managed_server` stdio 入口，七项工具按共享 cader-cad/1 修订 2 schema 校验及转换，直接返回公共 DTO；普通入口仍 44 工具、默认 COM 不变。运行时打包同一份精确 schema，并声明 jsonschema 依赖。
+- 原生 journal 新增紧凑 request records，接受时固定 profile/operation/输入文档/预期 revision/源 artifact，完成压缩后保留；既有去重 hash 与旧 job 回包不变。失败在 CAD 线程完成事务展开后观察权威 revision，拿不到时不伪造；写入锁文档后检查 revision，Python 重启可按现存原生记录对账，不自动重放未知写入。
+- profile 首轮仅图层 0 的 line/circle/text，检查规范样式并显式标记无法完整表达的属性。显式绑定规范本地 .cader/artifacts，保存禁止覆盖，重开生成独立只读验收图；文件操作与实体事务分开。
+- 离线 178 passed / 33 skipped；C# Journal 17 / Host 12 / Cursor 11 / Artifact 17 共 57 断言通过；插件 Release 零警告零错误，wheel 验证入口、配置与 schema 原字节。
+- Cader 266c689 实际 CLI 两轮均 exit 0、verification passed：状态→创建→空图查询→三实体事务→源查询→保存→只读重开→独立查询。两轮额外原生回滚均 revision 0→6、无实体/图层/样式残留；新 Python adapter 读回相同权威失败身份。逐文件核对 Cader 128 个 tracked 文件未改，不修改其代码/策略/默认配置。
+- 使用自建 AutoCAD PID 33564，结束关闭全部测试图纸与进程；首次快速关闭的 RPC_E_CALL_REJECTED 保留并有界恢复，最终无 acad 进程。公开脱敏两轮证据、源指纹、请求原文摘要核对及复现脚本；不提交 token 或 DWG。通过范围为固定计划真实文件闭环，不冒充图片识别、复杂电路重绘、性能或长期稳定性验收，也不代替双方发布冻结。

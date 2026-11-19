@@ -1,0 +1,2012 @@
+{
+  "contract_version": "cader-cad/1",
+  "status": "Cader-side proposal; MCP implementation required",
+  "draft_revision": 2,
+  "schemas": {
+    "plan": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "number",
+          "const": 1
+        },
+        "purpose": {
+          "type": "string",
+          "enum": [
+            "geometry-fixture",
+            "image-redraw"
+          ]
+        },
+        "coordinate_mode": {
+          "type": "string",
+          "enum": [
+            "schematic",
+            "physical"
+          ]
+        },
+        "units": {
+          "type": "string",
+          "enum": [
+            "layout",
+            "mm",
+            "cm",
+            "m",
+            "in",
+            "ft"
+          ]
+        },
+        "scale_evidence": {
+          "type": "object",
+          "properties": {
+            "source": {
+              "type": "string",
+              "enum": [
+                "user",
+                "dimension"
+              ]
+            },
+            "units": {
+              "type": "string"
+            },
+            "value": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "source",
+            "units",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        "assessment_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "operations": {
+          "minItems": 1,
+          "maxItems": 100,
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._-]{1,128}$"
+                  },
+                  "operation": {
+                    "type": "string",
+                    "const": "draw_line"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "start": {
+                        "type": "array",
+                        "prefixItems": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "items": false,
+                        "minItems": 3,
+                        "maxItems": 3
+                      },
+                      "end": {
+                        "type": "array",
+                        "prefixItems": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "items": false,
+                        "minItems": 3,
+                        "maxItems": 3
+                      },
+                      "layer": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      }
+                    },
+                    "required": [
+                      "start",
+                      "end",
+                      "layer"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "operation",
+                  "args"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._-]{1,128}$"
+                  },
+                  "operation": {
+                    "type": "string",
+                    "const": "draw_circle"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "center": {
+                        "type": "array",
+                        "prefixItems": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "items": false,
+                        "minItems": 3,
+                        "maxItems": 3
+                      },
+                      "radius": {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      "layer": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      }
+                    },
+                    "required": [
+                      "center",
+                      "radius",
+                      "layer"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "operation",
+                  "args"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._-]{1,128}$"
+                  },
+                  "operation": {
+                    "type": "string",
+                    "const": "draw_text"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "point": {
+                        "type": "array",
+                        "prefixItems": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "items": false,
+                        "minItems": 3,
+                        "maxItems": 3
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 2000
+                      },
+                      "height": {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      "layer": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      }
+                    },
+                    "required": [
+                      "point",
+                      "text",
+                      "height",
+                      "layer"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "operation",
+                  "args"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "version",
+        "purpose",
+        "coordinate_mode",
+        "units",
+        "operations"
+      ],
+      "additionalProperties": false
+    },
+    "status": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "type": "string",
+          "const": "cader-cad/1"
+        },
+        "backend": {
+          "type": "string",
+          "const": "http"
+        },
+        "instance_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "revision_mode": {
+          "type": "string",
+          "const": "observed_database_events"
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "instance_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._-]{1,128}$"
+              },
+              "document_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._-]{1,128}$"
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "units": {
+                "type": "string",
+                "enum": [
+                  "unitless",
+                  "mm",
+                  "cm",
+                  "m",
+                  "in",
+                  "ft"
+                ]
+              },
+              "managed": {
+                "type": "boolean",
+                "const": true
+              },
+              "read_only": {
+                "type": "boolean",
+                "const": false
+              },
+              "output_directory": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "instance_id",
+              "document_id",
+              "revision",
+              "units",
+              "managed",
+              "read_only",
+              "output_directory"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "capabilities": {
+          "type": "object",
+          "properties": {
+            "managed_documents": {
+              "type": "boolean",
+              "const": true
+            },
+            "atomic_operations": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "save_as": {
+              "type": "boolean",
+              "const": true
+            },
+            "reopen": {
+              "type": "boolean",
+              "const": true
+            },
+            "job_status": {
+              "type": "boolean",
+              "const": true
+            },
+            "query_entities": {
+              "type": "boolean",
+              "const": true
+            },
+            "max_batch_operations": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 1000
+            }
+          },
+          "required": [
+            "managed_documents",
+            "atomic_operations",
+            "save_as",
+            "reopen",
+            "job_status",
+            "query_entities",
+            "max_batch_operations"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "contract_version",
+        "backend",
+        "instance_id",
+        "revision_mode",
+        "documents",
+        "capabilities"
+      ],
+      "additionalProperties": false
+    },
+    "create": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "type": "string",
+          "const": "cader-cad/1"
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "status": {
+          "type": "string",
+          "const": "succeeded"
+        },
+        "document": {
+          "type": "object",
+          "properties": {
+            "instance_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]{1,128}$"
+            },
+            "document_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]{1,128}$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "units": {
+              "type": "string",
+              "enum": [
+                "unitless",
+                "mm",
+                "cm",
+                "m",
+                "in",
+                "ft"
+              ]
+            },
+            "managed": {
+              "type": "boolean",
+              "const": true
+            },
+            "read_only": {
+              "type": "boolean",
+              "const": false
+            },
+            "output_directory": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "instance_id",
+            "document_id",
+            "revision",
+            "units",
+            "managed",
+            "read_only",
+            "output_directory"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "contract_version",
+        "request_id",
+        "status",
+        "document"
+      ],
+      "additionalProperties": false
+    },
+    "working_binding": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "instance_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "document_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "units": {
+          "type": "string",
+          "enum": [
+            "unitless",
+            "mm",
+            "cm",
+            "m",
+            "in",
+            "ft"
+          ]
+        },
+        "managed": {
+          "type": "boolean",
+          "const": true
+        },
+        "read_only": {
+          "type": "boolean",
+          "const": false
+        },
+        "output_directory": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "instance_id",
+        "document_id",
+        "revision",
+        "units",
+        "managed",
+        "read_only",
+        "output_directory"
+      ],
+      "additionalProperties": false
+    },
+    "verification_binding": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "instance_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "document_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "units": {
+          "type": "string",
+          "enum": [
+            "unitless",
+            "mm",
+            "cm",
+            "m",
+            "in",
+            "ft"
+          ]
+        },
+        "managed": {
+          "type": "boolean",
+          "const": false
+        },
+        "read_only": {
+          "type": "boolean",
+          "const": true
+        },
+        "source_artifact_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        }
+      },
+      "required": [
+        "instance_id",
+        "document_id",
+        "revision",
+        "units",
+        "managed",
+        "read_only",
+        "source_artifact_id"
+      ],
+      "additionalProperties": false
+    },
+    "job": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "type": "string",
+          "const": "cader-cad/1"
+        },
+        "instance_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "operation": {
+          "type": "string",
+          "enum": [
+            "create_working_document",
+            "execute_atomic_batch",
+            "save_document_as",
+            "reopen_document"
+          ]
+        },
+        "request_document_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]{1,128}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result_document_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]{1,128}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_artifact_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]{1,128}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "succeeded",
+            "failed",
+            "pending",
+            "not_found"
+          ]
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "committed",
+            "not_executed",
+            "rolled_back",
+            "unknown"
+          ]
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._-]{1,128}$"
+              },
+              "status": {
+                "type": "string",
+                "const": "succeeded"
+              },
+              "object_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._-]{1,128}$"
+              }
+            },
+            "required": [
+              "id",
+              "status",
+              "object_id"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "contract_version",
+        "instance_id",
+        "request_id",
+        "operation",
+        "request_document_id",
+        "result_document_id",
+        "source_artifact_id",
+        "status",
+        "outcome"
+      ],
+      "additionalProperties": false
+    },
+    "save": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "type": "string",
+          "const": "cader-cad/1"
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "status": {
+          "type": "string",
+          "const": "succeeded"
+        },
+        "artifact": {
+          "type": "object",
+          "properties": {
+            "artifact_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]{1,128}$"
+            },
+            "instance_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]{1,128}$"
+            },
+            "document_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]{1,128}$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "byte_size": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "artifact_id",
+            "instance_id",
+            "document_id",
+            "revision",
+            "path",
+            "sha256",
+            "byte_size"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "contract_version",
+        "request_id",
+        "status",
+        "artifact"
+      ],
+      "additionalProperties": false
+    },
+    "reopen": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "type": "string",
+          "const": "cader-cad/1"
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "status": {
+          "type": "string",
+          "const": "succeeded"
+        },
+        "source_artifact_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "document": {
+          "type": "object",
+          "properties": {
+            "instance_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]{1,128}$"
+            },
+            "document_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]{1,128}$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "units": {
+              "type": "string",
+              "enum": [
+                "unitless",
+                "mm",
+                "cm",
+                "m",
+                "in",
+                "ft"
+              ]
+            },
+            "managed": {
+              "type": "boolean",
+              "const": false
+            },
+            "read_only": {
+              "type": "boolean",
+              "const": true
+            },
+            "source_artifact_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]{1,128}$"
+            }
+          },
+          "required": [
+            "instance_id",
+            "document_id",
+            "revision",
+            "units",
+            "managed",
+            "read_only",
+            "source_artifact_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "contract_version",
+        "request_id",
+        "status",
+        "source_artifact_id",
+        "document"
+      ],
+      "additionalProperties": false
+    },
+    "query": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "type": "string",
+          "const": "cader-cad/1"
+        },
+        "instance_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "document_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "items": {
+          "maxItems": 1000,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "object_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._-]{1,128}$"
+              },
+              "operation": {
+                "type": "string",
+                "enum": [
+                  "draw_line",
+                  "draw_circle",
+                  "draw_text"
+                ]
+              },
+              "args": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {}
+              }
+            },
+            "required": [
+              "object_id",
+              "operation",
+              "args"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "unsupported_geometry_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "contract_version",
+        "instance_id",
+        "document_id",
+        "revision",
+        "items",
+        "next_cursor",
+        "unsupported_geometry_types"
+      ],
+      "additionalProperties": false
+    },
+    "business_outcome": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "type": "string",
+          "const": "cader-task/1"
+        },
+        "run_status": {
+          "type": "string",
+          "enum": [
+            "succeeded",
+            "failed",
+            "cancelled"
+          ]
+        },
+        "task_status": {
+          "type": "string",
+          "enum": [
+            "succeeded",
+            "failed",
+            "blocked",
+            "unverified"
+          ]
+        },
+        "blocked_reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "artifact": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "artifact_id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9._-]{1,128}$"
+                },
+                "instance_id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9._-]{1,128}$"
+                },
+                "document_id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9._-]{1,128}$"
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "byte_size": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "artifact_id",
+                "instance_id",
+                "document_id",
+                "revision",
+                "path",
+                "sha256",
+                "byte_size"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "verification": {
+          "type": "string",
+          "enum": [
+            "not_performed",
+            "passed",
+            "failed"
+          ]
+        },
+        "authorization": {
+          "type": "object",
+          "properties": {
+            "user_task_authorized": {
+              "type": "boolean"
+            },
+            "write_authorized": {
+              "type": "boolean"
+            },
+            "runtime_write_available": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "user_task_authorized",
+            "write_authorized",
+            "runtime_write_available"
+          ],
+          "additionalProperties": false
+        },
+        "stages": {
+          "type": "object",
+          "properties": {
+            "recognition": {
+              "type": "string",
+              "enum": [
+                "not_performed",
+                "succeeded",
+                "failed",
+                "blocked",
+                "unverified",
+                "unknown"
+              ]
+            },
+            "planning": {
+              "type": "string",
+              "enum": [
+                "not_performed",
+                "succeeded",
+                "failed",
+                "blocked",
+                "unverified",
+                "unknown"
+              ]
+            },
+            "execution": {
+              "type": "string",
+              "enum": [
+                "not_performed",
+                "succeeded",
+                "failed",
+                "blocked",
+                "unverified",
+                "unknown"
+              ]
+            },
+            "saving": {
+              "type": "string",
+              "enum": [
+                "not_performed",
+                "succeeded",
+                "failed",
+                "blocked",
+                "unverified",
+                "unknown"
+              ]
+            },
+            "reopening": {
+              "type": "string",
+              "enum": [
+                "not_performed",
+                "succeeded",
+                "failed",
+                "blocked",
+                "unverified",
+                "unknown"
+              ]
+            }
+          },
+          "required": [
+            "recognition",
+            "planning",
+            "execution",
+            "saving",
+            "reopening"
+          ],
+          "additionalProperties": false
+        },
+        "performed_actions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "operation": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "submitted",
+                  "confirmed",
+                  "succeeded",
+                  "outcome_unknown"
+                ]
+              },
+              "request_id": {
+                "type": "string"
+              },
+              "document_id": {
+                "type": "string"
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "operation",
+              "status"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "contract_version",
+        "run_status",
+        "task_status",
+        "blocked_reasons",
+        "artifact",
+        "verification",
+        "authorization",
+        "stages",
+        "performed_actions"
+      ],
+      "additionalProperties": {}
+    },
+    "execution_policy": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "number",
+          "const": 1
+        },
+        "contract_version": {
+          "type": "string",
+          "const": "cader-cad/1"
+        },
+        "allowed_operations": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "draw_line",
+              "draw_circle",
+              "draw_text"
+            ]
+          }
+        },
+        "reviewed_plan_sha256": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      },
+      "required": [
+        "version",
+        "contract_version",
+        "allowed_operations",
+        "reviewed_plan_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "get_backend_status_request": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "create_working_document_request": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "instance_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "units": {
+          "type": "string",
+          "enum": [
+            "unitless",
+            "mm",
+            "cm",
+            "m",
+            "in",
+            "ft"
+          ]
+        },
+        "managed": {
+          "type": "boolean",
+          "const": true
+        },
+        "output_directory": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "instance_id",
+        "request_id",
+        "units",
+        "managed",
+        "output_directory"
+      ],
+      "additionalProperties": false
+    },
+    "execute_atomic_batch_request": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "instance_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "document_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "expected_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "operations": {
+          "minItems": 1,
+          "maxItems": 100,
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._-]{1,128}$"
+                  },
+                  "operation": {
+                    "type": "string",
+                    "const": "draw_line"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "start": {
+                        "type": "array",
+                        "prefixItems": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "items": false,
+                        "minItems": 3,
+                        "maxItems": 3
+                      },
+                      "end": {
+                        "type": "array",
+                        "prefixItems": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "items": false,
+                        "minItems": 3,
+                        "maxItems": 3
+                      },
+                      "layer": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      }
+                    },
+                    "required": [
+                      "start",
+                      "end",
+                      "layer"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "operation",
+                  "args"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._-]{1,128}$"
+                  },
+                  "operation": {
+                    "type": "string",
+                    "const": "draw_circle"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "center": {
+                        "type": "array",
+                        "prefixItems": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "items": false,
+                        "minItems": 3,
+                        "maxItems": 3
+                      },
+                      "radius": {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      "layer": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      }
+                    },
+                    "required": [
+                      "center",
+                      "radius",
+                      "layer"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "operation",
+                  "args"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._-]{1,128}$"
+                  },
+                  "operation": {
+                    "type": "string",
+                    "const": "draw_text"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "point": {
+                        "type": "array",
+                        "prefixItems": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "items": false,
+                        "minItems": 3,
+                        "maxItems": 3
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 2000
+                      },
+                      "height": {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      "layer": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      }
+                    },
+                    "required": [
+                      "point",
+                      "text",
+                      "height",
+                      "layer"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "operation",
+                  "args"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "instance_id",
+        "request_id",
+        "document_id",
+        "expected_revision",
+        "operations"
+      ],
+      "additionalProperties": false
+    },
+    "get_job_status_request": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "request_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        }
+      },
+      "required": [
+        "request_id"
+      ],
+      "additionalProperties": false
+    },
+    "query_entities_page_request": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "instance_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "document_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "expected_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        }
+      },
+      "required": [
+        "instance_id",
+        "document_id",
+        "expected_revision",
+        "cursor",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "save_document_as_request": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "instance_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "document_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "expected_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "output_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "overwrite": {
+          "type": "boolean",
+          "const": false
+        }
+      },
+      "required": [
+        "instance_id",
+        "request_id",
+        "document_id",
+        "expected_revision",
+        "output_path",
+        "overwrite"
+      ],
+      "additionalProperties": false
+    },
+    "reopen_document_request": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "instance_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "artifact_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        }
+      },
+      "required": [
+        "instance_id",
+        "request_id",
+        "artifact_id"
+      ],
+      "additionalProperties": false
+    },
+    "assessment": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "number",
+          "const": 1
+        },
+        "source_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "coordinate_mode": {
+          "type": "string",
+          "enum": [
+            "schematic",
+            "physical"
+          ]
+        },
+        "layout_units": {
+          "type": "string",
+          "minLength": 1
+        },
+        "physical_scale": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "units": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source_fact": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]{1,64}$"
+                }
+              },
+              "required": [
+                "units",
+                "source_fact"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "regions": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,64}$"
+              },
+              "left": {
+                "type": "number",
+                "minimum": 0
+              },
+              "top": {
+                "type": "number",
+                "minimum": 0
+              },
+              "width": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "height": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            },
+            "required": [
+              "id",
+              "left",
+              "top",
+              "width",
+              "height"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "facts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,64}$"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "symbol",
+                  "label",
+                  "voltage_kv",
+                  "drawing_id",
+                  "crossing",
+                  "scale"
+                ]
+              },
+              "raw": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "value": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "observed",
+                  "derived",
+                  "unknown",
+                  "conflict"
+                ]
+              },
+              "region_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,64}$"
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "raw",
+              "value",
+              "status",
+              "region_id"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$"
+          }
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,64}$"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "OR",
+                  "XOR",
+                  "AND",
+                  "NOT",
+                  "RESISTOR",
+                  "CAPACITOR",
+                  "BJT",
+                  "OTHER",
+                  "UNKNOWN"
+                ]
+              },
+              "fact_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,64}$"
+              },
+              "ports": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_-]{1,64}$"
+                    },
+                    "node_id": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_-]{1,64}$"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "node_id"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "fact_id",
+              "ports"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "wires": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,64}$"
+              },
+              "from_node": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,64}$"
+              },
+              "to_node": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,64}$"
+              },
+              "region_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,64}$"
+              }
+            },
+            "required": [
+              "id",
+              "from_node",
+              "to_node",
+              "region_id"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "crossings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "wire_a": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,64}$"
+              },
+              "wire_b": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,64}$"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "junction",
+                  "bridge",
+                  "unresolved"
+                ]
+              },
+              "node_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{1,64}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "fact_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,64}$"
+              }
+            },
+            "required": [
+              "wire_a",
+              "wire_b",
+              "kind",
+              "node_id",
+              "fact_id"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "version",
+        "source_sha256",
+        "coordinate_mode",
+        "layout_units",
+        "physical_scale",
+        "regions",
+        "facts",
+        "nodes",
+        "symbols",
+        "wires",
+        "crossings"
+      ],
+      "additionalProperties": false
+    },
+    "independent_facts": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "source_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "width": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "height": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "values": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$"
+          },
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ]
+          }
+        },
+        "symbol_kinds": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "enum": [
+              "OR",
+              "XOR",
+              "AND",
+              "NOT",
+              "RESISTOR",
+              "CAPACITOR",
+              "BJT",
+              "OTHER",
+              "UNKNOWN"
+            ]
+          }
+        },
+        "connected": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,64}$"
+              },
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,64}$"
+              }
+            ],
+            "items": false,
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "disconnected": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,64}$"
+              },
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,64}$"
+              }
+            ],
+            "items": false,
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "required_labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "source_sha256",
+        "width",
+        "height",
+        "values",
+        "symbol_kinds",
+        "connected",
+        "disconnected",
+        "required_labels"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

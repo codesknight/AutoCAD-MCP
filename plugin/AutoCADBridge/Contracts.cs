@@ -11,18 +11,29 @@ public sealed class BridgeException(string code, string message) : Exception(mes
 }
 
 public sealed record Request(string RequestId, string? DocumentId, long? ExpectedRevision,
-    string Operation, JsonObject Args);
+    string Operation, JsonObject Args, string? ClientProfile = null);
 
 public sealed class Job(Request request, string hash)
 {
     public Request Request { get; private set; } = request;
     public string Hash { get; } = hash;
+    public string Operation { get; } = request.Operation;
+    public string? RequestDocumentId { get; } = request.DocumentId;
+    public long? ExpectedRevision { get; } = request.ExpectedRevision;
+    public string? SourceArtifactId { get; } = request.Operation == "reopen_artifact" ? request.Args["artifact_id"]?.GetValue<string>() : null;
+    public string? ClientProfile { get; } = request.ClientProfile;
     public DateTime Created { get; } = DateTime.UtcNow;
     private DateTime? completed;
     public TaskCompletionSource<JsonObject> Completion { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly object gate = new();
     private JsonObject value = new() { ["request_id"] = request.RequestId, ["status"] = "queued" };
     public JsonObject Snapshot() { lock (gate) return (JsonObject)value.DeepClone(); }
+    public JsonObject Record() { lock (gate) return new JsonObject {
+        ["request_id"] = Request.RequestId, ["operation"] = Operation,
+        ["request_document_id"] = RequestDocumentId, ["expected_revision"] = ExpectedRevision,
+        ["source_artifact_id"] = SourceArtifactId, ["client_profile"] = ClientProfile,
+        ["native_request_hash"] = Hash, ["job"] = value.DeepClone()
+    }; }
     public bool IsExpired(DateTime cutoff) { lock (gate) return completed < cutoff; }
     public void Running() { lock (gate) value["status"] = "running"; }
     public void Finish(JsonObject result)

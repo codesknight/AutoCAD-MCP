@@ -2,6 +2,8 @@
 
 日期：2026-11-19。Cader 审阅提交：`266c6895048f1ce97a5517265a7f14f29bfa5e1c`。
 
+> 本文保留实施前的历史确认状态。后续版本化入口和真实 DWG 固定计划验收已完成，当前状态见[实现说明](../design/cader-managed-profile.md)与[验收报告](../validation/2026-11-19-cader-managed-profile.md)。共享 manifest 的 unfrozen 状态保持原样。
+
 **MCP 方接受 cader-cad/1、draft_revision=2 作为适配实施基线。** 四项语义意见已获得一致的回应，不再沿用修订 1 的冲突假设。此确认不表示版本化 profile 已实现、双方发布已冻结或真实 DWG 联合验收已通过。
 
 ## 精确输入与验证

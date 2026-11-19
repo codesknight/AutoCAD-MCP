@@ -1,0 +1,106 @@
+[
+  {
+    "operation": "create_working_document",
+    "request_id": "a1f57bdc-bb33-40e4-949b-8ec44e385a65",
+    "request_sha256": "0804f1a6139e2a75310f9b057c8851e8d15e24218b717faf901b763857d985de",
+    "exact_original_request_json_sha256_verified": true,
+    "request_json_published": false,
+    "reason": "Contains local paths; original bytes retained in private Cader run",
+    "arguments_redacted_for_display": {
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "request_id": "a1f57bdc-bb33-40e4-949b-8ec44e385a65",
+      "units": "unitless",
+      "managed": true,
+      "output_directory": "<CADER_WORKSPACE>\\.cader\\artifacts"
+    }
+  },
+  {
+    "operation": "execute_atomic_batch",
+    "request_id": "4dc8353e-afe2-4413-ae19-ddaeb5c2c5d5",
+    "request_sha256": "cca081230ec14a4465d2017083b2aaa71ab6e39544ff1138b5446faeb62358fc",
+    "exact_original_request_json_sha256_verified": true,
+    "request_json_published": false,
+    "reason": "Contains local paths; original bytes retained in private Cader run",
+    "arguments_redacted_for_display": {
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "request_id": "4dc8353e-afe2-4413-ae19-ddaeb5c2c5d5",
+      "document_id": "290c8f710d1f4d0ea11ef4cb1976868f",
+      "expected_revision": 0,
+      "operations": [
+        {
+          "id": "line-a",
+          "operation": "draw_line",
+          "args": {
+            "start": [
+              0,
+              0,
+              0
+            ],
+            "end": [
+              20,
+              0,
+              0
+            ],
+            "layer": "0"
+          }
+        },
+        {
+          "id": "circle-a",
+          "operation": "draw_circle",
+          "args": {
+            "center": [
+              10,
+              10,
+              0
+            ],
+            "radius": 3,
+            "layer": "0"
+          }
+        },
+        {
+          "id": "label-a",
+          "operation": "draw_text",
+          "args": {
+            "point": [
+              0,
+              15,
+              0
+            ],
+            "text": "CADER FIXTURE",
+            "height": 2,
+            "layer": "0"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "operation": "save_document_as",
+    "request_id": "b6c1e887-9726-442a-9520-11a7f0186936",
+    "request_sha256": "31e736553263b16f37d7368ada0d30606fcf8edc6f741d1f9ea1b8fcdb5cbbf5",
+    "exact_original_request_json_sha256_verified": true,
+    "request_json_published": false,
+    "reason": "Contains local paths; original bytes retained in private Cader run",
+    "arguments_redacted_for_display": {
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "request_id": "b6c1e887-9726-442a-9520-11a7f0186936",
+      "document_id": "290c8f710d1f4d0ea11ef4cb1976868f",
+      "expected_revision": 16,
+      "output_path": "<CADER_WORKSPACE>\\.cader\\artifacts\\joint-mcp-29d3d783b5c84f35a01af421895c3725.dwg",
+      "overwrite": false
+    }
+  },
+  {
+    "operation": "reopen_document",
+    "request_id": "64ef23f4-cfc3-4474-b54f-121aaf044246",
+    "request_sha256": "83bc691954c693bbd477fe214bf7a3c08dd5adcf62fb301558e703997909159b",
+    "exact_original_request_json_sha256_verified": true,
+    "request_json_published": false,
+    "reason": "Contains local paths; original bytes retained in private Cader run",
+    "arguments_redacted_for_display": {
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "request_id": "64ef23f4-cfc3-4474-b54f-121aaf044246",
+      "artifact_id": "2746b1d7648049c68b6a512d037970db"
+    }
+  }
+]

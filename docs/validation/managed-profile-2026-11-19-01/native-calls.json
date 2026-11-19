@@ -1,0 +1,493 @@
+[
+  {
+    "tool": "get_backend_status",
+    "arguments": {},
+    "result": {
+      "contract_version": "cader-cad/1",
+      "backend": "http",
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "revision_mode": "observed_database_events",
+      "documents": [],
+      "capabilities": {
+        "managed_documents": true,
+        "atomic_operations": [
+          "draw_line",
+          "draw_circle",
+          "draw_text"
+        ],
+        "save_as": true,
+        "reopen": true,
+        "job_status": true,
+        "query_entities": true,
+        "max_batch_operations": 100
+      }
+    }
+  },
+  {
+    "tool": "create_working_document",
+    "arguments": {
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "request_id": "7391cf23641b4a26885c7eebe932cced",
+      "units": "unitless",
+      "managed": true,
+      "output_directory": "<MCP_WORKSPACE>\\.git\\managed-profile-20261119\\joint-01\\native-success\\.cader\\artifacts"
+    },
+    "result": {
+      "contract_version": "cader-cad/1",
+      "request_id": "7391cf23641b4a26885c7eebe932cced",
+      "status": "succeeded",
+      "document": {
+        "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+        "document_id": "7efae6fab437444a9059c9cb053c6458",
+        "revision": 0,
+        "units": "unitless",
+        "managed": true,
+        "read_only": false,
+        "output_directory": "<MCP_WORKSPACE>\\.git\\managed-profile-20261119\\joint-01\\native-success\\.cader\\artifacts"
+      }
+    }
+  },
+  {
+    "tool": "query_entities_page",
+    "arguments": {
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "document_id": "7efae6fab437444a9059c9cb053c6458",
+      "expected_revision": 0,
+      "cursor": null,
+      "limit": 1000
+    },
+    "result": {
+      "contract_version": "cader-cad/1",
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "document_id": "7efae6fab437444a9059c9cb053c6458",
+      "revision": 0,
+      "items": [],
+      "next_cursor": null,
+      "unsupported_geometry_types": []
+    }
+  },
+  {
+    "tool": "execute_atomic_batch",
+    "arguments": {
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "document_id": "7efae6fab437444a9059c9cb053c6458",
+      "request_id": "23457b24b44149379125d288b08d89ed",
+      "expected_revision": 0,
+      "operations": [
+        {
+          "id": "line-a",
+          "operation": "draw_line",
+          "args": {
+            "start": [
+              0,
+              0,
+              0
+            ],
+            "end": [
+              20,
+              0,
+              0
+            ],
+            "layer": "0"
+          }
+        },
+        {
+          "id": "circle-a",
+          "operation": "draw_circle",
+          "args": {
+            "center": [
+              10,
+              10,
+              0
+            ],
+            "radius": 3,
+            "layer": "0"
+          }
+        },
+        {
+          "id": "label-a",
+          "operation": "draw_text",
+          "args": {
+            "point": [
+              0,
+              15,
+              0
+            ],
+            "text": "CADER FIXTURE",
+            "height": 2,
+            "layer": "0"
+          }
+        }
+      ]
+    },
+    "result": {
+      "contract_version": "cader-cad/1",
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "request_id": "23457b24b44149379125d288b08d89ed",
+      "operation": "execute_atomic_batch",
+      "request_document_id": "7efae6fab437444a9059c9cb053c6458",
+      "result_document_id": "7efae6fab437444a9059c9cb053c6458",
+      "source_artifact_id": null,
+      "status": "succeeded",
+      "outcome": "committed",
+      "revision": 16,
+      "results": [
+        {
+          "id": "line-a",
+          "status": "succeeded",
+          "object_id": "1"
+        },
+        {
+          "id": "circle-a",
+          "status": "succeeded",
+          "object_id": "2"
+        },
+        {
+          "id": "label-a",
+          "status": "succeeded",
+          "object_id": "3"
+        }
+      ]
+    }
+  },
+  {
+    "tool": "query_entities_page",
+    "arguments": {
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "document_id": "7efae6fab437444a9059c9cb053c6458",
+      "expected_revision": 16,
+      "cursor": null,
+      "limit": 1000
+    },
+    "result": {
+      "contract_version": "cader-cad/1",
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "document_id": "7efae6fab437444a9059c9cb053c6458",
+      "revision": 16,
+      "items": [
+        {
+          "object_id": "1",
+          "operation": "draw_line",
+          "args": {
+            "start": [
+              0,
+              0,
+              0
+            ],
+            "end": [
+              20,
+              0,
+              0
+            ],
+            "layer": "0"
+          }
+        },
+        {
+          "object_id": "2",
+          "operation": "draw_circle",
+          "args": {
+            "center": [
+              10,
+              10,
+              0
+            ],
+            "radius": 3,
+            "layer": "0"
+          }
+        },
+        {
+          "object_id": "3",
+          "operation": "draw_text",
+          "args": {
+            "point": [
+              0,
+              15,
+              0
+            ],
+            "text": "CADER FIXTURE",
+            "height": 2,
+            "layer": "0"
+          }
+        }
+      ],
+      "next_cursor": null,
+      "unsupported_geometry_types": []
+    }
+  },
+  {
+    "tool": "save_document_as",
+    "arguments": {
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "document_id": "7efae6fab437444a9059c9cb053c6458",
+      "request_id": "c5f515a414aa4a7ebb5868d523026ddc",
+      "expected_revision": 16,
+      "output_path": "<MCP_WORKSPACE>\\.git\\managed-profile-20261119\\joint-01\\native-success\\.cader\\artifacts\\fixture.dwg",
+      "overwrite": false
+    },
+    "result": {
+      "contract_version": "cader-cad/1",
+      "request_id": "c5f515a414aa4a7ebb5868d523026ddc",
+      "status": "succeeded",
+      "artifact": {
+        "artifact_id": "88328101e6294d0da713776dc5c7d877",
+        "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+        "document_id": "7efae6fab437444a9059c9cb053c6458",
+        "revision": 16,
+        "path": "<MCP_WORKSPACE>\\.git\\managed-profile-20261119\\joint-01\\native-success\\.cader\\artifacts\\fixture.dwg",
+        "sha256": "a4e29bbd120b0a8a068d3c025ebe7c13efa9d0d8181bdfbf368c5672eb8ae632",
+        "byte_size": 32307
+      }
+    }
+  },
+  {
+    "tool": "reopen_document",
+    "arguments": {
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "request_id": "aa7631b532de4b01a92cd5b3b9aec946",
+      "artifact_id": "88328101e6294d0da713776dc5c7d877"
+    },
+    "result": {
+      "contract_version": "cader-cad/1",
+      "request_id": "aa7631b532de4b01a92cd5b3b9aec946",
+      "status": "succeeded",
+      "source_artifact_id": "88328101e6294d0da713776dc5c7d877",
+      "document": {
+        "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+        "document_id": "cfb5e751da2849ffa1fd73d2b42702a3",
+        "revision": 0,
+        "units": "unitless",
+        "managed": false,
+        "read_only": true,
+        "source_artifact_id": "88328101e6294d0da713776dc5c7d877"
+      }
+    }
+  },
+  {
+    "tool": "query_entities_page",
+    "arguments": {
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "document_id": "cfb5e751da2849ffa1fd73d2b42702a3",
+      "expected_revision": 0,
+      "cursor": null,
+      "limit": 1000
+    },
+    "result": {
+      "contract_version": "cader-cad/1",
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "document_id": "cfb5e751da2849ffa1fd73d2b42702a3",
+      "revision": 0,
+      "items": [
+        {
+          "object_id": "1",
+          "operation": "draw_line",
+          "args": {
+            "start": [
+              0,
+              0,
+              0
+            ],
+            "end": [
+              20,
+              0,
+              0
+            ],
+            "layer": "0"
+          }
+        },
+        {
+          "object_id": "2",
+          "operation": "draw_circle",
+          "args": {
+            "center": [
+              10,
+              10,
+              0
+            ],
+            "radius": 3,
+            "layer": "0"
+          }
+        },
+        {
+          "object_id": "3",
+          "operation": "draw_text",
+          "args": {
+            "point": [
+              0,
+              15,
+              0
+            ],
+            "text": "CADER FIXTURE",
+            "height": 2,
+            "layer": "0"
+          }
+        }
+      ],
+      "next_cursor": null,
+      "unsupported_geometry_types": []
+    }
+  },
+  {
+    "tool": "create_working_document",
+    "arguments": {
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "request_id": "7491186d72f84c88aa875deb07410fff",
+      "units": "unitless",
+      "managed": true,
+      "output_directory": "<MCP_WORKSPACE>\\.git\\managed-profile-20261119\\joint-01\\native-rollback\\.cader\\artifacts"
+    },
+    "result": {
+      "contract_version": "cader-cad/1",
+      "request_id": "7491186d72f84c88aa875deb07410fff",
+      "status": "succeeded",
+      "document": {
+        "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+        "document_id": "1037fc72b4774b3c9833dee96db04447",
+        "revision": 0,
+        "units": "unitless",
+        "managed": true,
+        "read_only": false,
+        "output_directory": "<MCP_WORKSPACE>\\.git\\managed-profile-20261119\\joint-01\\native-rollback\\.cader\\artifacts"
+      }
+    }
+  },
+  {
+    "tool": "execute_atomic_batch",
+    "arguments": {
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "document_id": "1037fc72b4774b3c9833dee96db04447",
+      "request_id": "dbf0299f238b493280b24796f97af6df",
+      "expected_revision": 0,
+      "operations": [
+        {
+          "id": "label-a",
+          "operation": "draw_text",
+          "args": {
+            "point": [
+              0,
+              15,
+              0
+            ],
+            "text": "CADER FIXTURE",
+            "height": 2,
+            "layer": "0"
+          }
+        },
+        {
+          "id": "native-invalid",
+          "operation": "draw_line",
+          "args": {
+            "start": [
+              0,
+              0,
+              0
+            ],
+            "end": [
+              1e-12,
+              0,
+              0
+            ],
+            "layer": "0"
+          }
+        }
+      ]
+    },
+    "result": {
+      "contract_version": "cader-cad/1",
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "request_id": "dbf0299f238b493280b24796f97af6df",
+      "operation": "execute_atomic_batch",
+      "request_document_id": "1037fc72b4774b3c9833dee96db04447",
+      "result_document_id": null,
+      "source_artifact_id": null,
+      "status": "failed",
+      "outcome": "rolled_back",
+      "revision": 6
+    }
+  },
+  {
+    "tool": "query_entities_page",
+    "arguments": {
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "document_id": "1037fc72b4774b3c9833dee96db04447",
+      "expected_revision": 6,
+      "cursor": null,
+      "limit": 1000
+    },
+    "result": {
+      "contract_version": "cader-cad/1",
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "document_id": "1037fc72b4774b3c9833dee96db04447",
+      "revision": 6,
+      "items": [],
+      "next_cursor": null,
+      "unsupported_geometry_types": []
+    }
+  },
+  {
+    "tool": "execute_atomic_batch",
+    "arguments": {
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "document_id": "1037fc72b4774b3c9833dee96db04447",
+      "request_id": "9a2e61c882124a32bc691b1d9911d87a",
+      "expected_revision": 5,
+      "operations": [
+        {
+          "id": "line-a",
+          "operation": "draw_line",
+          "args": {
+            "start": [
+              0,
+              0,
+              0
+            ],
+            "end": [
+              20,
+              0,
+              0
+            ],
+            "layer": "0"
+          }
+        },
+        {
+          "id": "circle-a",
+          "operation": "draw_circle",
+          "args": {
+            "center": [
+              10,
+              10,
+              0
+            ],
+            "radius": 3,
+            "layer": "0"
+          }
+        },
+        {
+          "id": "label-a",
+          "operation": "draw_text",
+          "args": {
+            "point": [
+              0,
+              15,
+              0
+            ],
+            "text": "CADER FIXTURE",
+            "height": 2,
+            "layer": "0"
+          }
+        }
+      ]
+    },
+    "result": {
+      "contract_version": "cader-cad/1",
+      "instance_id": "2194a87363c1477f8be1a88fdf07f215",
+      "request_id": "9a2e61c882124a32bc691b1d9911d87a",
+      "operation": "execute_atomic_batch",
+      "request_document_id": "1037fc72b4774b3c9833dee96db04447",
+      "result_document_id": null,
+      "source_artifact_id": null,
+      "status": "failed",
+      "outcome": "not_executed",
+      "revision": 6
+    }
+  }
+]
