@@ -35,7 +35,7 @@ async def verify(config_path,token,records,result,child_log):
     async with stdio_client(parameters,errlog=child_log) as (read,write):
         async with ClientSession(read,write) as client:
             await client.initialize()
-            assert len((await client.list_tools()).tools)==40
+            assert len((await client.list_tools()).tools)==44
             async def call(name,args,expected_error=None):
                 response=await client.call_tool(name,args)
                 text=' '.join(getattr(c,'text','') for c in response.content)

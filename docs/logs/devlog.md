@@ -521,3 +521,12 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 按用户要求重新设计静态封面，使用内置 image_gen 生成暖白/石墨/青绿的工程视觉：轴测装配体、正投影、剖面和尺寸标注体现 CAD，工具连接与空白接口表达 MCP 模块化和可扩展性。
 - 新封面保存为 docs/assets/cover.png，中英文 README 共用图片并更新替代文字；旧 cover.svg 保留备用，原有真实演示 GIF 不变。归档实际生成提示词及概念图说明，不将生成插画当作实机画面或验收证据。
 - 检查图片格式、文字与 README 展示；未修改业务代码、用户已有 Web 改动或 Cader 项目，本轮未操作 AutoCAD。
+
+## 2026-11-19（续）：受控工作图、扩展事务与 DWG 保存件
+
+- 仅修改 MCP：新增 create_working_drawing/get_working_drawing/save_working_drawing/reopen_saved_drawing 四项 HTTP 专用结构化工具，总数 44；原 36 项 schema 保持，COM 默认不变。新工作图绑定单位、输出目录和文档身份，不改旧工具绑定；请求预分配 ID，提交前原生实例校验，结果未知不自动重放。
+- 保存为新 DWG 副本，保留编辑器文档名；临时完整保存后不覆盖发布，记录 SHA-256/字节数/源 revision。保存件只凭本实例 artifact_id 校验哈希并只读重开，返回独立 document_id；文件操作不进入图元事务，不声称文件失败已回滚。记录为内存态，重启不可恢复，最多 2048 项；路径/已有文件/链接边界明确拒绝。
+- 原子批处理扩至图层、线、圆、圆弧、矩形、多段线、单行/多行文字、对齐标注九项；保留 OCS XY、角度与标注平面兼容规则。分页补圆弧、法向、bulge、线型/颜色/线宽及图层属性，并标记不支持的几何。
+- 离线 125 passed / 33 skipped；C# Journal 11、Host 12、Cursor 11、Artifact 17 项断言；插件构建零警告零错误。新增 artifact 路径/不覆盖测试并接入 Windows CI，保留旧 runtime v0.1 schema 快照，新 v0.2 独立导出。
+- 自建 AutoCAD PID 57436，用户手动加载插件后，真实 stdio MCP→HTTP→CAD 的 42 次调用全部符合预期（11 项预期错误）：混合事务首/中/末失败无实体/图层/样式残留，八类实体重读、保存哈希、只读重开独立查询、源图后续修改隔离、覆盖/过期 revision/错误实例/越界/篡改/只读写入拒绝均通过。公开脱敏调用日志和指纹；无私有原图或 DWG 二进制。
+- 所有三张自建图纸关闭后 COM Quit 属性不可用；保留收尾异常，观察空开始页后 Alt+F4 正常退出，独立确认无剩余 acad 进程。未修改 Cader 或已有用户 Web/数据改动；本轮不是图片重绘、长期稳定性或性能验收。

@@ -95,13 +95,14 @@ def job_status(request_id):
     return method(request_id)
 
 
-def atomic_batch(document_id,operations,request_id,expected_revision):
+def atomic_batch(document_id,operations,request_id,expected_revision,instance_id=None):
     from autocad_mcp.cad.errors import UnsupportedOperationError
     backend=get_backend()
     method=getattr(backend,"execute_batch_job",None)
     if method is None:
         raise UnsupportedOperationError("COM has no atomic batch capability; no fallback was attempted")
-    return method(operations,document_id=document_id,request_id=request_id,expected_revision=expected_revision)
+    identity = {"instance_id":instance_id} if instance_id is not None else {}
+    return method(operations,document_id=document_id,request_id=request_id,expected_revision=expected_revision,**identity)
 
 
 def query_page(document_id,entity_type,layer,fields,limit,cursor):
@@ -111,3 +112,11 @@ def query_page(document_id,entity_type,layer,fields,limit,cursor):
     if method is None:
         raise UnsupportedOperationError("COM has no revision-bound pagination; no fallback was attempted")
     return method(document_id,entity_type=entity_type,layer=layer,fields=fields,limit=limit,cursor=cursor)
+
+
+def document_job(operation, args, **identity):
+    from autocad_mcp.cad.errors import UnsupportedOperationError
+    method = getattr(get_backend(), "document_job", None)
+    if method is None:
+        raise UnsupportedOperationError("COM has no controlled document lifecycle; no fallback was attempted")
+    return method(operation, args, **identity)

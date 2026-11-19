@@ -91,7 +91,7 @@ class MockBridge:
         if path == "/v1/capabilities":
             return httpx.Response(200, json={"instance_id":self.instance,
                 "protocol_version":"1","operations":self.operations,"atomic_batch":True,
-                "query_pagination":self.query_pagination})
+                "query_pagination":self.query_pagination,"controlled_documents":getattr(self,"controlled_documents",False)})
         if path == "/v1/status":
             return httpx.Response(200, json={"instance_id":self.instance,"request_id":"status",
                 "status":"succeeded","result":{"active_document_id":"doc-a","documents":[]}})

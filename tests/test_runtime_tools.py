@@ -87,3 +87,20 @@ def test_explicit_document_and_job_envelopes_over_mcp(monkeypatch):
         assert calls==[([LINE],dict(document_id='explicit-doc',request_id='stable-request',expected_revision=6))]
     finally:
         state.close_backend()
+
+@pytest.mark.parametrize('operation,args',[
+    ('draw_arc',dict(center=[0,0,0],radius=2,start_angle=0,end_angle=360)),
+    ('draw_rectangle',dict(corner1=[0,0,0],corner2=[0,3,0])),
+    ('draw_polyline',dict(points=[[0,0,0]])),
+    ('draw_text',dict(position=[0,0,0],height=0,text='bad')),
+    ('draw_mtext',dict(position=[0,0,0],text='bad\x00text')),
+    ('add_dimension',dict(start=[0,0,0],end=[2,0,1],text_position=[1,3,0])),
+])
+def test_invalid_extended_batch_is_rejected_before_backend(monkeypatch,operation,args):
+    state.close_backend()
+    monkeypatch.setattr(state,'create_backend',lambda _:pytest.fail('Invalid geometry reached backend'))
+    async def run():
+        async with create_connected_server_and_client_session(mcp) as client:
+            result=await client.call_tool('execute_atomic_batch',dict(document_id='d',operations=[dict(id='one',operation=operation,args=args)]))
+            assert result.isError
+    asyncio.run(run())

@@ -8,7 +8,7 @@ namespace AutoCADBridge;
 public static class DrawingOperations
 {
     public sealed record Created(Entity Entity,Point3d[]? Vertices=null,bool Closed=false);
-    public static readonly string[] Names=["draw_rectangle","draw_polyline","draw_text","draw_mtext","add_dimension"];
+    public static readonly string[] Names=["draw_arc","draw_rectangle","draw_polyline","draw_text","draw_mtext","add_dimension"];
     private static Point3d Point(JsonNode? value) {
         var a=value?.AsArray();
         if(a is null || a.Count!=3) throw new BridgeException("INVALID_ARGUMENT","Expected a three-coordinate point");
@@ -35,6 +35,14 @@ public static class DrawingOperations
     }
     public static Created Create(string operation,JsonObject args,Database db,Transaction tr) {
         try {
+            if(operation=="draw_arc") {
+                var center=Point(args["center"]);var radius=Number(args,"radius",positive:true);
+                var start=Number(args,"start_angle");var end=Number(args,"end_angle");
+                var sweep=((end-start)%360+360)%360;
+                if(!double.IsFinite(sweep)||sweep<1e-10) throw new BridgeException("INVALID_ARGUMENT","Arc sweep must be nonzero and less than a full circle");
+                var entity=new Arc(center,Vector3d.ZAxis,radius,((start%360+360)%360)*Math.PI/180,((end%360+360)%360)*Math.PI/180);
+                entity.SetDatabaseDefaults(db);return new(entity);
+            }
             if(operation is "draw_rectangle" or "draw_polyline") {
                 Point3d[] points;
                 bool closed;

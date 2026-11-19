@@ -3,12 +3,11 @@
 The next five legacy MCP tools use native .NET geometry when HTTP is selected:
 `draw_rectangle`, `draw_polyline`, `draw_text`, `draw_mtext`, and `add_dimension`.
 Their original MCP schemas and string results remain unchanged. COM stays the
-default, and the atomic batch allowlist stays limited to layer/line/circle.
+default. This first-group record predates the [controlled-document extension](controlled-working-drawings.md), which adds arc and extends transactional batches.
 
 Every write still requires a Bridge-created document and runs under its document
 lock and transaction. Errors and unknown outcomes never trigger COM fallback or
-automatic write replay. Editing, blocks/attributes and filesystem tools remain
-separate migration work.
+automatic write replay. Editing and blocks/attributes remain separate migration work; saved artifacts now have their own controlled lifecycle, while legacy file tool migration remains separate.
 
 ## Geometry and text compatibility
 

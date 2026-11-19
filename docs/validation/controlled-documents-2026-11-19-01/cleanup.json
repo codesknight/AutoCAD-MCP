@@ -1,0 +1,13 @@
+{
+  "baseline_pids": [],
+  "owned_pid": 57436,
+  "documents_closed": [
+    "fixture.dwg",
+    "Drawing2.dwg",
+    "Drawing1.dwg"
+  ],
+  "first_quit_attempt": "COM Quit attribute unavailable after documents closed; no document close was repeated",
+  "recovery": "Observed empty AutoCAD Start workspace; Alt+F4 normal exit",
+  "process_exit_confirmed": true,
+  "remaining_acad_processes": []
+}

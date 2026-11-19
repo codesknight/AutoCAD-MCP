@@ -36,8 +36,9 @@ def test_actual_stdio_tool_discovery_matches_baseline(tmp_path):
     assert {name:discovered[name] for name in baseline} == baseline
     assert set(discovered)-set(baseline) == {
         'get_backend_status','get_job_status','execute_atomic_batch','query_entities_page',
+        'create_working_drawing','get_working_drawing','save_working_drawing','reopen_saved_drawing',
     }
-    runtime=json.loads((FIXTURES/'mcp-runtime-tools-v0.1.json').read_text(encoding='utf-8'))
+    runtime=json.loads((FIXTURES/'mcp-runtime-tools-v0.2.json').read_text(encoding='utf-8'))
     assert {name:discovered[name] for name in set(discovered)-set(baseline)} == {
         tool['name']:stable_schema(tool) for tool in runtime
     }

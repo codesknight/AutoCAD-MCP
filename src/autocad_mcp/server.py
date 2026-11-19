@@ -4,7 +4,7 @@ import anyio
 
 from mcp.server.fastmcp import FastMCP
 
-from autocad_mcp.tools import document_tools, drawing_tools, query_tools, reference_tools, vqa_tools, runtime_tools
+from autocad_mcp.tools import document_tools, drawing_tools, query_tools, reference_tools, vqa_tools, runtime_tools, working_document_tools
 
 from autocad_mcp.state import server_session_started, server_session_stopped
 
@@ -28,6 +28,7 @@ document_tools.register(mcp)
 vqa_tools.register(mcp)
 reference_tools.register(mcp)
 runtime_tools.register(mcp)
+working_document_tools.register(mcp)
 
 if __name__ == "__main__":
     import sys

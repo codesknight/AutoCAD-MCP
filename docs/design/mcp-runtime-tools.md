@@ -8,13 +8,14 @@ never switches backends.
 | --- | --- | --- |
 | `get_backend_status` | Worker lifecycle/queue metadata; does not start or probe CAD | Instance, capabilities, active/bound document IDs and observed revisions |
 | `get_job_status` | Unsupported | Read an existing request journal entry without resubmitting it |
-| `execute_atomic_batch` | Unsupported | 1–200 layer/line/circle steps in one transaction |
+| `execute_atomic_batch` | Unsupported | 1–200 layer/line/circle/arc/rectangle/polyline/text/mtext/dimension steps in one transaction |
 | `query_entities_page` | Unsupported | Model-space queries with type/layer filters and field projection |
 
 ## Explicit document identity
 
-Call `new_drawing`, then `get_backend_status` and choose the corresponding managed
-document's `document_id`. The new batch and page tools require this ID on every
+For new clients use [create_working_drawing](controlled-working-drawings.md) with an
+explicit instance and retain its returned identity. The earlier `new_drawing` +
+`get_backend_status` discovery workflow remains available for compatibility. The new batch and page tools require this ID on every
 call. They do not change the shared legacy tools' bound document. The HTTP Bridge
 allows writes only to Bridge-created documents, and validates document/revision
 again on its CAD main thread. Old tools retain their existing signatures.
@@ -23,6 +24,7 @@ Example batch arguments:
 
 ```json
 {
+  "instance_id": "<current Bridge instance>",
   "document_id": "<managed document ID from status>",
   "request_id": "fixture-001",
   "expected_revision": 0,
@@ -34,7 +36,7 @@ Example batch arguments:
 ```
 
 Use the revision actually returned by status; `0` above is illustrative. Step IDs
-must be unique. Coordinates are finite three-element WCS arrays. A batch failure
+must be unique. Coordinates are finite three-element arrays. Rectangle/polyline retain legacy OCS XY behavior with input Z ignored; other points use WCS. A batch failure
 rolls back its transaction, including a layer created earlier in that batch.
 There are no dynamic references between steps or filesystem operations.
 

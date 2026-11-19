@@ -13,7 +13,7 @@
 | `copy_entity` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `create_layer` | 串行 STA adapter | 协议 fixture + 小规模实机 smoke | 实验支持；本轮实机重读通过 |
 | `delete_entity` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
-| `draw_arc` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
+| `draw_arc` | 串行 STA adapter | 旧 schema 保持 | 新增 HTTP；实机批处理创建及角度/长度/端点重读通过 |
 | `draw_circle` | 串行 STA adapter | 协议 fixture + 小规模实机 smoke | 实验支持；本轮实机重读通过 |
 | `draw_hatch` | 串行 STA adapter | 协议 fixture；未实机复测 | 未实现 |
 | `draw_line` | 串行 STA adapter | 协议 fixture + 小规模实机 smoke | 实验支持；本轮实机重读通过 |
@@ -54,3 +54,11 @@
 设计与验证边界见 [mcp-runtime-tools.md](mcp-runtime-tools.md)。
 
 首批绘图迁移及原生错误记录见 [http-drawing-migration.md](http-drawing-migration.md)。
+
+## 受控工作图增量（2026-11-19）
+
+旧 36 项 schema 不变；总数增至 44。新增 create_working_drawing/get_working_drawing/save_working_drawing/reopen_saved_drawing 均仅 HTTP 支持，COM 明确拒绝。旧 save_drawing/export_current_view 的 HTTP 迁移状态不变。
+
+原子批处理现支持图层、直线、圆、圆弧、矩形、多段线、文字、多行文字和标注；文件操作独立于数据库事务。能力清单区分单次、批处理及保存/重开。
+
+契约见 [controlled-working-drawings.md](controlled-working-drawings.md)，真实创建—绘制—保存—只读重开—独立查询证据见[实机报告](../validation/2026-11-19-controlled-documents.md)。
