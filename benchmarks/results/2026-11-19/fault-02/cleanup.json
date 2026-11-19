@@ -1,0 +1,10 @@
+{
+  "closed_documents": [
+    "Drawing10.dwg"
+  ],
+  "remaining_documents": [],
+  "listener_stopped": false,
+  "cad_process_closed": false,
+  "listener_error": "TimeoutError",
+  "original_active_restored": true
+}

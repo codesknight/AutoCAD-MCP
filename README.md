@@ -159,6 +159,8 @@ Both paths keep the MCP tool layer. Unsupported HTTP operations return an explic
 
 See [runtime tool examples and recovery rules](docs/design/mcp-runtime-tools.md) for explicit document IDs, batch steps and cursor handling.
 
+See the [native fault and reproducible performance report](docs/validation/2026-11-19-cad09.md), including failed samples and qualification limits. COM remains the default.
+
 **MCP HTTP and the CAD Bridge are separate interfaces.** `--http` selects MCP Streamable HTTP on port **8931**. `backend: "http"` selects the CAD Bridge on port **8765**. The default remains COM.
 
 ~~~mermaid

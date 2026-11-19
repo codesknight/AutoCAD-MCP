@@ -1,0 +1,139 @@
+{
+  "cases": [
+    {
+      "case": "authentication_origin_host",
+      "status": "passed",
+      "evidence": {
+        "auth_status": 401,
+        "origin_status": 403,
+        "host_status": 403
+      },
+      "elapsed_ms": 10.110199997143354
+    },
+    {
+      "case": "invalid_geometry_no_residue",
+      "status": "passed",
+      "evidence": {
+        "rejected": 3,
+        "additional_entities": 0,
+        "layer_changes": 0
+      },
+      "elapsed_ms": 2062.9364999986137
+    },
+    {
+      "case": "atomic_rollback_0",
+      "status": "passed",
+      "evidence": {
+        "failed_index": 0,
+        "terminal_status": "rolled_back",
+        "additional_entities": 0,
+        "layer_changes": 0
+      },
+      "elapsed_ms": 1722.722899998189
+    },
+    {
+      "case": "atomic_rollback_2",
+      "status": "passed",
+      "evidence": {
+        "failed_index": 2,
+        "terminal_status": "rolled_back",
+        "additional_entities": 0,
+        "layer_changes": 0
+      },
+      "elapsed_ms": 1965.5696999980137
+    },
+    {
+      "case": "atomic_rollback_4",
+      "status": "passed",
+      "evidence": {
+        "failed_index": 4,
+        "terminal_status": "rolled_back",
+        "additional_entities": 0,
+        "layer_changes": 0
+      },
+      "elapsed_ms": 1822.1791999967536
+    },
+    {
+      "case": "deduplication_and_request_conflict",
+      "status": "passed",
+      "evidence": {
+        "submissions": 3,
+        "entities": 1,
+        "duplicate_side_effects": 0,
+        "conflict_rejected": true
+      },
+      "elapsed_ms": 1662.4203999963356
+    },
+    {
+      "case": "active_document_switch_both_backends",
+      "status": "passed",
+      "evidence": {
+        "http_bound_target_respected": true,
+        "com_switched_document_rejected": true,
+        "wrong_document_writes": 0
+      },
+      "elapsed_ms": 3288.4616000010283
+    },
+    {
+      "case": "closed_document_stale_id_and_wrong_session",
+      "status": "passed",
+      "evidence": {
+        "closed_document_rejected": true,
+        "wrong_session_rejected": true,
+        "wrong_document_writes": 0
+      },
+      "elapsed_ms": 3113.137699998333
+    },
+    {
+      "case": "external_edit_revision_conflict",
+      "status": "passed",
+      "evidence": {
+        "external_com_edit_observed": true,
+        "stale_write_rejected": true,
+        "entities": 1
+      },
+      "elapsed_ms": 1666.7241000031936
+    },
+    {
+      "case": "lost_post_response_no_replay",
+      "status": "passed",
+      "evidence": {
+        "injection": "response discarded after forwarding real POST",
+        "write_posts": 1,
+        "final_status": "succeeded",
+        "entities": 1,
+        "duplicate_side_effects": 0
+      },
+      "elapsed_ms": 1533.9577000049758
+    },
+    {
+      "case": "poll_disconnect_no_replay",
+      "status": "failed",
+      "error_type": "TimeoutError",
+      "error_code": null,
+      "elapsed_ms": 430759.18260000617
+    },
+    {
+      "case": "wait_timeout_no_replay",
+      "status": "failed",
+      "error_type": "TimeoutError",
+      "error_code": null,
+      "elapsed_ms": 133517.21949999774
+    },
+    {
+      "case": "busy_queue_capacity_and_drain",
+      "status": "failed",
+      "error_type": "TimeoutError",
+      "error_code": null,
+      "elapsed_ms": 34521.764999997686
+    },
+    {
+      "case": "stop_with_pending_write_and_readback",
+      "status": "failed",
+      "error_type": "TimeoutError",
+      "error_code": null,
+      "elapsed_ms": 33113.286500003596
+    }
+  ],
+  "completed": false
+}

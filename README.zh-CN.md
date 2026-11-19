@@ -159,6 +159,8 @@ doubao_api_key=YOUR_KEY
 
 显式文档 ID、批处理步骤和游标恢复方式见[运行时工具示例](docs/design/mcp-runtime-tools.md)。
 
+查看[原生故障与可复现性能报告](docs/validation/2026-11-19-cad09.md)，其中保留失败样本和验收限制。默认后端仍为 COM。
+
 **MCP HTTP 与 CAD Bridge 是两个独立接口。** `--http` 选择端口 **8931** 的 MCP Streamable HTTP；`backend: "http"` 选择端口 **8765** 的 CAD Bridge。默认后端仍为 COM。
 
 ~~~mermaid

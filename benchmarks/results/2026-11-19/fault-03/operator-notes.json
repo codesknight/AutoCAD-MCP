@@ -1,0 +1,5 @@
+{
+  "busy_injection_problem": "Synchronous SendCommand remained blocked in LINE before the HTTP fault assertions could execute. Agent cancelled only owned Drawing23/24/25/26 via Escape to allow cleanup and preserve the recorded failures.",
+  "fix": "Use asynchronous PostCommand for subsequent runs.",
+  "failed_cases_not_counted_as_backend_passes": true
+}

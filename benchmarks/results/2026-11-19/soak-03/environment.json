@@ -1,0 +1,38 @@
+{
+  "recorded_date": "2026-11-19",
+  "git_sha": "c9a348d1bbc70f237a1285e66594f8a685668d4a",
+  "tracked_diff": [
+    "web/backend/agent_loop.py",
+    "web/backend/mcp_client.py",
+    "web/backend/providers/anthropic_provider.py"
+  ],
+  "python_version": "3.11.15",
+  "sdk": "8.0.428",
+  "cad_version": "25.1s (LMS Tech)",
+  "bridge_sha256": "0aefe2db4f50bf3a4e559c3c99294c13f48e75bdfdc92d51b4d50d4f9ee89627",
+  "bridge_source_sha256": {
+    "plugin\\AutoCADBridge\\BridgeServer.cs": "6bb72c2efed2863529151e34c3217968c70309cdc8b903b5e786975349f69c43",
+    "plugin\\AutoCADBridge\\CadOperations.cs": "33c4f52c119521ffcead3e15181464597bd7d4e215209cb4a8f20427846f943e",
+    "plugin\\AutoCADBridge\\Contracts.cs": "2b21664d645dc1f5d02a203e6034f01208524f421415001353ead65b93e8da8e",
+    "plugin\\AutoCADBridge\\Diagnostics.cs": "97d845b93a436bd9f4ae8b9397d04ac966c82792025a5e6559bc25dd08e423d3",
+    "plugin\\AutoCADBridge\\EmbeddedHttpHost.cs": "931836a332ee677b58955feea112de3a59927f6d1c756dcbd85aa292640c997c",
+    "plugin\\AutoCADBridge\\Plugin.cs": "32ca52a36727b0f22adebb084936d8b1af528100887b436b9293e116ee9217b5"
+  },
+  "logical_cpus": 24,
+  "backend_default": "com",
+  "launch": "normal_desktop_then_attach",
+  "fixture": "fresh Bridge-created acadiso.dwt document; INSUNITS=4; no save; no explicit timed regen",
+  "units": "millimetres",
+  "numeric_tolerance": 1e-08,
+  "query_limit": 1000,
+  "batch_limit": 200,
+  "journal_capacity": 2048,
+  "journal_ttl_seconds": 600,
+  "poll_interval_seconds": 0.05,
+  "existing_documents_preserved": 1,
+  "pid": 46240,
+  "memory_start": {
+    "working_set_bytes": 1170292736,
+    "private_bytes": 2366783488
+  }
+}

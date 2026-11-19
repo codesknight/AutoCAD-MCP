@@ -1,0 +1,75 @@
+{
+  "completed": true,
+  "passed": false,
+  "measured_samples": 145,
+  "failed_samples": 12,
+  "warmup_failed": 6,
+  "groups": [
+    {
+      "scenario": "cold_attach",
+      "size": 0,
+      "samples": 20,
+      "warmups": 3,
+      "paired_warmup_max_seconds": 0.08605680000619031,
+      "reason": "Standard repetition count"
+    },
+    {
+      "scenario": "query",
+      "size": 100,
+      "samples": 20,
+      "warmups": 3,
+      "paired_warmup_max_seconds": 1.7551737999892794,
+      "reason": "Standard repetition count"
+    },
+    {
+      "scenario": "create",
+      "size": 100,
+      "samples": 5,
+      "warmups": 3,
+      "paired_warmup_max_seconds": 5.538658099991153,
+      "reason": "Paired warmup max 5.539s exceeds declared 5.0s heavy threshold; use 5 repeats for every mode in this group"
+    },
+    {
+      "scenario": "query",
+      "size": 500,
+      "samples": 5,
+      "warmups": 3,
+      "paired_warmup_max_seconds": 9.53294150000147,
+      "reason": "Paired warmup max 9.533s exceeds declared 5.0s heavy threshold; use 5 repeats for every mode in this group"
+    },
+    {
+      "scenario": "create",
+      "size": 500,
+      "samples": 5,
+      "warmups": 3,
+      "paired_warmup_max_seconds": 27.95907559999614,
+      "reason": "Paired warmup max 27.959s exceeds declared 5.0s heavy threshold; use 5 repeats for every mode in this group"
+    },
+    {
+      "scenario": "query",
+      "size": 1000,
+      "samples": 5,
+      "warmups": 3,
+      "paired_warmup_max_seconds": 16.1603926000098,
+      "reason": "Paired warmup max 16.160s exceeds declared 5.0s heavy threshold; use 5 repeats for every mode in this group"
+    },
+    {
+      "scenario": "create",
+      "size": 1000,
+      "samples": 5,
+      "warmups": 3,
+      "paired_warmup_max_seconds": 55.74130000000878,
+      "reason": "Paired warmup max 55.741s exceeds declared 5.0s heavy threshold; use 5 repeats for every mode in this group"
+    }
+  ],
+  "timing_boundary": "Python adapter.execute/execute_batch, excluding fixture provisioning, validation, explicit regen/save and cleanup",
+  "instance_policy": "Fresh Bridge instance and fresh acadiso.dwt document per sample, outside timing",
+  "statistics_policy": "P95 only for >=20 successful measured samples; heavy groups expose median/max and sample count",
+  "fairness": "Same fixture, CAD process/build, unit/layer, normalized query fields, seed-shuffled mode order",
+  "exclusions": [
+    "LLM latency",
+    "MCP transport overhead",
+    "CAD process cold startup",
+    "atomicity equivalence for COM sequential writes"
+  ]
+}
