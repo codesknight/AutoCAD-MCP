@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/cover.svg" alt="AutoCAD MCP：用自然语言操作 CAD，默认 COM 后端与实验性 .NET HTTP Bridge。" width="100%">
+  <img src="docs/assets/cover.png" alt="AutoCAD MCP：精密 CAD 工程图与模块化工具枢纽，连接几何、图层、图块、查询及未来扩展。" width="100%">
 </p>
 
 <p align="center"><a href="README.md">English</a> · <strong>简体中文</strong></p>

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/cover.svg" alt="AutoCAD MCP — Natural language. Real CAD. Default COM and experimental .NET HTTP Bridge." width="100%">
+  <img src="docs/assets/cover.png" alt="AutoCAD MCP — precision CAD drafting and a modular tool hub connecting geometry, layers, blocks, queries and future extensions." width="100%">
 </p>
 
 <p align="center"><strong>English</strong> · <a href="README.zh-CN.md">简体中文</a></p>
