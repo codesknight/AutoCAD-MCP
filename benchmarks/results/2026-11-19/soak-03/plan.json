@@ -1,0 +1,18 @@
+{
+  "output": "benchmarks\\results\\2026-11-19\\soak-03",
+  "mode": "soak",
+  "owned_pid": null,
+  "preserve_existing": true,
+  "soak_seconds": 1800,
+  "interval": 1,
+  "sizes": [
+    100,
+    500,
+    1000
+  ],
+  "samples": 20,
+  "heavy_samples": 5,
+  "heavy_threshold": 5,
+  "warmups": 3,
+  "seed": 190019
+}

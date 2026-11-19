@@ -1,0 +1,12 @@
+{
+  "cpu": "Intel(R) Core(TM) i7-14650HX",
+  "ram_bytes": 34053414912,
+  "harness_sha256": {
+    "benchmarks\\common.py": "15a16024fd280559f9230ed99adba6d174df23b60fc378ae4ca7bf83e3c87825",
+    "benchmarks\\native.py": "322bbcdbc45793e73875a30a37dd0f346ae261c7927e90c9b32fbeb378f4182b",
+    "benchmarks\\run.py": "5a3e64a449e73bdb1e6e2e71d6d7379baf5b8c116eeead3cd131a1116e2c2f1b",
+    "benchmarks\\soak.py": "d9fb4c7539a75986802426a885669c50510ae873eb4e06fe82ecf959bd02d8e5",
+    "benchmarks\\__init__.py": "8f2f8da44c5af8cc9643ab0ce2a77bd8e69506444bc357bd888a80c4128ceea4"
+  },
+  "archived_native_source": "native-at-run-start.py"
+}

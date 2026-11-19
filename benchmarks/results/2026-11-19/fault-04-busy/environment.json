@@ -1,0 +1,62 @@
+{
+  "recorded_date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "git_sha": "e7dd081398ca0a6397189519d3f227a20e7cc417",
+  "tracked_diff": [
+    "benchmarks/README.md",
+    "benchmarks/faults.py",
+    "benchmarks/native.py",
+    "benchmarks/report.py",
+    "benchmarks/run.py",
+    "web/backend/agent_loop.py",
+    "web/backend/mcp_client.py",
+    "web/backend/providers/anthropic_provider.py"
+  ],
+  "python_version": "3.11.15",
+  "sdk": "8.0.428",
+  "cad_version": "25.1s (LMS Tech)",
+  "cad_file_version": "31.1.60.0",
+  "os_version": "Windows-10-10.0.26200-SP0",
+  "hardware": {
+    "cpu": "Intel(R) Core(TM) i7-14650HX",
+    "ram_bytes": 34053414912
+  },
+  "harness_sha256": {
+    "benchmarks/common.py": "15a16024fd280559f9230ed99adba6d174df23b60fc378ae4ca7bf83e3c87825",
+    "benchmarks/faults.py": "9b8d8ac3f7bbde00c251bb01acb3149385b928a6cdb0569e20c15c132d5c9160",
+    "benchmarks/native.py": "97d3dd3e534facb03e311c1dc1335dc5199927447903b96f01d6d13d69d00824",
+    "benchmarks/performance.py": "c9de192f98f8cf4ba4d732780f91cf45cfd9208520b7f8edee7ff4282f81ee4c",
+    "benchmarks/report.py": "8272e47c9ac3bf860b503262565e943d97143cc442dcb1fb93db32da12a37405",
+    "benchmarks/restart.py": "998e86a08cad04e67cdf4432d7d64d5b78ba8683f45936c4eca91b9290517081",
+    "benchmarks/run.py": "e4f28a93db785f9c717c5d49f19fb7df2cee92048baccd92e174fec852c71e99",
+    "benchmarks/soak.py": "d9fb4c7539a75986802426a885669c50510ae873eb4e06fe82ecf959bd02d8e5",
+    "benchmarks/__init__.py": "8f2f8da44c5af8cc9643ab0ce2a77bd8e69506444bc357bd888a80c4128ceea4"
+  },
+  "bridge_sha256": "0aefe2db4f50bf3a4e559c3c99294c13f48e75bdfdc92d51b4d50d4f9ee89627",
+  "bridge_source_sha256": {
+    "plugin\\AutoCADBridge\\BridgeServer.cs": "6bb72c2efed2863529151e34c3217968c70309cdc8b903b5e786975349f69c43",
+    "plugin\\AutoCADBridge\\CadOperations.cs": "33c4f52c119521ffcead3e15181464597bd7d4e215209cb4a8f20427846f943e",
+    "plugin\\AutoCADBridge\\Contracts.cs": "2b21664d645dc1f5d02a203e6034f01208524f421415001353ead65b93e8da8e",
+    "plugin\\AutoCADBridge\\Diagnostics.cs": "97d845b93a436bd9f4ae8b9397d04ac966c82792025a5e6559bc25dd08e423d3",
+    "plugin\\AutoCADBridge\\EmbeddedHttpHost.cs": "931836a332ee677b58955feea112de3a59927f6d1c756dcbd85aa292640c997c",
+    "plugin\\AutoCADBridge\\Plugin.cs": "32ca52a36727b0f22adebb084936d8b1af528100887b436b9293e116ee9217b5"
+  },
+  "logical_cpus": 24,
+  "backend_default": "com",
+  "launch": "normal_desktop_then_attach",
+  "fixture": "fresh Bridge-created acadiso.dwt document; INSUNITS=4; no save; no explicit timed regen",
+  "units": "millimetres",
+  "numeric_tolerance": 1e-08,
+  "query_limit": 1000,
+  "batch_limit": 200,
+  "journal_capacity": 2048,
+  "journal_ttl_seconds": 600,
+  "poll_interval_seconds": 0.05,
+  "bridge_port": 57605,
+  "existing_documents_preserved": 1,
+  "pid": 46240,
+  "memory_start": {
+    "working_set_bytes": 1008332800,
+    "private_bytes": 2390859776
+  }
+}

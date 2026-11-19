@@ -1,0 +1,136 @@
+{
+  "completed": false,
+  "faults": {
+    "completed": true,
+    "passed": true,
+    "cases": [
+      {
+        "case": "authentication_origin_host",
+        "status": "not_run",
+        "reason": "Not selected for this focused run"
+      },
+      {
+        "case": "invalid_geometry_no_residue",
+        "status": "not_run",
+        "reason": "Not selected for this focused run"
+      },
+      {
+        "case": "atomic_rollback_0",
+        "status": "not_run",
+        "reason": "Not selected for this focused run"
+      },
+      {
+        "case": "atomic_rollback_2",
+        "status": "not_run",
+        "reason": "Not selected for this focused run"
+      },
+      {
+        "case": "atomic_rollback_4",
+        "status": "not_run",
+        "reason": "Not selected for this focused run"
+      },
+      {
+        "case": "deduplication_and_request_conflict",
+        "status": "not_run",
+        "reason": "Not selected for this focused run"
+      },
+      {
+        "case": "active_document_switch_both_backends",
+        "status": "not_run",
+        "reason": "Not selected for this focused run"
+      },
+      {
+        "case": "closed_document_stale_id_and_wrong_session",
+        "status": "not_run",
+        "reason": "Not selected for this focused run"
+      },
+      {
+        "case": "external_edit_revision_conflict",
+        "status": "not_run",
+        "reason": "Not selected for this focused run"
+      },
+      {
+        "case": "lost_post_response_no_replay",
+        "status": "not_run",
+        "reason": "Not selected for this focused run"
+      },
+      {
+        "case": "poll_disconnect_no_replay",
+        "status": "passed",
+        "evidence": {
+          "write_posts": 1,
+          "pending_status": "queued",
+          "recovered_status": "succeeded",
+          "entities": 1,
+          "duplicate_side_effects": 0
+        },
+        "elapsed_ms": 6741.00810001255
+      },
+      {
+        "case": "wait_timeout_no_replay",
+        "status": "passed",
+        "evidence": {
+          "write_posts": 1,
+          "pending_status": "queued",
+          "recovered_status": "succeeded",
+          "entities": 1,
+          "duplicate_side_effects": 0
+        },
+        "elapsed_ms": 6369.150600003195
+      },
+      {
+        "case": "busy_queue_capacity_and_drain",
+        "status": "passed",
+        "evidence": {
+          "queued": 64,
+          "rejected": 6,
+          "terminal": 70,
+          "hanging_jobs": 0
+        },
+        "elapsed_ms": 6288.186999998288
+      },
+      {
+        "case": "stop_with_pending_write_and_readback",
+        "status": "passed",
+        "evidence": {
+          "initial_status": "queued",
+          "client_outcome": "outcome_unknown",
+          "write_posts": 1,
+          "observed_entities": 0,
+          "duplicate_side_effects": 0
+        },
+        "elapsed_ms": 9295.489900003304
+      },
+      {
+        "case": "journal_capacity_and_explicit_recovery",
+        "status": "not_run",
+        "reason": "Not selected for this focused run"
+      },
+      {
+        "case": "bridge_restart_instance_and_ownership",
+        "status": "not_run",
+        "reason": "Not selected for this focused run"
+      },
+      {
+        "case": "port_conflict_and_recovery",
+        "status": "not_run",
+        "reason": "Not selected for this focused run"
+      },
+      {
+        "case": "cad_process_restart",
+        "status": "not_run",
+        "reason": "User-owned running CAD preserved. Requires an independently owned empty instance and normal desktop restart."
+      }
+    ],
+    "limitations": [
+      "Network loss is injected at the client transport boundary against real accepted jobs",
+      "Database revision edit uses external COM, not a human UI edit",
+      "Crash recovery and persistent journal are not implemented",
+      "CAD process restart not run in a user-owned instance"
+    ]
+  },
+  "cleanup": {
+    "error_type": "RuntimeError"
+  },
+  "summary": []
+}

@@ -1,0 +1,8 @@
+{
+  "completed": true,
+  "recorded_at_unix": 1795023728.6945038,
+  "remaining_test_documents": [],
+  "original_document_present": true,
+  "cad_listener_ports": [],
+  "note": "Initial cleanup timed out; later independent COM/TCP readback confirms delayed stop/close completed. Original failure records unchanged."
+}

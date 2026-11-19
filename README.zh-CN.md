@@ -156,6 +156,8 @@ doubao_api_key=YOUR_KEY
 
 两种后端共用 MCP 工具层。HTTP 后端不支持的操作会明确报错，写入不会回退到 COM。
 
+查看[原生故障与可复现性能报告](docs/validation/2026-11-19-cad09.md)，其中保留失败样本和验收限制。默认后端仍为 COM。
+
 **MCP HTTP 与 CAD Bridge 是两个独立接口。** `--http` 选择端口 **8931** 的 MCP Streamable HTTP；`backend: "http"` 选择端口 **8765** 的 CAD Bridge。默认后端仍为 COM。
 
 ~~~mermaid

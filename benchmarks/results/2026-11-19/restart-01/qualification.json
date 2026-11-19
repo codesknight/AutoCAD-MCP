@@ -1,0 +1,15 @@
+{
+  "completed": true,
+  "passed": true,
+  "lost_process_outcome": "OUTCOME_UNKNOWN",
+  "write_posts": 1,
+  "stale_client_rejected": true,
+  "recovery_verified": true,
+  "journal_lost_explicitly": true,
+  "original_processes_preserved": true,
+  "owned_processes_closed": true,
+  "case": "cad_process_restart",
+  "baseline_process_count": 1,
+  "owned_process_count": 2,
+  "outcome": "queued write result unknown; no replay; stale client rejected; explicit rebind works"
+}

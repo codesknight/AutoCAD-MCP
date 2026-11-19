@@ -1,0 +1,16 @@
+{
+  "completed": false,
+  "error_type": "com_error",
+  "error_code": null,
+  "cleanup": {
+    "closed_documents": [
+      "Drawing27.dwg",
+      "Drawing11.dwg"
+    ],
+    "remaining_documents": [],
+    "listener_stopped": true,
+    "cad_process_closed": false,
+    "original_active_restored": true
+  },
+  "summary": []
+}
