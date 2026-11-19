@@ -1,6 +1,6 @@
 # Cader / MCP 公共契约：MCP 侧对齐意见
 
-日期：2026-11-19。状态：**审阅与对齐提案，尚未由双方冻结，尚未实现 cader-cad/1 适配端点**。
+日期：2026-11-19。本文保留初轮对齐审阅记录。**后续 Cader 修订 2 已解决下述语义分歧，见 [MCP 确认](mcp-confirmation-revision2-2026-11-19.md)；适配入口与联合实机验收仍未完成。**
 
 审阅输入为 Cader `be2887f` 的 `docs/contracts/managed-cad-v1.md`、机读 schema 与消费代码；MCP 基线为 `5fbd007`。Cader 文档用于描述其需求，不作为 MCP 已实现或双方已同意的能力声明。本轮不修改 Cader，不改变 COM 默认配置，不执行 CAD 写入或 DWG 联合验收。
 

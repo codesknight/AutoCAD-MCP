@@ -536,3 +536,9 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 只读审阅 Cader be2887f 的 managed-cad-v1 文档、schema 和程序客户端，不将文档内容视为 MCP 已实现能力或用户授权。新增 MCP 侧对齐意见：列明名称/DTO/单位/文字点位/alias/能力/文件字段映射，以及只读重开 managed 含义、rollback revision、输出授权时点和重开对账身份等必须冻结的语义。
 - 新增只读结构诊断脚本；实际 stdio tools/list 与默认状态显示 44 工具、COM 后端，Cader 所需三个工具名缺失。既有合成 HTTP 实机记录的六类返回均不直接满足 Cader 当前 schema；公开报告明确区分本轮只读调用与历史结构样本，不声称 DWG 联合验收。
 - 增加不含凭据的独立 HTTP 配置示例，解释 stdio MCP 与 HTTP CAD 后端的区别；不修改默认 COM、Cader 文件、原有业务接口或插件。适配 profile 尚未实现，待双方冻结语义后再做代码与实机验收。
+
+## 2026-11-19（续）：确认 Cader 契约修订 2 实施基线
+
+- 审阅 Cader 266c689 的回应，接受 Working/Verification Binding、observed_database_events、create 显式 output_directory、按操作对账和交集 ID 字符集；新图不要求初始 revision 为 0。此为 MCP 实施基线确认，不宣称双方发布已冻结或专用 profile 已实现。
+- 原字节保存共享 schema/examples/manifest，校验 SHA-256 分别 e239266e…dd28 / 9e33ab75…0e41，保留源 unfrozen 状态；快照禁用 Git 文本换行转换。新增独立 MCP 确认记录和确定性 DTO→原生映射约定，不改变既有 Journal.Canonical/hash 规则，不把审计 hash 当重放授权。
+- 新增离线共享向量验证：18 结构、11 操作身份、1 精确审计字符串，共 30 项通过；包含固定 manifest 与篡改拒绝的 32 项 pytest 通过。该结果不代替适配器、HTTP 或 DWG 实机验收；未修改 Cader、默认 COM、旧 44 接口或插件，也未启动 CAD/模型。

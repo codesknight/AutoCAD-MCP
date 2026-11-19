@@ -1,0 +1,41 @@
+{
+  "contract_version": "cader-cad/1",
+  "draft_revision": 2,
+  "mapping_revision": 1,
+  "mcp_decision": "accepted_as_implementation_baseline",
+  "bilateral_release_frozen": false,
+  "source_cader_commit": "266c6895048f1ce97a5517265a7f14f29bfa5e1c",
+  "source_manifest_sha256": "e8af26934a19e4fc8e58fe494c861926df56db14f708ac02a95a7a45682d8d93",
+  "schema": {
+    "path": "configs/contracts/cader-v1.schemas.json",
+    "sha256": "e239266ee97ccd64284f6a6b5896eb57532b0f18eb5769dad3899e614191dd28"
+  },
+  "examples": {
+    "path": "benchmark/fixtures/managed-cad-v1.cases.json",
+    "sha256": "9e33ab75c054e0b49d60c0616914f497d584aa284e7ff3898a643fa50caa0e41"
+  },
+  "semantics": {
+    "working_managed": true,
+    "working_read_only": false,
+    "verification_managed": false,
+    "verification_read_only": true,
+    "revision_mode": "observed_database_events",
+    "initial_revision_zero_required": false,
+    "failure_revision_may_advance": true,
+    "output_directory": "explicit_create_request",
+    "id_pattern": "^[A-Za-z0-9._-]{1,128}$"
+  },
+  "vector_checks": {
+    "schema": 18,
+    "job_identity": 11,
+    "request_audit": 1,
+    "passed": true
+  },
+  "implementation": {
+    "managed_profile": "not_implemented",
+    "default_backend": "com",
+    "legacy_tool_count": 44,
+    "cad_connected_this_round": false,
+    "joint_dwg_acceptance": "not_run"
+  }
+}

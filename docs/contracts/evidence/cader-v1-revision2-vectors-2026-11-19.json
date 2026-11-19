@@ -1,0 +1,162 @@
+{
+  "contract_version": "cader-cad/1",
+  "draft_revision": 2,
+  "schema_sha256": "e239266ee97ccd64284f6a6b5896eb57532b0f18eb5769dad3899e614191dd28",
+  "examples_sha256": "9e33ab75c054e0b49d60c0616914f497d584aa284e7ff3898a643fa50caa0e41",
+  "passed": true,
+  "checks": [
+    {
+      "kind": "schema",
+      "name": "working-writable",
+      "passed": true
+    },
+    {
+      "kind": "schema",
+      "name": "verification-readonly",
+      "passed": true
+    },
+    {
+      "kind": "schema",
+      "name": "verification-cannot-write",
+      "passed": true
+    },
+    {
+      "kind": "schema",
+      "name": "working-cannot-be-readonly",
+      "passed": true
+    },
+    {
+      "kind": "schema",
+      "name": "canonical-mm-unit",
+      "passed": true
+    },
+    {
+      "kind": "schema",
+      "name": "native-unit-needs-mapping",
+      "passed": true
+    },
+    {
+      "kind": "schema",
+      "name": "observed-revision-mode",
+      "passed": true
+    },
+    {
+      "kind": "schema",
+      "name": "no-silent-revision-mode-change",
+      "passed": true
+    },
+    {
+      "kind": "schema",
+      "name": "create-directory-bound",
+      "passed": true
+    },
+    {
+      "kind": "schema",
+      "name": "create-directory-required",
+      "passed": true
+    },
+    {
+      "kind": "schema",
+      "name": "query-null-cursor-and-revision",
+      "passed": true
+    },
+    {
+      "kind": "schema",
+      "name": "query-revision-required",
+      "passed": true
+    },
+    {
+      "kind": "schema",
+      "name": "request-id-intersection",
+      "passed": true
+    },
+    {
+      "kind": "schema",
+      "name": "request-id-colon-rejected",
+      "passed": true
+    },
+    {
+      "kind": "schema",
+      "name": "readonly-reopen-envelope",
+      "passed": true
+    },
+    {
+      "kind": "schema",
+      "name": "reopen-job-identities",
+      "passed": true
+    },
+    {
+      "kind": "schema",
+      "name": "legacy-job-needs-mapping",
+      "passed": true
+    },
+    {
+      "kind": "schema",
+      "name": "rollback-revision-can-advance",
+      "passed": true
+    },
+    {
+      "kind": "job_identity",
+      "name": "reopen-output-is-new-document",
+      "passed": true
+    },
+    {
+      "kind": "job_identity",
+      "name": "wrong-input-document",
+      "passed": true
+    },
+    {
+      "kind": "job_identity",
+      "name": "wrong-artifact",
+      "passed": true
+    },
+    {
+      "kind": "job_identity",
+      "name": "reopen-cannot-reuse-working-document",
+      "passed": true
+    },
+    {
+      "kind": "job_identity",
+      "name": "reopen-cannot-reuse-existing-document",
+      "passed": true
+    },
+    {
+      "kind": "job_identity",
+      "name": "wrong-instance",
+      "passed": true
+    },
+    {
+      "kind": "job_identity",
+      "name": "wrong-operation",
+      "passed": true
+    },
+    {
+      "kind": "job_identity",
+      "name": "create-output-has-no-input-document",
+      "passed": true
+    },
+    {
+      "kind": "job_identity",
+      "name": "batch-must-return-target-document",
+      "passed": true
+    },
+    {
+      "kind": "job_identity",
+      "name": "batch-wrong-output-document",
+      "passed": true
+    },
+    {
+      "kind": "job_identity",
+      "name": "batch-pending-has-no-result-yet",
+      "passed": true
+    },
+    {
+      "kind": "request_audit",
+      "name": "vector-1",
+      "passed": true
+    }
+  ],
+  "managed_profile_implemented": false,
+  "cad_connected": false,
+  "dwg_acceptance": "not_run"
+}

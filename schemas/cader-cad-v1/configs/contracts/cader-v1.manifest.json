@@ -1,0 +1,15 @@
+{
+  "contract_version": "cader-cad/1",
+  "draft_revision": 2,
+  "status": "unfrozen; awaiting MCP confirmation",
+  "schema": {
+    "path": "configs/contracts/cader-v1.schemas.json",
+    "sha256": "e239266ee97ccd64284f6a6b5896eb57532b0f18eb5769dad3899e614191dd28"
+  },
+  "examples": {
+    "path": "benchmark/fixtures/managed-cad-v1.cases.json",
+    "sha256": "9e33ab75c054e0b49d60c0616914f497d584aa284e7ff3898a643fa50caa0e41"
+  },
+  "hash_encoding": "SHA-256 of exact UTF-8 file bytes including final LF; not a semantic JSON hash",
+  "native_bridge_request_hash": "unchanged; requires MCP profile mapping confirmation"
+}
