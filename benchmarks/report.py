@@ -51,14 +51,14 @@ def render(root,output):
         if not q.get("completed") and r["recovery"].get("completed"):
             status+="；后续独立复核清理完成（原始失败保留）"
         lines.append(f"| {r['name']} | {r['plan']['mode']} | {q.get('completed',False)} | {status} | [JSONL]({link(r['folder']/'cases.jsonl')}) |")
-    envrun=next((r for r in reversed(runs) if r["env"]),None)
+    envrun=choose("benchmark") or next((r for r in reversed(runs) if r["env"]),None)
     if envrun:
         env=envrun["env"]
-        extra=next((r["extra"] for r in runs if r["extra"]),{})
+        extra=env.get("hardware") or next((r["extra"] for r in runs if r["extra"]),{})
         lines+=["","## 环境","",f"- CAD：{env['cad_version']}；SDK：{env['sdk']}；Python：{env['python_version']}。",
             f"- CPU：{extra.get('cpu','未采集')}；物理内存：{number(extra.get('ram_bytes',0)/1073741824)} GiB。",
             f"- 被测 DLL SHA-256：§{env['bridge_sha256']}§。",
-            f"- 代码基线：§{env['git_sha']}§；完整版本及源文件哈希见各运行环境 JSON。",
+            f"- 性能代码基线：§{env['git_sha']}§；各次故障/连续测试的确切版本及源文件哈希以对应 environment.json 为准。",
             "- 既有 Web 工作区改动未纳入本轮提交；没有使用私有 DWG。"]
     fault=choose("faults")
     lines+=["","## 原生故障矩阵",""]
@@ -102,6 +102,24 @@ def render(root,output):
             "| --- | ---: | --- | ---: | ---: | ---: | ---: | ---: |"]
         for r in rows:
             lines.append(f"| {r['scenario']} | {r['size']} | {r['backend']} / {r['mode']} | {r['samples']} | {r['failed']} | {number(r['median_ms'])} | {number(r['p95_ms'])} | {number(r['max_ms'])} |")
+        measured=[r for r in bench["rows"] if r.get("kind")=="benchmark" and r.get("phase")=="measured"]
+        lines += ["","### 结果解释","",
+            f"- 共 {len(measured)} 个测量样本，失败 {bench['benchmark']['failed_samples']} 个；另有 {bench['benchmark']['warmup_failed']} 个预热失败，均保留在原始 JSONL。"]
+        for backend in ("com","http"):
+            group=[r for r in measured if r["backend"]==backend]
+            lines.append(f"- {backend.upper()}：{sum(bool(r['ok']) for r in group)} / {len(group)} 个测量样本通过几何校验。")
+        lines += ["- 中位数仅来自成功样本；COM 失败样本导致选择偏差，不应据此宣称普遍加速比或双后端验收全部通过。",
+            "- HTTP 逐条与 HTTP 批量必须分开看：逐条调用受网络往返及当前 50 ms 轮询间隔影响；批量将多步放在一次任务中。该归因是实现与测量边界的解释，不是独立的延迟分解实验。",
+            "- 本轮性能阶段完成且清理成功，但存在失败样本，benchmark.passed=false；后续应定位 COM 引用/几何读取失败后按同一计划重新测量。"]
+        failures={}
+        for row in measured:
+            if not row["ok"]:
+                key=row.get("error_type","unknown")
+                failures[key]=failures.get(key,0)+1
+        lines += ["- 测量失败类型："+"、".join(f"{name} × {count}" for name,count in sorted(failures.items()))+"。错误类型本身不足以确诊根因；不得直接将 KeyError 等同于 CAD 几何错误。"]
+        chart=output.with_name(output.stem+"-performance.svg")
+        if chart.exists():
+            lines += ["",f"![已校验样本的中位耗时及全部失败计数]({link(chart)})"]
         lines += ["","### 抽样依据",""]
         for p in bench["benchmark"]["groups"]:
             lines.append(f"- {p['scenario']} / {p['size']}：{p['samples']} 次；{p['reason']}。")

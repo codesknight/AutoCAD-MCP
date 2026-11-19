@@ -24,14 +24,16 @@ def main():
             values=[];counts=[]
             for size in sizes:
                 r=next(r for r in rows if r["scenario"]==scenario and int(r["size"])==size and r["backend"]==backend and r["mode"]==mode)
-                if int(r["failed"]):
-                    raise ValueError("Plot only a fully validated benchmark; failures remain in the report")
-                values.append(float(r["median_ms"]))
-                counts.append(int(r["samples"]))
+                values.append(float(r["median_ms"]) if r["median_ms"] else float("nan"))
+                counts.append((int(r["passed"]),int(r["failed"])))
             xpos=[i+(j-(len(modes)-1)/2)*width for i in range(len(sizes))]
             bars=ax.bar(xpos,values,width,label=label,color=colors["batch" if mode=="batch" else backend])
-            for bar,value,n in zip(bars,values,counts):
-                ax.annotate(f"{value:,.1f}\nn={n}",(bar.get_x()+bar.get_width()/2,value),
+            for bar,value,(valid,failed) in zip(bars,values,counts):
+                if not valid:
+                    ax.annotate(f"0 valid\n{failed} failed",(bar.get_x()+bar.get_width()/2,.08),
+                        xycoords=("data","axes fraction"),ha="center",fontsize=7,color="#a33")
+                    continue
+                ax.annotate(f"{value:,.1f}\nvalid={valid}, fail={failed}",(bar.get_x()+bar.get_width()/2,value),
                     xytext=(0,4),textcoords="offset points",ha="center",va="bottom",fontsize=7)
         ax.set_xticks(range(len(sizes)),[f"{n:,}" for n in sizes])
         ax.set_xlabel("Entities")
@@ -43,9 +45,11 @@ def main():
         ax.grid(axis="y",which="major",alpha=.18)
         ax.set_axisbelow(True)
     fig.suptitle("AutoCAD 2026 / COM vs experimental HTTP Bridge",fontsize=14)
-    fig.supxlabel("Setup, validation, explicit regen/save and LLM latency excluded. Batch atomicity is an HTTP-only capability.",fontsize=8)
+    fig.supxlabel("Medians use validated samples only; all failed attempts remain reported. Setup/verification/LLM latency excluded.",fontsize=8)
     args.output.parent.mkdir(parents=True,exist_ok=True)
     fig.savefig(args.output,metadata={"Date":None})
+    if args.output.suffix.lower()==".svg":
+        args.output.write_text("\n".join(line.rstrip() for line in args.output.read_text(encoding="utf-8").splitlines())+"\n",encoding="utf-8")
     plt.close(fig)
 
 if __name__=="__main__":

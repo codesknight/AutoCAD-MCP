@@ -1,0 +1,25 @@
+{
+  "output": "benchmarks\\results\\2026-11-19\\fault-05-helper",
+  "mode": "faults",
+  "owned_pid": null,
+  "preserve_existing": true,
+  "soak_seconds": 1800,
+  "interval": 1,
+  "sizes": [
+    100,
+    500,
+    1000
+  ],
+  "samples": 20,
+  "heavy_samples": 5,
+  "heavy_threshold": 5,
+  "warmups": 3,
+  "seed": 190019,
+  "fault_cases": [
+    "poll_disconnect_no_replay",
+    "wait_timeout_no_replay",
+    "busy_queue_capacity_and_drain",
+    "stop_with_pending_write_and_readback"
+  ],
+  "busy_helper": null
+}

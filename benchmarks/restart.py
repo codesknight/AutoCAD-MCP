@@ -36,7 +36,7 @@ def main():
     with socket.socket() as probe:
         probe.bind(("127.0.0.1",0));port=probe.getsockname()[1]
     settings.write_text(json.dumps({"token":token,"port":port}),encoding="utf-8")
-    config=load_config().model_copy(update={"backend":"http","http":HTTPConfig(base_url=f"http://127.0.0.1:{port}")})
+    config=load_config().model_copy(update={"backend":"http","http":HTTPConfig(base_url=f"http://127.0.0.1:{port}",request_timeout_seconds=300)})
     raw=httpx.Client(base_url=config.http.base_url,headers={"Authorization":"Bearer "+token},trust_env=False,timeout=2)
     h=None
     fresh=None

@@ -1,0 +1,310 @@
+{
+  "completed": true,
+  "benchmark": {
+    "completed": true,
+    "passed": false,
+    "measured_samples": 145,
+    "failed_samples": 12,
+    "warmup_failed": 6,
+    "groups": [
+      {
+        "scenario": "cold_attach",
+        "size": 0,
+        "samples": 20,
+        "warmups": 3,
+        "paired_warmup_max_seconds": 0.08605680000619031,
+        "reason": "Standard repetition count"
+      },
+      {
+        "scenario": "query",
+        "size": 100,
+        "samples": 20,
+        "warmups": 3,
+        "paired_warmup_max_seconds": 1.7551737999892794,
+        "reason": "Standard repetition count"
+      },
+      {
+        "scenario": "create",
+        "size": 100,
+        "samples": 5,
+        "warmups": 3,
+        "paired_warmup_max_seconds": 5.538658099991153,
+        "reason": "Paired warmup max 5.539s exceeds declared 5.0s heavy threshold; use 5 repeats for every mode in this group"
+      },
+      {
+        "scenario": "query",
+        "size": 500,
+        "samples": 5,
+        "warmups": 3,
+        "paired_warmup_max_seconds": 9.53294150000147,
+        "reason": "Paired warmup max 9.533s exceeds declared 5.0s heavy threshold; use 5 repeats for every mode in this group"
+      },
+      {
+        "scenario": "create",
+        "size": 500,
+        "samples": 5,
+        "warmups": 3,
+        "paired_warmup_max_seconds": 27.95907559999614,
+        "reason": "Paired warmup max 27.959s exceeds declared 5.0s heavy threshold; use 5 repeats for every mode in this group"
+      },
+      {
+        "scenario": "query",
+        "size": 1000,
+        "samples": 5,
+        "warmups": 3,
+        "paired_warmup_max_seconds": 16.1603926000098,
+        "reason": "Paired warmup max 16.160s exceeds declared 5.0s heavy threshold; use 5 repeats for every mode in this group"
+      },
+      {
+        "scenario": "create",
+        "size": 1000,
+        "samples": 5,
+        "warmups": 3,
+        "paired_warmup_max_seconds": 55.74130000000878,
+        "reason": "Paired warmup max 55.741s exceeds declared 5.0s heavy threshold; use 5 repeats for every mode in this group"
+      }
+    ],
+    "timing_boundary": "Python adapter.execute/execute_batch, excluding fixture provisioning, validation, explicit regen/save and cleanup",
+    "instance_policy": "Fresh Bridge instance and fresh acadiso.dwt document per sample, outside timing",
+    "statistics_policy": "P95 only for >=20 successful measured samples; heavy groups expose median/max and sample count",
+    "fairness": "Same fixture, CAD process/build, unit/layer, normalized query fields, seed-shuffled mode order",
+    "exclusions": [
+      "LLM latency",
+      "MCP transport overhead",
+      "CAD process cold startup",
+      "atomicity equivalence for COM sequential writes"
+    ]
+  },
+  "cleanup": {
+    "closed_documents": [
+      "Drawing56.dwg"
+    ],
+    "remaining_documents": [],
+    "listener_stopped": true,
+    "cad_process_closed": false,
+    "original_active_restored": true
+  },
+  "summary": [
+    {
+      "scenario": "cold_attach",
+      "size": 0,
+      "backend": "com",
+      "mode": "single",
+      "samples": 20,
+      "passed": 20,
+      "failed": 0,
+      "median_ms": 61.70445001043845,
+      "p95_ms": 84.09499999834225,
+      "max_ms": 88.14910000364762,
+      "failure_rate": 0.0
+    },
+    {
+      "scenario": "cold_attach",
+      "size": 0,
+      "backend": "http",
+      "mode": "single",
+      "samples": 20,
+      "passed": 20,
+      "failed": 0,
+      "median_ms": 63.818449998507276,
+      "p95_ms": 84.18180000444409,
+      "max_ms": 91.8552999937674,
+      "failure_rate": 0.0
+    },
+    {
+      "scenario": "create",
+      "size": 100,
+      "backend": "com",
+      "mode": "single",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "median_ms": 945.7834000058938,
+      "p95_ms": null,
+      "max_ms": 969.6012000058545,
+      "failure_rate": 0.0
+    },
+    {
+      "scenario": "create",
+      "size": 100,
+      "backend": "http",
+      "mode": "batch",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "median_ms": 58.39859999832697,
+      "p95_ms": null,
+      "max_ms": 59.73780000931583,
+      "failure_rate": 0.0
+    },
+    {
+      "scenario": "create",
+      "size": 100,
+      "backend": "http",
+      "mode": "single",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "median_ms": 5497.608899997431,
+      "p95_ms": null,
+      "max_ms": 5524.20169999823,
+      "failure_rate": 0.0
+    },
+    {
+      "scenario": "create",
+      "size": 500,
+      "backend": "com",
+      "mode": "single",
+      "samples": 5,
+      "passed": 4,
+      "failed": 1,
+      "median_ms": 4418.825599997945,
+      "p95_ms": null,
+      "max_ms": 4757.493199998862,
+      "failure_rate": 0.2
+    },
+    {
+      "scenario": "create",
+      "size": 500,
+      "backend": "http",
+      "mode": "batch",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "median_ms": 194.1588000045158,
+      "p95_ms": null,
+      "max_ms": 201.83739998901729,
+      "failure_rate": 0.0
+    },
+    {
+      "scenario": "create",
+      "size": 500,
+      "backend": "http",
+      "mode": "single",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "median_ms": 27854.249899988645,
+      "p95_ms": null,
+      "max_ms": 27932.086699991487,
+      "failure_rate": 0.0
+    },
+    {
+      "scenario": "create",
+      "size": 1000,
+      "backend": "com",
+      "mode": "single",
+      "samples": 5,
+      "passed": 3,
+      "failed": 2,
+      "median_ms": 8971.041400000104,
+      "p95_ms": null,
+      "max_ms": 9059.174699999858,
+      "failure_rate": 0.4
+    },
+    {
+      "scenario": "create",
+      "size": 1000,
+      "backend": "http",
+      "mode": "batch",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "median_ms": 311.947299996973,
+      "p95_ms": null,
+      "max_ms": 326.97969999571797,
+      "failure_rate": 0.0
+    },
+    {
+      "scenario": "create",
+      "size": 1000,
+      "backend": "http",
+      "mode": "single",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "median_ms": 55835.84729999711,
+      "p95_ms": null,
+      "max_ms": 56007.38629999978,
+      "failure_rate": 0.0
+    },
+    {
+      "scenario": "query",
+      "size": 100,
+      "backend": "com",
+      "mode": "single",
+      "samples": 20,
+      "passed": 18,
+      "failed": 2,
+      "median_ms": 1590.4536999951233,
+      "p95_ms": null,
+      "max_ms": 1776.6624999931082,
+      "failure_rate": 0.1
+    },
+    {
+      "scenario": "query",
+      "size": 100,
+      "backend": "http",
+      "mode": "single",
+      "samples": 20,
+      "passed": 20,
+      "failed": 0,
+      "median_ms": 58.764350003912114,
+      "p95_ms": 59.916700003668666,
+      "max_ms": 62.29940000048373,
+      "failure_rate": 0.0
+    },
+    {
+      "scenario": "query",
+      "size": 500,
+      "backend": "com",
+      "mode": "single",
+      "samples": 5,
+      "passed": 2,
+      "failed": 3,
+      "median_ms": 7924.229650008783,
+      "p95_ms": null,
+      "max_ms": 7933.590500004357,
+      "failure_rate": 0.6
+    },
+    {
+      "scenario": "query",
+      "size": 500,
+      "backend": "http",
+      "mode": "single",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "median_ms": 73.42149999749381,
+      "p95_ms": null,
+      "max_ms": 134.02480000513606,
+      "failure_rate": 0.0
+    },
+    {
+      "scenario": "query",
+      "size": 1000,
+      "backend": "com",
+      "mode": "single",
+      "samples": 5,
+      "passed": 1,
+      "failed": 4,
+      "median_ms": 15912.28950000368,
+      "p95_ms": null,
+      "max_ms": 15912.28950000368,
+      "failure_rate": 0.8
+    },
+    {
+      "scenario": "query",
+      "size": 1000,
+      "backend": "http",
+      "mode": "single",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "median_ms": 99.49199999391567,
+      "p95_ms": null,
+      "max_ms": 168.9055000024382,
+      "failure_rate": 0.0
+    }
+  ]
+}

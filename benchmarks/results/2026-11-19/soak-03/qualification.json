@@ -1,0 +1,32 @@
+{
+  "completed": false,
+  "soak": {
+    "completed": true,
+    "duration_seconds": 1800.625,
+    "successful_calls": 1793,
+    "failed_calls": 0,
+    "interval_seconds": 1,
+    "memory_start": {
+      "working_set_bytes": 1170292736,
+      "private_bytes": 2366783488
+    },
+    "memory_end": {
+      "working_set_bytes": 1070919680,
+      "private_bytes": 2583908352
+    },
+    "stop_budget_private_growth_bytes": 536870912,
+    "p50_ms": 53.74080000183312,
+    "p95_ms": 60.138099994219374
+  },
+  "cleanup": {
+    "closed_documents": [],
+    "remaining_documents": [
+      "Drawing4.dwg"
+    ],
+    "listener_stopped": false,
+    "cad_process_closed": false,
+    "listener_error": "TimeoutError",
+    "original_active_restored": true
+  },
+  "summary": []
+}

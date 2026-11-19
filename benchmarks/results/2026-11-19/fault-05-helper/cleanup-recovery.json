@@ -1,0 +1,8 @@
+{
+  "completed": true,
+  "recorded_at_unix": 1795052979.3585851,
+  "remaining_test_documents": [],
+  "listener_stopped": true,
+  "original_document_present": true,
+  "note": "Loaded harness predates original-document restore guard fix; independent readback confirms cleanup."
+}

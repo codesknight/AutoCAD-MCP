@@ -1,0 +1,16 @@
+{
+  "completed": false,
+  "error_type": "InterruptedError",
+  "error_code": null,
+  "cleanup": {
+    "closed_documents": [
+      "Drawing3.dwg"
+    ],
+    "remaining_documents": [],
+    "listener_stopped": false,
+    "cad_process_closed": false,
+    "listener_error": "com_error",
+    "original_active_restored": true
+  },
+  "summary": []
+}

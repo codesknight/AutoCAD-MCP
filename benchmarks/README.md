@@ -80,3 +80,13 @@ Render the audit report from all recorded attempts:
 ~~~powershell
 python -m benchmarks.report --root benchmarks/results/<date> --output docs/validation/<date>-cad09.md
 ~~~
+
+Optional chart authoring requires matplotlib (not a runtime dependency):
+
+~~~powershell
+python -m benchmarks.plot --summary benchmarks/results/<date>/<benchmark-run>/summary.csv --output docs/validation/<date>-cad09-performance.svg
+~~~
+
+Recorded report: [2026-11-19 qualification and performance](../docs/validation/2026-11-19-cad09.md).
+It includes failed COM samples and earlier harness attempts; completion must not
+be confused with all acceptance criteria passing.
