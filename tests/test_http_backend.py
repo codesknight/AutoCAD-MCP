@@ -12,6 +12,60 @@ from autocad_mcp.cad.errors import BackendClosedError, UnsupportedOperationError
 TOKEN = "unit-test-token-" * 4
 
 
+def test_explicit_batch_returns_identity_without_changing_legacy_binding(setup_backend):
+    backend,bridge=setup_backend
+    def response(data):
+        return dict(instance_id=bridge.instance,request_id=data['request_id'],status='succeeded',
+                    document_id=data['document_id'],revision=9,result=[1])
+    bridge.post_response=response
+    job=backend.execute_batch_job([{'id':'one','operation':'draw_line','args':{}}],
+                                 document_id='doc-b',request_id='batch-one',expected_revision=8)
+    assert job.document_id=='doc-b' and job.revision==9 and job.result==[1]
+    sent=json.loads(bridge.calls[-1].content)
+    assert sent['document_id']=='doc-b' and sent['expected_revision']==8 and sent['atomic']
+    assert backend.runtime_status()['bound_document_id']=='doc-a'
+    assert sum(c.method=='POST' for c in bridge.calls)==1
+
+
+def test_pagination_capability_and_explicit_document_payload(setup_backend):
+    backend,bridge=setup_backend
+    with pytest.raises(UnsupportedOperationError,match='no fallback'):
+        backend.query_page('doc-b')
+    assert all(c.method=='GET' for c in bridge.calls)
+    # A fresh backend is required to renegotiate changed capabilities.
+    bridge.query_pagination=True
+    bridge.operations.append('query_entities_page')
+    backend._capabilities=None
+    bridge.post_response=lambda data:dict(instance_id=bridge.instance,request_id=data['request_id'],
+        status='succeeded',document_id='doc-b',result={'items':[],'next_cursor':None})
+    result=backend.query_page('doc-b',entity_type='AcDbLine',layer='Fixture',fields=['handle'],limit=5,cursor='opaque')
+    assert result['items']==[]
+    data=json.loads(bridge.calls[-1].content)
+    assert data['document_id']=='doc-b'
+    assert data['operation']=='query_entities_page'
+    assert data['args']==dict(entity_type='AcDbLine',layer='Fixture',fields=['handle'],limit=5,cursor='opaque')
+    assert backend.runtime_status()['bound_document_id']=='doc-a'
+
+
+def test_explicit_batch_lost_response_does_not_replay(setup_backend):
+    backend,bridge=setup_backend
+    bridge.timeout_post=True
+    with pytest.raises(BridgeRemoteError) as failure:
+        backend.execute_batch_job([{'id':'one','operation':'draw_line','args':{}}],
+                                  document_id='doc-b',request_id='uncertain-batch')
+    assert failure.value.code=='OUTCOME_UNKNOWN' and failure.value.request_id=='uncertain-batch'
+    assert sum(c.method=='POST' for c in bridge.calls)==1
+
+def test_job_status_rejects_a_different_request_identity(setup_backend):
+    backend,bridge=setup_backend
+    bridge.job_response=lambda _:bridge.envelope('someone-else')
+    with pytest.raises(BridgeRemoteError) as failure:
+        backend.get_job('my-request')
+    assert failure.value.code=='PROTOCOL_ERROR'
+    assert failure.value.outcome=='outcome_unknown'
+    assert all(c.method=='GET' for c in bridge.calls)
+
+
 class MockBridge:
     def __init__(self):
         self.calls = []
@@ -21,6 +75,7 @@ class MockBridge:
         self.post_response = None
         self.job_response = None
         self.timeout_post = False
+        self.query_pagination = False
 
     def envelope(self, request_id, **values):
         return dict(instance_id=self.instance, request_id=request_id,
@@ -35,7 +90,8 @@ class MockBridge:
                 "protocol_version":self.protocol,"status":"ready"})
         if path == "/v1/capabilities":
             return httpx.Response(200, json={"instance_id":self.instance,
-                "protocol_version":"1","operations":self.operations,"atomic_batch":True})
+                "protocol_version":"1","operations":self.operations,"atomic_batch":True,
+                "query_pagination":self.query_pagination})
         if path == "/v1/status":
             return httpx.Response(200, json={"instance_id":self.instance,"request_id":"status",
                 "status":"succeeded","result":{"active_document_id":"doc-a","documents":[]}})

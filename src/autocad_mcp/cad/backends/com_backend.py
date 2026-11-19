@@ -78,7 +78,14 @@ class COMBackend:
 
     def capabilities(self) -> dict:
         return {"backend": "com", "operations": sorted(OPERATIONS),
-                "atomic_batch": False, "execution": "serial_sta"}
+                "atomic_batch": False, "query_pagination":False,"execution": "serial_sta"}
+
+    def runtime_status(self) -> dict:
+        # Lifecycle metadata only: status/discovery never launches CAD or probes a native object.
+        with self._lock:
+            phase="closed" if self._closed else "worker_failed" if self._failure else "not_started" if self._thread is None else "worker_running"
+            return {"backend":"com","state":phase,"connection_state":"not_probed",
+                    "queue_depth":self._queue.qsize(),"capabilities":self.capabilities(),"documents":[]}
 
     def execute(self, operation: str, payload: dict):
         # Reject unknown operations and invalid payloads before any CAD startup.

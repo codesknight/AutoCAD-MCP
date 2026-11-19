@@ -1,6 +1,6 @@
 # 实验性 .NET Bridge 与 HTTP 后端
 
-日期：2026-11-18。依赖前一轮 backend foundation（PR #30），默认仍为 COM。
+更新日期：2026-11-19。依赖 backend foundation（PR #30），默认仍为 COM。
 
 ## 安装与支持范围
 
@@ -15,11 +15,15 @@
 | draw_line / draw_circle | WCS 三元组、图层及有限几何参数检查 |
 | create_layer / list_layers | 图层创建、颜色及列表 |
 | query_entities / get_entity | 模型空间、类型过滤、摘要、Handle |
+| draw_rectangle / draw_polyline | 旧重量级多段线类型，OCS XY 与目标数据库 elevation |
+| draw_text / draw_mtext / add_dimension | CJK 文字及共同 WCS Z 平面的对齐标注 |
+| get_backend_status / get_job_status | 实例/文档/能力和 job 查询，不重放 |
+| execute_atomic_batch / query_entities_page | 显式文档事务与过滤/投影/签名游标 |
 | 其他 CAD 工具 | 明确不支持，不回退到 COM |
 
-36 项 MCP schema 保留；资源目录和 VQA 不依赖 CAD 后端。
-**原子批处理目前仅有内部 HTTPBackend.execute_batch()，尚未新增批处理 MCP 工具。**
-图块、变换、区域查询、文字、保存/导出尚未迁移。
+旧 36 项 MCP schema 保留，新增四项运行时工具，总数 40；资源目录和 VQA 不依赖 CAD 后端。
+原子批处理可通过 execute_atomic_batch MCP 工具调用，显式绑定文档并返回完整 job。
+图块、变换、区域查询、保存/导出尚未迁移；首批绘图的兼容限制见 [迁移说明](http-drawing-migration.md)。
 
 ~~~powershell
 .\scripts\install-bridge.ps1 -AutoCADDir "D:\LiuYanhong\Apps\AutoCAD2026\AutoCAD 2026"
@@ -88,13 +92,13 @@ POST /v1/execute、/v1/batch。
   终态保留十分钟并释放请求体。没有持久恢复，不承诺跨实例 exactly-once。
 - POST 202 后只轮询 job。写响应丢失、轮询失败、实例/文档身份不符返回 OUTCOME_UNKNOWN；
   不重发，不回退；需要重读校验。
-- 模型空间查询最多 1000 项，超出明确报错；分页、布局、字段裁剪尚未实现。
+- 旧模型空间查询最多 1000 项，超出明确报错；新增 query_entities_page 每页最多 1000 项，支持类型/图层/字段裁剪及签名游标。布局查询尚未实现。
 - HTTP 停服/释放在后台完成，主线程不等待网络异步释放。
   原生事件和退出边界捕获异常，本地日志为 %LOCALAPPDATA%\AutoCAD-MCP\Logs\bridge.log，1 MiB 轮换。
 
 协议 schema 见 [schemas/bridge/v1](../../schemas/bridge/v1/)。
 
-## 验证结果与事故记录
+## 2026-11-18 初次验证与事故记录
 
 ~~~powershell
 python -m pytest -q
@@ -127,6 +131,8 @@ Python 离线 77 passed / 33 skipped；C# journal 断言 11 项、无 UI 消息�
 
 ## 后续
 
-其余工具迁移、批处理 MCP 工具、持久恢复、取消、分页、长期故障/资源测试、
+2026-11-19 的故障与性能证据见 [CAD-09 报告](../validation/2026-11-19-cad09.md)；新增 MCP/分页/首批绘图及其真实失败、修复、清理复核见 [运行时工具报告](../validation/2026-11-19-mcp-runtime.md)。
+
+新增 MCP 批处理、后端/job 状态和分页接口，使用与限制见 [mcp-runtime-tools.md](mcp-runtime-tools.md)。其余工具迁移、持久恢复、取消、
 安装卸载矩阵与完整双后端性能基准仍待完成。
 本轮是最小闭环验收，不发 v0.2，不切默认 COM，不声称 HTTP 性能胜出。

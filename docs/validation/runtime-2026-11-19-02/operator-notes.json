@@ -1,0 +1,5 @@
+{
+  "failure": "Test expected exact dimension definition point instead of equivalent dimension-line placement",
+  "reinspection": "Five entities valid; measurement 10, dimension line y=5, point canonicalized to [10,5,0]",
+  "cleanup": "Same owned PID later closed; see runtime-2026-11-19-03/cleanup-recovery.json"
+}

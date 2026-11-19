@@ -1,0 +1,10 @@
+{
+  "completed": true,
+  "owned_pid": 52600,
+  "owned_process_remaining": false,
+  "original_pid": 46240,
+  "original_process_preserved": true,
+  "method": "Independent process inventory after asynchronous exit; raw qualification flags retained",
+  "native_checks_passed": true,
+  "initial_cleanup_issue": "Immediate PID assertion raced with process termination; driver now waits for exit"
+}

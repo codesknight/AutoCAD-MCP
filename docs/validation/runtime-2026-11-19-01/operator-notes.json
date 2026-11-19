@@ -1,0 +1,9 @@
+{
+  "native_error": "db2dpoly.cpp@352: eInvalidInput",
+  "operation": "draw_rectangle",
+  "job_status_observed": "running",
+  "request_id": "a687252bc6ed4d0687da693e738484f8",
+  "scope": "Owned scratch-only CAD PID 62840 exited; original PID 46240 remains",
+  "cleanup_verified": true,
+  "outcome": "No uncertain write was retried; failed run retained"
+}

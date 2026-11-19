@@ -140,7 +140,13 @@ class HTTPBackend:
             raise ValueError("Invalid Bridge request ID")
         with self._lock:
             self._connect()
-            return BridgeJob.model_validate(self._request("GET", f"/v1/jobs/{request_id}", request_id=request_id))
+            try:
+                job=BridgeJob.model_validate(self._request("GET", f"/v1/jobs/{request_id}", request_id=request_id))
+            except ValidationError:
+                raise BridgeRemoteError("PROTOCOL_ERROR","Invalid job status envelope",request_id=request_id,outcome="outcome_unknown") from None
+            if job.request_id!=request_id:
+                raise BridgeRemoteError("PROTOCOL_ERROR","Job identity mismatch",request_id=request_id,outcome="outcome_unknown")
+            return job
 
     def execute(self, operation, payload, *, request_id=None, expected_revision=None):
         operation_signature(operation).bind(**payload)
@@ -160,17 +166,38 @@ class HTTPBackend:
             return copy_data(job.result)
 
     def execute_batch(self, operations, *, request_id=None, expected_revision=None):
+        return self.execute_batch_job(operations,request_id=request_id,expected_revision=expected_revision).result
+
+    def execute_batch_job(self, operations, *, document_id=None,request_id=None,expected_revision=None):
         with self._lock:
             self._connect()
             if not self._capabilities.get("atomic_batch"):
                 raise UnsupportedOperationError("HTTP Bridge has no atomic batch capability")
-            if self._document is None:
+            target=self._document if document_id is None else document_id
+            if not target:
                 raise BridgeRemoteError("DOCUMENT_NOT_FOUND", "Call new_drawing to create a managed document")
             if not 1 <= len(operations) <= self._capabilities.get("max_batch_operations", 200):
                 raise ValueError("Invalid Bridge batch length")
             return self._submit("/v1/batch", {"request_id":request_id or uuid4().hex,
-                "document_id":self._document, "expected_revision":expected_revision,
-                "atomic":True, "operations":copy_data(operations)}).result
+                "document_id":target, "expected_revision":expected_revision,
+                "atomic":True, "operations":copy_data(operations)})
+
+    def runtime_status(self):
+        with self._lock:
+            status=self.status()
+            return {"backend":"http","state":"ready","instance_id":self._instance,
+                    "capabilities":copy_data(self._capabilities),"bound_document_id":self._document,**status}
+
+    def query_page(self,document_id,*,entity_type="",layer="",fields=None,limit=200,cursor=""):
+        if not document_id:
+            raise ValueError("An explicit document_id is required")
+        with self._lock:
+            self._connect()
+            if not self._capabilities.get("query_pagination") or "query_entities_page" not in self._capabilities["operations"]:
+                raise UnsupportedOperationError("HTTP Bridge does not support pagination; no fallback was attempted")
+            return self._submit("/v1/execute",{"request_id":uuid4().hex,"document_id":document_id,
+                "expected_revision":None,"operation":"query_entities_page",
+                "args":{"entity_type":entity_type,"layer":layer,"fields":fields,"limit":limit,"cursor":cursor}}).result
 
     def close(self):
         with self._lock:

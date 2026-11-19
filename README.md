@@ -36,7 +36,7 @@
 | **Choose a model** | Streaming Web UI: Anthropic, OpenAI, OpenAI-compatible endpoints and Doubao |
 | **Extend understanding** | Optional local drawing VQA service |
 
-**36 registered MCP tools.** Default COM provides the existing CAD tool surface. Experimental HTTP supports a smaller, documented subset. See the [tool migration matrix](docs/design/tool-migration-matrix.md).
+**40 registered MCP tools.** Default COM provides the existing CAD tool surface. Four additive runtime tools expose backend/job status, atomic batches and paginated queries. Experimental HTTP supports a smaller, documented subset. See the [tool migration matrix](docs/design/tool-migration-matrix.md).
 
 ## Quick start
 
@@ -148,13 +148,16 @@ Call `POST /api/chat/stream` or `POST /api/chat` from the script. Never commit r
 | | COM — default | .NET HTTP Bridge — experimental |
 | --- | --- | --- |
 | CAD execution | Python COM adapter on one STA worker | AutoCAD plugin, main-thread queue and transactions |
-| Current scope | Existing CAD tools | Seven CAD tools: new drawing, line/circle, create/list layers, query/get entity |
-| Atomic batch | Not supported | Internal Python API for transactional layer/line/circle operations |
+| Current scope | Existing CAD tools | Twelve legacy CAD tools, plus runtime status/job/batch/page tools; see migration evidence |
+| Atomic batch | Not supported | MCP tool for 1–200 transactional layer/line/circle operations |
+| Query pagination | Existing legacy query | MCP pages of up to 1,000 items, filters, field projection and revision-bound cursors |
 | Setup | Python + running AutoCAD | Matching .NET SDK, plugin build/NETLOAD, local token |
 | Write behavior | Existing COM workflow; one write entry point | Bridge-created documents only; explicit document binding |
 | Details | [COM foundation](docs/design/backend-foundation.md) | [Install, configure & validate](docs/design/http-bridge.md) |
 
 Both paths keep the MCP tool layer. Unsupported HTTP operations return an explicit error; writes never fall back to COM.
+
+See [runtime tool examples and recovery rules](docs/design/mcp-runtime-tools.md) for explicit document IDs, batch steps and cursor handling.
 
 See the [native fault and reproducible performance report](docs/validation/2026-11-19-cad09.md), including failed samples and qualification limits. COM remains the default.
 
@@ -189,7 +192,7 @@ python -m pytest tests/test_backend_integration.py --cad-integration -q -s
 python scripts/export_mcp_contract.py --output tools.json
 ~~~
 
-The latest [native verification record](docs/validation/2026-11-18-http-bridge.json) documents **77 Python tests passed**, 33 CAD tests skipped by default, 23 C# assertions, and real MCP stdio/Streamable HTTP checks. See [CI runs](https://github.com/codesknight/AutoCAD-MCP/actions) for current branch results.
+The latest [runtime and drawing verification report](docs/validation/2026-11-19-mcp-runtime.md) documents **103 Python tests passed**, 33 CAD tests skipped, 34 C# assertions, real MCP stdio pagination of 1,205 entities and five native drawing tools. It retains the native failure, correction and cleanup recheck. Earlier stdio/Streamable HTTP checks remain in the [initial record](docs/validation/2026-11-18-http-bridge.json). See [CI runs](https://github.com/codesknight/AutoCAD-MCP/actions) for current branch results.
 
 Native verification uses **normal AutoCAD startup, then attachment**; automatic startup compatibility remains under investigation. The harness closes its test drawings and stops its listener. Helpers must clean up CAD processes they create while preserving user-owned instances.
 

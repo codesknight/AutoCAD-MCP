@@ -1,0 +1,32 @@
+{
+  "completed": false,
+  "passed": false,
+  "bridge_sha256": "11dfad2a309b0ac9e78bbbee05be4972d240843cd60e68bf68c24cff1c6ca5ec",
+  "source_sha256": {
+    "plugin/AutoCADBridge/BridgeServer.cs": "5034f43220c497bf42d7d8016442905cb71731596c6b65e9317ee1e26cdc6bc9",
+    "plugin/AutoCADBridge/CadOperations.cs": "02980e6b090bc70e6883e0a1e9d8fc7de9060b51a41c631d6cf38fce005ca5ee",
+    "plugin/AutoCADBridge/Contracts.cs": "2b21664d645dc1f5d02a203e6034f01208524f421415001353ead65b93e8da8e",
+    "plugin/AutoCADBridge/Diagnostics.cs": "97d845b93a436bd9f4ae8b9397d04ac966c82792025a5e6559bc25dd08e423d3",
+    "plugin/AutoCADBridge/DrawingOperations.cs": "e257b90cc0f42d04a5fc76c69ef6fc74fa0e39c2eb2bfe1c7d84413401fafd72",
+    "plugin/AutoCADBridge/EmbeddedHttpHost.cs": "931836a332ee677b58955feea112de3a59927f6d1c756dcbd85aa292640c997c",
+    "plugin/AutoCADBridge/Plugin.cs": "32ca52a36727b0f22adebb084936d8b1af528100887b436b9293e116ee9217b5",
+    "plugin/AutoCADBridge/QueryCursor.cs": "4f2f79a0828005498eaf7cd68bc6751e9df76e9329e858ba2316a9d47b713071",
+    "scripts/verify_runtime_tools.py": "f2c9502b7e76f4bfaf285a9b26c3e8a2b6be41072fac5b63380816916c4556d9"
+  },
+  "instance_id": "a02bf8ab5bb044fbb907a4b8262b9efd",
+  "pagination_items": 1205,
+  "page_counts": [
+    400,
+    400,
+    400,
+    5
+  ],
+  "no_duplicate_ids": true,
+  "geometry_sha256": "b01070ace7197a889487f95bd1825ecbdcb57ef9a76dd6a5e66de6bae1714f35",
+  "duplicate_batch_deduplicated": true,
+  "journal_identity_verified": true,
+  "filter_projection_verified": true,
+  "cursor_errors_verified": true,
+  "rollback_reported": true,
+  "error_type": "ExceptionGroup"
+}

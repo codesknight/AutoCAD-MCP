@@ -501,3 +501,17 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 独立 restart-01 实际终止自建进程中的排队写入，确认 OUTCOME_UNKNOWN、仅一次 POST、旧客户端拒绝重绑定、旧 journal 丢失有明确语义、新客户端新文档创建圆并重读成功；两个自建 CAD 进程均关闭，用户原 PID 46240 保留。主矩阵原 not_run 不改写，渲染报告引用独立通过证据，合计 18 项故障通过。
 - benchmark-01 保存 145 个测量和 51 个预热样本。HTTP 80/80 测量通过；COM 53/65 通过，12 个失败（7 com_error、4 AttributeError、1 KeyError）及 6 个预热失败全部保留。完整运行/清理完成不等于性能验收全过，benchmark.passed=false。1K 创建成功样本中位数：HTTP 批量 311.95 ms、HTTP 逐条 55835.85 ms、COM 8971.04 ms（COM 仅 3/5 成功）；不据有选择偏差的样本宣称普遍加速比。
 - 提交全部失败尝试、连续调用、故障与性能原始 JSON/JSONL/CSV，新增可重生成的中文报告和 SVG 对照图。图表标注成功/失败数，小样本无 P95，检查图像无重叠；没有提交令牌、私有 DWG 或 dump。84 passed / 33 skipped，COM 默认配置未变；更大工具覆盖/分页属于下一阶段。
+
+## 2026-11-19（续）：MCP 运行时工具与查询分页
+
+- 新增 get_backend_status/get_job_status/execute_atomic_batch/query_entities_page 四项结构化工具，旧 36 项 schema 不变，总数 40。COM 状态只读工作线程元数据，不启动 CAD；其余不支持的能力明确报错，不回退。
+- 新批处理与分页必须显式指定 document_id，避免依赖共享旧工具的活动绑定；批处理限制 1–200 步图层/线/圆，保留 request_id、revision 与完整 job 结果。查询 job 验证返回请求身份，未知写入仍不自动重放。
+- 原生分页支持类型/图层过滤与字段裁剪，每页最多 1000，签名游标绑定实例、文档、查询与观察到的 revision，十分钟过期。仍逐页扫描模型空间，不宣称大型图纸查询优化；旧查询上限保留。
+- 首轮离线验证 102 passed / 33 skipped，新增真实 MCP 参数/输出及 HTTP no-replay 测试；C# 游标篡改、跨实例/文档/查询、revision 与 TTL 共 11 项断言通过，原生 DLL 编译零警告零错误。实机新版 DLL 与超过 1000 项分页仍待验证，不据离线结果记为原生验收完成。
+- 修复契约导出脚本的 worktree 来源：明确对子进程使用当前 checkout 的 src，避免 editable install 指向原仓库而错误地验证旧版本。同步双语 README、工具矩阵与调用/恢复文档，默认仍为 COM。
+- 继续迁移矩形、重量级多段线、单行/多行文字、对齐标注，保持旧 MCP 参数与文字返回。新增几何重读字段；多段线遵循旧 COM 的 OCS XY/数据库 elevation 语义，文字沿用 MCP_CJK/SimSun，对齐标注暂限共同 WCS Z 平面。批处理白名单未扩展，编辑/图块属性/文件仍未迁移。
+- 首轮新版实机 runtime-2026-11-19-01 通过 1205 个实体的 400/400/400/5 分页、唯一 ID、过滤/投影、去重与游标错误检查；随后矩形构造触发 db2dpoly.cpp@352 eInvalidInput，专用进程退出，原有 PID 46240 保留。客户端 OUTCOME_UNKNOWN，未重放；原失败 qualification 与 DLL 哈希保留，不记为全轮通过。
+- 移除导致本次原生错误的多段线批量构造路径，改为默认父实体入库后在同一事务 AppendVertex，显式关闭顶点 wrapper 并最后设置 Closed。官方要求父对象必须先入库；具体原生内部根因未由 dump 确诊。修复构建零警告零错误，C# 游标 11 项断言通过，正在独立新实例复测。
+- 修复版 runtime-02 五类几何创建/读取成功，脚本却把规范化后的标注线定义点 [10,5,0] 误判为不等于输入 [5,5,0]；独立只读重查确认同一条 y=5 标注线、测量 10。按端点/测量/线位置更正校验，原失败保留。
+- runtime-03 的 43 次实际 MCP 调用全部符合预期（含预期错误），1205 项分页与五类绘图重读通过。收尾即时 PID 断言与异步退出竞争，原 qualification=false 保留；独立复核确认自建 PID 52600 已退出、原 PID 46240 保留，添加 cleanup-recovery 证据及有界退出等待回归。临时隔离令牌文件已删除，未替换原有实例锁定的已安装 DLL。
+- 最终离线 103 passed / 33 skipped；C# journal 11、host 12、cursor 11 项断言通过。双语 README、迁移矩阵、复现脚本与报告同步真实范围，默认 COM 不变；编辑/图块属性/文件为后续工作，旧 CAD-09 性能数据不冒充新 DLL 性能。

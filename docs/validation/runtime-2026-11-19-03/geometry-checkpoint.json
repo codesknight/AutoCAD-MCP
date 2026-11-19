@@ -1,0 +1,168 @@
+[
+  {
+    "object_id": 1,
+    "type": "AcDb2dPolyline",
+    "layer": "0",
+    "handle": "2D0",
+    "closed": true,
+    "points": [
+      [
+        2,
+        3,
+        0
+      ],
+      [
+        12,
+        3,
+        0
+      ],
+      [
+        12,
+        8,
+        0
+      ],
+      [
+        2,
+        8,
+        0
+      ]
+    ],
+    "bounding_box": {
+      "min": [
+        2,
+        3,
+        0
+      ],
+      "max": [
+        12,
+        8,
+        0
+      ]
+    }
+  },
+  {
+    "object_id": 2,
+    "type": "AcDb2dPolyline",
+    "layer": "0",
+    "handle": "2D6",
+    "closed": true,
+    "points": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        5,
+        0,
+        0
+      ],
+      [
+        5,
+        4,
+        0
+      ]
+    ],
+    "bounding_box": {
+      "min": [
+        0,
+        0,
+        0
+      ],
+      "max": [
+        5,
+        4,
+        0
+      ]
+    }
+  },
+  {
+    "object_id": 3,
+    "type": "AcDbText",
+    "layer": "0",
+    "handle": "2DC",
+    "text_string": "中文 MCP 文字",
+    "insertion_point": [
+      10,
+      20,
+      0
+    ],
+    "height": 2.5,
+    "rotation": 29.999999999999996,
+    "text_style": "MCP_CJK",
+    "bounding_box": {
+      "min": [
+        8.526536312849162,
+        19.685521501419057,
+        0
+      ],
+      "max": [
+        30.308188154990308,
+        34.1722257010966,
+        0
+      ]
+    }
+  },
+  {
+    "object_id": 4,
+    "type": "AcDbMText",
+    "layer": "0",
+    "handle": "2DE",
+    "text_string": "第一行\\P第二行",
+    "insertion_point": [
+      20,
+      30,
+      0
+    ],
+    "height": 3,
+    "width": 40,
+    "rotation": 0,
+    "text_style": "MCP_CJK",
+    "bounding_box": {
+      "min": [
+        20,
+        20.558659217877093,
+        0
+      ],
+      "max": [
+        60,
+        30,
+        0
+      ]
+    }
+  },
+  {
+    "object_id": 5,
+    "type": "AcDbAlignedDimension",
+    "layer": "0",
+    "handle": "2E0",
+    "start_point": [
+      0,
+      0,
+      0
+    ],
+    "end_point": [
+      10,
+      0,
+      0
+    ],
+    "dimension_line_point": [
+      10,
+      5,
+      0
+    ],
+    "measurement": 10,
+    "bounding_box": {
+      "min": [
+        0,
+        0,
+        0
+      ],
+      "max": [
+        10,
+        8.177864938608458,
+        0
+      ]
+    }
+  }
+]

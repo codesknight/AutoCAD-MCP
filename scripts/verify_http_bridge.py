@@ -51,7 +51,7 @@ def backend_config(url):
 
 async def verify_client(client, owned_documents):
     await client.initialize()
-    assert len((await client.list_tools()).tools) == 36
+    assert len((await client.list_tools()).tools) == 40
     async def call(name, args):
         response = await client.call_tool(name, args)
         assert not response.isError, response.content
