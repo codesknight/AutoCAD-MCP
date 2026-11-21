@@ -263,10 +263,27 @@ class CADController:
             # sideways-rotates the whole image -- force upright output since
             # a rotated engineering drawing is harder for a VQA model to read.
             layout.PlotRotation = 0
-            layout.PlotType = 1  # acExtents
+            doc.Regen(1)  # refresh native extents after geometry changes
+            if layout.ModelType and doc.ModelSpace.Count:
+                low, high = doc.GetVariable("EXTMIN"), doc.GetVariable("EXTMAX")
+                if any(not math.isfinite(v) for v in (*low, *high)) or any(a > b for a, b in zip(low, high)):
+                    raise ValueError("CAD_CAPTURE_EXTENTS_INVALID")
+                # Plot windows use display coordinates. Project every corner,
+                # then add a native-coordinate margin before fit-to-page.
+                corners = [doc.Utility.TranslateCoordinates(to_variant_point(x, y, z), 0, 2, False)
+                           for x in (low[0], high[0]) for y in (low[1], high[1]) for z in (low[2], high[2])]
+                left, right = min(p[0] for p in corners), max(p[0] for p in corners)
+                bottom, top = min(p[1] for p in corners), max(p[1] for p in corners)
+                margin = max(max(right - left, top - bottom) * 0.05, 1e-6)
+                layout.SetWindowToPlot(to_variant_double_array([left - margin, bottom - margin]),
+                                       to_variant_double_array([right + margin, top + margin]))
+                layout.PlotType = 4  # acWindow; SetWindowToPlot must precede this
+            else:
+                layout.PlotType = 1  # acExtents for an empty/paper layout
             layout.UseStandardScale = True
             layout.StandardScale = 0  # acScaleToFit
             layout.CenterPlot = True
+            doc.Regen(1)
             if not doc.Plot.PlotToFile(file_path):
                 raise RuntimeError("CAD_PLOT_REJECTED: PlotToFile returned false")
             self._wait_for_stable_file(file_path, timeout)

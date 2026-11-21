@@ -561,3 +561,9 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 既有web/backend、资料和tests/images改动保持原样，不混入本次提交。此修复不覆盖进程崩溃/丢回执的权威终态，也未宣称任意图纸视觉质量或像素映射已解决。
 
 - 最终本地221 passed/33 skipped；实现538db9c已普通推送codex/dependency-preflight，[CI 44891530548](https://github.com/codesknight/AutoCAD-MCP/actions/runs/44891530548) offline与bridge-contracts均成功。Cader第二轮真实房子/树18确认、unknown0、两次有效自动视觉及一轮修正，无写屏障；完整质量仍因计划原生类型/需求语义和截图边缘pending，不能据此宣称任意输出质量通过。本轮新图经完整快照与未命名状态核对后关闭，用户Drawing1/2保留。Cader完整分层证据在其docs/validation/2026-11-21-dependency-and-partial-execution.md，最终文档CI在Cader#20同步。
+
+## 2026-11-21（续）：手稿重绘视觉捕获边距
+
+- 关联Cader#20 REQ-034；原extents fit图形可能触边，后处理补白不能证明原图完整。本轮Regen后读取EXTMIN/MAX，验证有限值及顺序，投影八角到DCS，用5%原生窗口边距设置acWindow再fit-to-page；空模型/纸空间保留原extents路径。保持完整打印快照恢复，不修改图元或回放未知操作。
+- 真实AutoCAD仅新建本次测试图：PNG约1.188秒，导出设置前后完全相同，边缘前景像素0/possible_clipping=false；核对后关闭该测试图，既有用户图未修改。私有证据由Cader `.cader/runs/dependency-native-23923545-6703-44df-8d5f-dce6b6aa15b0` 保存，不提交图纸。
+- 实际全量pytest 221 passed/33 skipped；isolated ruff I/F改动两文件通过。新增窗口投影/边距/恢复断言属于fixture，另有上述实机，不当成完整模型重绘验收。后者仍由Cader分层报告。原始失败保留，web/backend/训练资料的既有改动保持不动。

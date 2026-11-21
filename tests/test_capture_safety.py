@@ -16,6 +16,7 @@ class Layout:
         self.UseStandardScale = False
         self.StandardScale = 16
         self.CanonicalMediaName = "original media"
+        self.window = ((0, 0), (1, 1))
         self.deleted = False
 
     def CopyFrom(self, other):
@@ -29,12 +30,15 @@ class Layout:
     def Delete(self):
         self.deleted = True
 
+    def SetWindowToPlot(self, low, high):
+        self.window = (tuple(low.value), tuple(high.value))
+
 
 @pytest.mark.parametrize("failure", [None, "plot_false", "timeout", "plot_error"])
 def test_foreground_capture_restores_all_settings(tmp_path, failure):
     layout, backup = Layout(), Layout()
     before = vars(layout).copy()
-    variables = {"BACKGROUNDPLOT": 3}
+    variables = {"BACKGROUNDPLOT": 3, "EXTMIN": (0, 0, 0), "EXTMAX": (10, 10, 0)}
     path = tmp_path / "capture.png"
     calls = []
     plot = SimpleNamespace(QuietErrorMode=False)
@@ -44,7 +48,8 @@ def test_foreground_capture_restores_all_settings(tmp_path, failure):
         assert variables["BACKGROUNDPLOT"] == 0
         assert plot.QuietErrorMode
         assert layout.StandardScale == 0 and layout.UseStandardScale
-        assert layout.PlotType == 1 and layout.PlotRotation == 0
+        assert layout.PlotType == 4 and layout.PlotRotation == 0
+        assert layout.window == ((-0.5, -0.5), (10.5, 10.5))
         if failure == "plot_error":
             raise RuntimeError("native plot failure")
         path.write_bytes(b"synthetic only")
@@ -52,6 +57,8 @@ def test_foreground_capture_restores_all_settings(tmp_path, failure):
 
     plot.PlotToFile = plot_to_file
     doc = SimpleNamespace(ActiveLayout=layout, Plot=plot,
+                          ModelSpace=SimpleNamespace(Count=1), Regen=lambda _mode: None,
+                          Utility=SimpleNamespace(TranslateCoordinates=lambda point, *_args: tuple(point.value)),
                           PlotConfigurations=SimpleNamespace(Add=lambda *_args: backup),
                           GetVariable=lambda key: variables[key],
                           SetVariable=lambda key, value: variables.__setitem__(key, value))
