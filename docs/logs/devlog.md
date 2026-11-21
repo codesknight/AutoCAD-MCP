@@ -559,3 +559,5 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 离线新增38例创建安全与5例导出恢复。前一全量216 passed/33 skipped；加入导出后的最终全量/CI另记。初次fixture遗漏InsertBlock已修正；误在Cader目录用此环境pytest导致导入失败是检查目录问题。项目未配置ruff，借用Cader环境isolated I/F检查；不把Cader严格BLE规则对旧代码的报告视为本仓库既有检查通过。
 - 独立真实AutoCAD新图：缺图层后实体0；建层后多段线正常；后续故意赋无效图层只清理第二个新增实体，已有测试实体保留。新图PNG约1.110秒完成，前后BACKGROUNDPLOT=2、空设备名/scale/rotation/临时配置数量均恢复；仅关闭本次新图。真实模型完整质量另由Cader记录，首轮export失败保留。
 - 既有web/backend、资料和tests/images改动保持原样，不混入本次提交。此修复不覆盖进程崩溃/丢回执的权威终态，也未宣称任意图纸视觉质量或像素映射已解决。
+
+- 最终本地221 passed/33 skipped；实现538db9c已普通推送codex/dependency-preflight，[CI 44891530548](https://github.com/codesknight/AutoCAD-MCP/actions/runs/44891530548) offline与bridge-contracts均成功。Cader第二轮真实房子/树18确认、unknown0、两次有效自动视觉及一轮修正，无写屏障；完整质量仍因计划原生类型/需求语义和截图边缘pending，不能据此宣称任意输出质量通过。本轮新图经完整快照与未命名状态核对后关闭，用户Drawing1/2保留。Cader完整分层证据在其docs/validation/2026-11-21-dependency-and-partial-execution.md，最终文档CI在Cader#20同步。
