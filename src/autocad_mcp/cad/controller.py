@@ -6,6 +6,8 @@ import time
 import uuid
 from contextlib import contextmanager
 
+import pythoncom
+
 from autocad_mcp.cad.connection import CADConnection
 from autocad_mcp.cad.geometry import (
     Point,
@@ -238,13 +240,29 @@ class CADController:
         background = doc.GetVariable("BACKGROUNDPLOT")
         quiet = doc.Plot.QuietErrorMode
         backup = None
+        backup_name = "_MCP_CAPTURE_" + uuid.uuid4().hex
+        backup_created = False
         copied = False
         original_error = None
         restore_errors = []
         try:
             # CopyFrom restores media, scale, origin, rotation and the initial
             # empty/None device too; assigning ConfigName="" is invalid COM.
-            backup = doc.PlotConfigurations.Add("_MCP_CAPTURE_" + uuid.uuid4().hex, layout.ModelType)
+            # Add can return an unresolved pywin32 wrapper. Never repeat Add;
+            # reacquire the acknowledged object by its unique native name.
+            doc.PlotConfigurations.Add(backup_name, layout.ModelType)
+            backup_created = True
+            for attempt in range(6):
+                try:
+                    backup = doc.PlotConfigurations.Item(backup_name)
+                    if backup.Name != backup_name:
+                        raise RuntimeError("CAD_PLOT_BACKUP_IDENTITY_MISMATCH")
+                    _ = backup.CopyFrom, backup.Delete
+                    break
+                except (AttributeError, pythoncom.com_error):
+                    if attempt == 5:
+                        raise
+                    time.sleep(0.1)
             backup.CopyFrom(layout)
             copied = True
             # Autodesk requires this for foreground ActiveX plotting. Waiting
@@ -291,10 +309,17 @@ class CADController:
             original_error = error
         finally:
             actions = []
+            restored = not copied
             if copied:
-                actions.append(lambda: layout.CopyFrom(backup))
-            if backup is not None:
-                actions.append(backup.Delete)
+                try:
+                    layout.CopyFrom(backup)
+                    restored = True
+                except Exception as error:
+                    restore_errors.append(str(error))
+            if backup_created and restored:
+                # Resolve methods inside the protected action, not while
+                # building this list: lookup failures must not skip restoration.
+                actions.append(lambda: doc.PlotConfigurations.Item(backup_name).Delete())
             actions.extend([
                 lambda: doc.SetVariable("BACKGROUNDPLOT", background),
                 lambda: setattr(doc.Plot, "QuietErrorMode", quiet),

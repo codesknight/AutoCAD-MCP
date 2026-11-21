@@ -567,3 +567,11 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 关联Cader#20 REQ-034；原extents fit图形可能触边，后处理补白不能证明原图完整。本轮Regen后读取EXTMIN/MAX，验证有限值及顺序，投影八角到DCS，用5%原生窗口边距设置acWindow再fit-to-page；空模型/纸空间保留原extents路径。保持完整打印快照恢复，不修改图元或回放未知操作。
 - 真实AutoCAD仅新建本次测试图：PNG约1.188秒，导出设置前后完全相同，边缘前景像素0/possible_clipping=false；核对后关闭该测试图，既有用户图未修改。私有证据由Cader `.cader/runs/dependency-native-23923545-6703-44df-8d5f-dce6b6aa15b0` 保存，不提交图纸。
 - 实际全量pytest 221 passed/33 skipped；isolated ruff I/F改动两文件通过。新增窗口投影/边距/恢复断言属于fixture，另有上述实机，不当成完整模型重绘验收。后者仍由Cader分层报告。原始失败保留，web/backend/训练资料的既有改动保持不动。
+
+## 2026-11-21（续）：打印快照COM包装与清理异常
+
+- Cader#20 REQ-035完整质量测试在第四次捕获返回`Add.Delete`，Cader保留隔离测试图/unknown屏障。源码确认直接使用PlotConfigurations.Add返回包装，且finally建立actions列表时提前读取backup.Delete；读取失败在保护范围外，掩盖原始CopyFrom错误并跳过其他状态恢复。未把旧请求改为未执行或清除旧屏障。
+- Add只派发一次，以唯一名称从Item重新取得已确认创建对象并有界检查方法/身份；只重读COM包装，不重试Add/PlotToFile。清理方法查找放入受保护的action，逐项尝试原变量/QuietErrorMode恢复；布局恢复失败保留快照供复核，不删除最后的恢复副本。异常保留首发错误和restore_errors。
+- 本地11例捕获安全测试通过，含Add返回未解析对象、原错误/删除方法读取失败、恢复失败保留副本，以及原打印失败/超时/拒绝覆盖场景。全量227 passed/33 skipped，isolated ruff I/F改动文件通过。
+- 独立真实CAD先读空闲状态，再仅新建本轮测试图，连续5次实际PNG导出、BACKGROUNDPLOT/设备/比例/旋转/配置数完整恢复；约1.1秒/次。私有证据Cader `.cader/runs/dependency-native-10194094-fdbc-4069-86e3-20cc55cccf5f`。只关闭该新图，旧冻结图和用户原图保留。原始失败、局部fixture与实机分列，完整模型灯泡重验另由Cader记录。
+- 不混入既有web/backend、训练资料和tests/images改动；未修改Cader权限策略或原生Bridge事务契约。
