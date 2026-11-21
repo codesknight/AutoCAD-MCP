@@ -551,3 +551,11 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 离线 178 passed / 33 skipped；C# Journal 17 / Host 12 / Cursor 11 / Artifact 17 共 57 断言通过；插件 Release 零警告零错误，wheel 验证入口、配置与 schema 原字节。
 - Cader 266c689 实际 CLI 两轮均 exit 0、verification passed：状态→创建→空图查询→三实体事务→源查询→保存→只读重开→独立查询。两轮额外原生回滚均 revision 0→6、无实体/图层/样式残留；新 Python adapter 读回相同权威失败身份。逐文件核对 Cader 128 个 tracked 文件未改，不修改其代码/策略/默认配置。
 - 使用自建 AutoCAD PID 33564，结束关闭全部测试图纸与进程；首次快速关闭的 RPC_E_CALL_REJECTED 保留并有界恢复，最终无 acad 进程。公开脱敏两轮证据、源指纹、请求原文摘要核对及复现脚本；不提交 token 或 DWG。通过范围为固定计划真实文件闭环，不冒充图片识别、复杂电路重绘、性能或长期稳定性验收，也不代替双方发布冻结。
+
+## 2026-11-21：Cader 用户日志中的图层依赖与延迟截图
+
+- 来源：用户明确要求修复Cader 17:24 draw_polyline(HOUSE)部分执行与反复屏障，关联codesknight/Cader#20 REQ-032。未预建图层时旧实现先AddPolyline再赋层，错误后留下0层实体；本轮在9类创建入口先查图层存在/可写，属性失败只清理本次新增实体（含hatch边界），不全局Undo。清理失败明确保留原错误和cleanup_errors；不是事务或可重放证明。
+- 实机第一轮模型确认16写入后，export_current_view超时，PNG延迟到达。改为BACKGROUNDPLOT=0前台打印、检查布尔回执、显式extents/fit/upright，PlotConfiguration.CopyFrom快照完整恢复，finally逐项恢复系统变量/QuietErrorMode并删除临时配置；拒绝覆盖已有文件。原生未知仍由Cader保留屏障，不用重打伪造成功。
+- 离线新增38例创建安全与5例导出恢复。前一全量216 passed/33 skipped；加入导出后的最终全量/CI另记。初次fixture遗漏InsertBlock已修正；误在Cader目录用此环境pytest导致导入失败是检查目录问题。项目未配置ruff，借用Cader环境isolated I/F检查；不把Cader严格BLE规则对旧代码的报告视为本仓库既有检查通过。
+- 独立真实AutoCAD新图：缺图层后实体0；建层后多段线正常；后续故意赋无效图层只清理第二个新增实体，已有测试实体保留。新图PNG约1.110秒完成，前后BACKGROUNDPLOT=2、空设备名/scale/rotation/临时配置数量均恢复；仅关闭本次新图。真实模型完整质量另由Cader记录，首轮export失败保留。
+- 既有web/backend、资料和tests/images改动保持原样，不混入本次提交。此修复不覆盖进程崩溃/丢回执的权威终态，也未宣称任意图纸视觉质量或像素映射已解决。

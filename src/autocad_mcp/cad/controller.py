@@ -4,10 +4,15 @@ import os
 import tempfile
 import time
 import uuid
+from contextlib import contextmanager
 
 from autocad_mcp.cad.connection import CADConnection
-from autocad_mcp.cad.geometry import Point, to_variant_double_array, to_variant_object_array, to_variant_point
-
+from autocad_mcp.cad.geometry import (
+    Point,
+    to_variant_double_array,
+    to_variant_object_array,
+    to_variant_point,
+)
 
 _CJK_TEXT_STYLE = "MCP_CJK"
 _SAVE_DRAWING_EXTENSIONS = {".dwg", ".dxf", ".dwt", ".dws"}
@@ -16,6 +21,49 @@ _SAVE_DRAWING_EXTENSIONS = {".dwg", ".dxf", ".dwt", ".dws"}
 class CADController:
     def __init__(self, connection: CADConnection):
         self.connection = connection
+
+    def _validate_layer(self, layer: str | None) -> None:
+        """Resolve dependencies before Add*: setter failures must not leave geometry."""
+        if layer:
+            target = self.connection.document.Layers.Item(layer)
+            if target.Lock or target.Freeze:
+                raise ValueError(f"CAD_LAYER_NOT_WRITABLE: {layer}")
+
+    @contextmanager
+    def _creation_scope(self):
+        """Best-effort cleanup of objects returned by this call only, never Undo.
+
+        This is not a transaction or execution receipt. A lost COM response, an
+        Add* that raises without returning an object, or failed cleanup is still
+        uncertain and must not be retried blindly by the caller.
+        """
+        created = []
+        try:
+            yield created
+        except Exception as original:
+            cleanup_errors = []
+            for entity in reversed(created):
+                try:
+                    entity.Delete()
+                except Exception as cleanup:
+                    cleanup_errors.append(str(cleanup))
+            if cleanup_errors:
+                raise RuntimeError(
+                    f"CAD_PARTIAL_MUTATION: original={original}; "
+                    f"cleanup_errors={cleanup_errors}; preserve document; do not replay"
+                ) from original
+            raise
+
+    def _configure_entity(self, entity, layer: str | None = None, **properties):
+        with self._creation_scope() as created:
+            created.append(entity)
+            for name, value in properties.items():
+                setattr(entity, name, value)
+            if layer:
+                entity.Layer = layer
+            # Include response construction in the cleanup scope.
+            _ = entity.ObjectID
+            return entity
 
     def _ensure_cjk_text_style(self) -> str:
         """AutoCAD 的默认文字样式 "Standard" 用 txt.shx，这个 SHX 字体没有中文字形，
@@ -32,41 +80,36 @@ class CADController:
 
     def draw_line(self, start: Point, end: Point, layer: str | None = None) -> int:
         """Draw a line and return the new entity's ObjectID handle."""
+        self._validate_layer(layer)
         model_space = self.connection.model_space
         line = model_space.AddLine(to_variant_point(*start), to_variant_point(*end))
-        if layer:
-            line.Layer = layer
-        return line.ObjectID
+        return self._configure_entity(line, layer).ObjectID
 
     def draw_circle(self, center: Point, radius: float, layer: str | None = None) -> int:
         """Draw a circle and return the new entity's ObjectID handle."""
+        self._validate_layer(layer)
         model_space = self.connection.model_space
         circle = model_space.AddCircle(to_variant_point(*center), radius)
-        if layer:
-            circle.Layer = layer
-        return circle.ObjectID
+        return self._configure_entity(circle, layer).ObjectID
 
     def draw_arc(
         self, center: Point, radius: float, start_angle: float, end_angle: float,
         layer: str | None = None,
     ) -> int:
         """start_angle/end_angle 单位为度，从 X 轴正方向逆时针计。"""
+        self._validate_layer(layer)
         model_space = self.connection.model_space
         arc = model_space.AddArc(
             to_variant_point(*center), radius, math.radians(start_angle), math.radians(end_angle)
         )
-        if layer:
-            arc.Layer = layer
-        return arc.ObjectID
+        return self._configure_entity(arc, layer).ObjectID
 
     def _add_polyline(self, points: list[Point], closed: bool = False, layer: str | None = None):
+        self._validate_layer(layer)
         model_space = self.connection.model_space
         flat = [coord for point in points for coord in point]
         polyline = model_space.AddPolyline(to_variant_double_array(flat))
-        polyline.Closed = closed
-        if layer:
-            polyline.Layer = layer
-        return polyline
+        return self._configure_entity(polyline, layer, Closed=closed)
 
     def draw_polyline(self, points: list[Point], closed: bool = False, layer: str | None = None) -> int:
         return self._add_polyline(points, closed, layer).ObjectID
@@ -79,24 +122,19 @@ class CADController:
 
     def draw_text(self, position: Point, text: str, height: float, layer: str | None = None, rotation: float = 0.0) -> int:
         """rotation 单位为度。"""
+        self._validate_layer(layer)
+        style = self._ensure_cjk_text_style()
         model_space = self.connection.model_space
         text_obj = model_space.AddText(text, to_variant_point(*position), height)
-        text_obj.StyleName = self._ensure_cjk_text_style()
-        if rotation:
-            text_obj.Rotation = math.radians(rotation)
-        if layer:
-            text_obj.Layer = layer
-        return text_obj.ObjectID
+        return self._configure_entity(text_obj, layer, StyleName=style, Rotation=math.radians(rotation)).ObjectID
 
     def draw_mtext(self, position: Point, text: str, width: float = 100.0, height: float = 2.5, layer: str | None = None) -> int:
         """多行富文本。width 是文本框宽度（超出会自动换行），height 是字高。"""
+        self._validate_layer(layer)
+        style = self._ensure_cjk_text_style()
         model_space = self.connection.model_space
         mtext = model_space.AddMText(to_variant_point(*position), width, text)
-        mtext.StyleName = self._ensure_cjk_text_style()
-        mtext.Height = height
-        if layer:
-            mtext.Layer = layer
-        return mtext.ObjectID
+        return self._configure_entity(mtext, layer, StyleName=style, Height=height).ObjectID
 
     def list_blocks(self) -> list[str]:
         """列出当前图纸里已有的、可插入的图块定义名（排除模型/图纸空间等内部匿名块）。"""
@@ -109,13 +147,12 @@ class CADController:
         """插入一个图块引用，返回新实体的 ObjectID。block_name 可以是当前图纸已有的图块名，
         也可以是一个 .dwg 文件的完整路径（AutoCAD 会自动把它定义成同名图块）。rotation 单位为度。
         """
+        self._validate_layer(layer)
         model_space = self.connection.model_space
         block_ref = model_space.InsertBlock(
             to_variant_point(*position), block_name, scale, scale, scale, math.radians(rotation)
         )
-        if layer:
-            block_ref.Layer = layer
-        return block_ref.ObjectID
+        return self._configure_entity(block_ref, layer).ObjectID
 
     def create_layer(self, name: str, color: int | None = None) -> None:
         """color 是 AutoCAD 颜色索引（ACI），常用：1=红 2=黄 3=绿 4=青 5=蓝 6=洋红 7=白/黑。"""
@@ -139,14 +176,18 @@ class CADController:
 
     def draw_hatch(self, points: list[Point], pattern_name: str = "SOLID", layer: str | None = None) -> int:
         """用 points 围成的闭合多段线作为边界填充图案（1 = acHatchPatternTypePreDefined）。"""
+        self._validate_layer(layer)
         model_space = self.connection.model_space
-        boundary = self._add_polyline(points, closed=True)
-        hatch = model_space.AddHatch(1, pattern_name, True)
-        hatch.AppendOuterLoop(to_variant_object_array([boundary]))
-        hatch.Evaluate()
-        if layer:
-            hatch.Layer = layer
-        return hatch.ObjectID
+        with self._creation_scope() as created:
+            boundary = self._add_polyline(points, closed=True)
+            created.append(boundary)
+            hatch = model_space.AddHatch(1, pattern_name, True)
+            created.append(hatch)
+            hatch.AppendOuterLoop(to_variant_object_array([boundary]))
+            hatch.Evaluate()
+            if layer:
+                hatch.Layer = layer
+            return hatch.ObjectID
 
     def add_dimension(self, start: Point, end: Point, text_position: Point) -> int:
         model_space = self.connection.model_space
@@ -182,24 +223,34 @@ class CADController:
         """把当前图纸的全图导出成光栅图片（用 AutoCAD 自带的
         PublishToWeb PNG.pc3 光栅打印驱动），给 VQA 等看图工具用。
         不给 file_path 就自动在系统临时目录生成一个，返回实际用的路径。
-        完成后把布局的打印配置改回原样，不持久修改用户的图纸设置。
-        `PlotToFile` 是异步的（调用后立刻返回，文件在后台慢慢写），
-        所以要轮询等文件出现并且大小稳定下来才算真正导出完成。
+        使用前台打印，完整恢复打印设置和 BACKGROUNDPLOT；不重放打印。
+        返回成功前仍需确认文件已出现且大小稳定。
         """
         if not file_path:
             export_dir = os.path.join(tempfile.gettempdir(), "autocad_mcp_exports")
             os.makedirs(export_dir, exist_ok=True)
             file_path = os.path.join(export_dir, f"{uuid.uuid4().hex}.png")
 
+        if os.path.exists(file_path):
+            raise FileExistsError(f"Export target already exists: {file_path}")
         doc = self.connection.document
-        self.connection.app.ZoomExtents()
-
         layout = doc.ActiveLayout
-        # A layout that has never been plotted has an empty ConfigName --
-        # assigning that back is itself an invalid COM call, so only restore
-        # when there was actually a prior device configured.
-        original_config = layout.ConfigName
+        background = doc.GetVariable("BACKGROUNDPLOT")
+        quiet = doc.Plot.QuietErrorMode
+        backup = None
+        copied = False
+        original_error = None
+        restore_errors = []
         try:
+            # CopyFrom restores media, scale, origin, rotation and the initial
+            # empty/None device too; assigning ConfigName="" is invalid COM.
+            backup = doc.PlotConfigurations.Add("_MCP_CAPTURE_" + uuid.uuid4().hex, layout.ModelType)
+            backup.CopyFrom(layout)
+            copied = True
+            # Autodesk requires this for foreground ActiveX plotting. Waiting
+            # for a background job starves/delays completion on this COM path.
+            doc.SetVariable("BACKGROUNDPLOT", 0)
+            doc.Plot.QuietErrorMode = True
             layout.ConfigName = "PublishToWeb PNG.pc3"
             # Switching plot device leaves the old paper size/media assigned,
             # which silently breaks the plot job unless refreshed explicitly.
@@ -213,13 +264,35 @@ class CADController:
             # a rotated engineering drawing is harder for a VQA model to read.
             layout.PlotRotation = 0
             layout.PlotType = 1  # acExtents
+            layout.UseStandardScale = True
+            layout.StandardScale = 0  # acScaleToFit
             layout.CenterPlot = True
-            doc.Plot.PlotToFile(file_path)
+            if not doc.Plot.PlotToFile(file_path):
+                raise RuntimeError("CAD_PLOT_REJECTED: PlotToFile returned false")
             self._wait_for_stable_file(file_path, timeout)
+        except Exception as error:
+            original_error = error
         finally:
-            if original_config:
-                layout.ConfigName = original_config
-                layout.RefreshPlotDeviceInfo()
+            actions = []
+            if copied:
+                actions.append(lambda: layout.CopyFrom(backup))
+            if backup is not None:
+                actions.append(backup.Delete)
+            actions.extend([
+                lambda: doc.SetVariable("BACKGROUNDPLOT", background),
+                lambda: setattr(doc.Plot, "QuietErrorMode", quiet),
+            ])
+            for restore in actions:
+                try:
+                    restore()
+                except Exception as error:
+                    restore_errors.append(str(error))
+        if restore_errors:
+            raise RuntimeError(
+                f"CAD_PLOT_RESTORE_FAILED: original={original_error}; restore_errors={restore_errors}"
+            ) from original_error
+        if original_error is not None:
+            raise original_error
         return file_path
 
     @staticmethod
