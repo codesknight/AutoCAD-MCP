@@ -551,3 +551,27 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 离线 178 passed / 33 skipped；C# Journal 17 / Host 12 / Cursor 11 / Artifact 17 共 57 断言通过；插件 Release 零警告零错误，wheel 验证入口、配置与 schema 原字节。
 - Cader 266c689 实际 CLI 两轮均 exit 0、verification passed：状态→创建→空图查询→三实体事务→源查询→保存→只读重开→独立查询。两轮额外原生回滚均 revision 0→6、无实体/图层/样式残留；新 Python adapter 读回相同权威失败身份。逐文件核对 Cader 128 个 tracked 文件未改，不修改其代码/策略/默认配置。
 - 使用自建 AutoCAD PID 33564，结束关闭全部测试图纸与进程；首次快速关闭的 RPC_E_CALL_REJECTED 保留并有界恢复，最终无 acad 进程。公开脱敏两轮证据、源指纹、请求原文摘要核对及复现脚本；不提交 token 或 DWG。通过范围为固定计划真实文件闭环，不冒充图片识别、复杂电路重绘、性能或长期稳定性验收，也不代替双方发布冻结。
+
+## 2026-11-21：Cader 用户日志中的图层依赖与延迟截图
+
+- 来源：用户明确要求修复Cader 17:24 draw_polyline(HOUSE)部分执行与反复屏障，关联codesknight/Cader#20 REQ-032。未预建图层时旧实现先AddPolyline再赋层，错误后留下0层实体；本轮在9类创建入口先查图层存在/可写，属性失败只清理本次新增实体（含hatch边界），不全局Undo。清理失败明确保留原错误和cleanup_errors；不是事务或可重放证明。
+- 实机第一轮模型确认16写入后，export_current_view超时，PNG延迟到达。改为BACKGROUNDPLOT=0前台打印、检查布尔回执、显式extents/fit/upright，PlotConfiguration.CopyFrom快照完整恢复，finally逐项恢复系统变量/QuietErrorMode并删除临时配置；拒绝覆盖已有文件。原生未知仍由Cader保留屏障，不用重打伪造成功。
+- 离线新增38例创建安全与5例导出恢复。前一全量216 passed/33 skipped；加入导出后的最终全量/CI另记。初次fixture遗漏InsertBlock已修正；误在Cader目录用此环境pytest导致导入失败是检查目录问题。项目未配置ruff，借用Cader环境isolated I/F检查；不把Cader严格BLE规则对旧代码的报告视为本仓库既有检查通过。
+- 独立真实AutoCAD新图：缺图层后实体0；建层后多段线正常；后续故意赋无效图层只清理第二个新增实体，已有测试实体保留。新图PNG约1.110秒完成，前后BACKGROUNDPLOT=2、空设备名/scale/rotation/临时配置数量均恢复；仅关闭本次新图。真实模型完整质量另由Cader记录，首轮export失败保留。
+- 既有web/backend、资料和tests/images改动保持原样，不混入本次提交。此修复不覆盖进程崩溃/丢回执的权威终态，也未宣称任意图纸视觉质量或像素映射已解决。
+
+- 最终本地221 passed/33 skipped；实现538db9c已普通推送codex/dependency-preflight，[CI 44891530548](https://github.com/codesknight/AutoCAD-MCP/actions/runs/44891530548) offline与bridge-contracts均成功。Cader第二轮真实房子/树18确认、unknown0、两次有效自动视觉及一轮修正，无写屏障；完整质量仍因计划原生类型/需求语义和截图边缘pending，不能据此宣称任意输出质量通过。本轮新图经完整快照与未命名状态核对后关闭，用户Drawing1/2保留。Cader完整分层证据在其docs/validation/2026-11-21-dependency-and-partial-execution.md，最终文档CI在Cader#20同步。
+
+## 2026-11-21（续）：手稿重绘视觉捕获边距
+
+- 关联Cader#20 REQ-034；原extents fit图形可能触边，后处理补白不能证明原图完整。本轮Regen后读取EXTMIN/MAX，验证有限值及顺序，投影八角到DCS，用5%原生窗口边距设置acWindow再fit-to-page；空模型/纸空间保留原extents路径。保持完整打印快照恢复，不修改图元或回放未知操作。
+- 真实AutoCAD仅新建本次测试图：PNG约1.188秒，导出设置前后完全相同，边缘前景像素0/possible_clipping=false；核对后关闭该测试图，既有用户图未修改。私有证据由Cader `.cader/runs/dependency-native-23923545-6703-44df-8d5f-dce6b6aa15b0` 保存，不提交图纸。
+- 实际全量pytest 221 passed/33 skipped；isolated ruff I/F改动两文件通过。新增窗口投影/边距/恢复断言属于fixture，另有上述实机，不当成完整模型重绘验收。后者仍由Cader分层报告。原始失败保留，web/backend/训练资料的既有改动保持不动。
+
+## 2026-11-21（续）：打印快照COM包装与清理异常
+
+- Cader#20 REQ-035完整质量测试在第四次捕获返回`Add.Delete`，Cader保留隔离测试图/unknown屏障。源码确认直接使用PlotConfigurations.Add返回包装，且finally建立actions列表时提前读取backup.Delete；读取失败在保护范围外，掩盖原始CopyFrom错误并跳过其他状态恢复。未把旧请求改为未执行或清除旧屏障。
+- Add只派发一次，以唯一名称从Item重新取得已确认创建对象并有界检查方法/身份；只重读COM包装，不重试Add/PlotToFile。清理方法查找放入受保护的action，逐项尝试原变量/QuietErrorMode恢复；布局恢复失败保留快照供复核，不删除最后的恢复副本。异常保留首发错误和restore_errors。
+- 本地11例捕获安全测试通过，含Add返回未解析对象、原错误/删除方法读取失败、恢复失败保留副本，以及原打印失败/超时/拒绝覆盖场景。全量227 passed/33 skipped，isolated ruff I/F改动文件通过。
+- 独立真实CAD先读空闲状态，再仅新建本轮测试图，连续5次实际PNG导出、BACKGROUNDPLOT/设备/比例/旋转/配置数完整恢复；约1.1秒/次。私有证据Cader `.cader/runs/dependency-native-10194094-fdbc-4069-86e3-20cc55cccf5f`。只关闭该新图，旧冻结图和用户原图保留。原始失败、局部fixture与实机分列，完整模型灯泡重验另由Cader记录。
+- 不混入既有web/backend、训练资料和tests/images改动；未修改Cader权限策略或原生Bridge事务契约。
