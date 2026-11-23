@@ -1130,21 +1130,14 @@
     "name": "new_drawing",
     "description": "新建一张空白图纸并切换过去（不会碰当前正在编辑的图纸），\n        返回新图纸的名字。做实验性的绘图操作前建议先调用这个，\n        避免不小心画到用户正在编辑的真实图纸上。\n        ",
     "inputSchema": {
-      "properties": {},
-      "title": "new_drawingArguments",
-      "type": "object"
-    },
-    "outputSchema": {
       "properties": {
-        "result": {
-          "title": "Result",
+        "request_id": {
+          "default": "",
+          "title": "Request Id",
           "type": "string"
         }
       },
-      "required": [
-        "result"
-      ],
-      "title": "new_drawingOutput",
+      "title": "new_drawingArguments",
       "type": "object"
     }
   },

@@ -233,3 +233,7 @@ Reference drawings, symbol DWGs and the optional VQA model/service are external 
 Released under the [MIT license](LICENSE). Inspired by [daobataotie/CAD-MCP](https://github.com/daobataotie/CAD-MCP); see the [reference analysis](docs/references/cad-mcp-analysis.md).
 
 <p align="center"><a href="README.zh-CN.md">切换到简体中文 →</a></p>
+
+## Native new-document safety (2026-11-23)
+
+COM attach no longer implicitly creates drawings. Explicit new_drawing resolves native Add metadata with bounded read-only readiness, invokes once, and binds only a uniquely new active document. Failures after invocation never retry creation. Optional request_id correlates native preflight/call/binding evidence; it is not idempotency or replay authority. MCP errors retain isError=true and native evidence. Legacy no-argument calls and successful document-name results remain compatible. This tool omits its former success-only outputSchema so error evidence is not misvalidated. Clients must validate full evidence and request identity; old errors cannot retrospectively prove no execution. Tests and limits: issue41 and docs/logs/devlog.md.

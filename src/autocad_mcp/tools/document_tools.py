@@ -1,17 +1,29 @@
+import json
+from uuid import uuid4
+
 from mcp.server.fastmcp import FastMCP
+from mcp.types import CallToolResult, TextContent
 
 from autocad_mcp import state
+from autocad_mcp.cad.connection import CADNewDocumentError
 from autocad_mcp.state import get_controller
 
 
 def register(mcp: FastMCP) -> None:
     @mcp.tool()
-    def new_drawing() -> str:
+    def new_drawing(request_id: str = "") -> CallToolResult:
         """新建一张空白图纸并切换过去（不会碰当前正在编辑的图纸），
         返回新图纸的名字。做实验性的绘图操作前建议先调用这个，
         避免不小心画到用户正在编辑的真实图纸上。
         """
-        return state.new_document()
+        try:
+            name = state.new_document()
+            return CallToolResult(content=[TextContent(type="text", text=name)],
+                                  structuredContent={"result": name})
+        except CADNewDocumentError as exc:
+            evidence = {**exc.evidence, "request_id": request_id or str(uuid4())}
+            return CallToolResult(isError=True, structuredContent=evidence,
+                                  content=[TextContent(type="text", text=json.dumps(evidence, ensure_ascii=False))])
 
     @mcp.tool()
     def save_drawing(file_path: str, overwrite: bool = False) -> str:

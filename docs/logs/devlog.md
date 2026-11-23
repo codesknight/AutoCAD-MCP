@@ -575,3 +575,12 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 本地11例捕获安全测试通过，含Add返回未解析对象、原错误/删除方法读取失败、恢复失败保留副本，以及原打印失败/超时/拒绝覆盖场景。全量227 passed/33 skipped，isolated ruff I/F改动文件通过。
 - 独立真实CAD先读空闲状态，再仅新建本轮测试图，连续5次实际PNG导出、BACKGROUNDPLOT/设备/比例/旋转/配置数完整恢复；约1.1秒/次。私有证据Cader `.cader/runs/dependency-native-10194094-fdbc-4069-86e3-20cc55cccf5f`。只关闭该新图，旧冻结图和用户原图保留。原始失败、局部fixture与实机分列，完整模型灯泡重验另由Cader记录。
 - 不混入既有web/backend、训练资料和tests/images改动；未修改Cader权限策略或原生Bridge事务契约。
+
+## 2026-11-23：原生新图创建边界与COM方法就绪
+
+- 来源Cader#20 REQ-039/BUG-039；用户授权修复首次new_drawing返回<unknown>.Add。connect在无文档时只附着，不再隐式Add；显式新建成为单一创建入口。只读获取Documents快照及Add DISPID并有界等待，绕过动态包装器失效的Python方法表；Invoke只执行一次，调用后异常绝不重放。
+- 绑定验证必须看到恰好一个新增名称，原有集合保留且活动文档属于新增集合，避免把旧ActiveDocument误认作新图；失败保持不可写绑定。原生调用前/调用/绑定阶段、是否调用/确认、前态及异常类型/HRESULT/堆栈形成autocad-native-create/1证据，MCP错误结果带客户端request_id回传。旧无参数调用和成功字符串/structured result保持兼容；此工具取消只声明成功的outputSchema以正确返回MCP isError，更新仅该工具的发现基线。
+- 离线故障注入覆盖无文档连接不造图、暂时方法解析失败、IDispatch元数据路径、永久前置拒绝、原生副作用后报错、绑定失败不重复Add，以及不能接管旧活动文档；真实内存MCP验证错误关联与成功兼容。全量最初234 passed/33 skipped，新增旧图绑定回归后最终数量另补；初次发现基线失败因有意新增可选参数/错误输出，已按实际contract更新，不忽略所有schema差异。
+- 真实AutoCAD连续3次各只增加1张测试图，绑定正确并只关闭自建图；耗时约812/500/813ms，原有Drawing5保留。证据私有Cader .cader/native-create-live.json。真实模型/绘本任务的后续质量、超时与预算分开记录，不把原生创建通过冒充完整图纸验收。旧unknown屏障未改写，既有web/backend、训练资料及tests/images修改不混入提交。
+
+- 最终全量235 passed/33 skipped，改动3文件isolated ruff I/F通过。Cader最终原始绘本任务整体ok=true、8/8、47确认/0unknown、1轮自主修正、2次真实视觉/Harness复用；只调用一次new_drawing。Cader另修父子时限/视觉交接/格式恢复与结果汇总，未把这些改动塞入MCP。自建Drawing6–12已清理，用户Drawing5保留，旧unknown屏障hash未变。提交及CI跟踪MCP#41、Cader#20，保留所有早期失败。

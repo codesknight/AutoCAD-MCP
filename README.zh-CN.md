@@ -233,3 +233,7 @@ docs/              设计、验证记录、视觉素材与开发日志
 本项目采用 [MIT 许可证](LICENSE)。参考并改进自 [daobataotie/CAD-MCP](https://github.com/daobataotie/CAD-MCP)，详见[参考项目分析](docs/references/cad-mcp-analysis.md)。
 
 <p align="center"><a href="README.md">Switch to English →</a></p>
+
+## 原生新图创建保护（2026-11-23）
+
+COM连接不再隐式造图。显式new_drawing只读解析Add原生元数据并有界等待，创建只调用一次，绑定须确认唯一新增活动文档。调用后异常不重试创建。可选request_id用于关联前置/调用/绑定证据，不是幂等或重放授权；错误保留isError=true及原生证据。旧无参调用、成功图名兼容；该工具取消只声明成功的outputSchema，避免错误证据被误校验。客户端须完整校验关联证据，不能回溯证明旧错误未执行。测试及限制见issue41与docs/logs/devlog.md。
