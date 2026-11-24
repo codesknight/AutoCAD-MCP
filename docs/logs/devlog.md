@@ -594,3 +594,5 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 原始房子/红屋顶蓝墙/大树/儿童绘本需求两次整体通过（5/5和8/8，36/35确认、unknown0），另一次4图恢复正常但风格uncertain、3轮修正后pending，原失败不抹除。复杂模型图各5次原生重复捕获，共10次恢复/清理核对通过，非圆形替代。完整私有运行ID、hash及限制见docs/validation/2026-11-24-capture-restoration.md。
 - Drawing17的51实体指纹及真实模型布局打印参数不变，旧屏障/执行审计hash不变。保留17和本轮未知18，仅清理无unknown的19/20/21；用户CAD进程未退出。相邻web/backend、训练资料、tests/images既有改动不混入提交。
 - 本地全量pytest246 passed/33 skipped，改动Python文件isolated ruff I/F通过；Cader另有138项、typecheck/smoke及真实失败×/!展示验证，双方CI/提交另在关联Issue补记。旧unknown、视觉风格不确定、保存验收及纸布局自动路由不宣称解决。
+
+- 实现736d40b已普通推送PR42，push CI https://github.com/codesknight/AutoCAD-MCP/actions/runs/45334329245 与PR CI https://github.com/codesknight/AutoCAD-MCP/actions/runs/45334339162 均success。配套Cader043fc93的Windows/Ubuntu CI也全绿。PR仍draft未合并，#43记录分支修复及验收，不以此改写旧unknown。用户既有web/backend和资料改动保持原样。
