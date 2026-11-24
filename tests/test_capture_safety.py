@@ -3,6 +3,7 @@ from copy import deepcopy
 from types import SimpleNamespace
 
 import pytest
+from autocad_mcp.cad.capture import CADCaptureError
 from autocad_mcp.cad.controller import CADController
 
 
@@ -19,10 +20,12 @@ class Layout:
         self.CanonicalMediaName = "original media"
         self.window = ((0, 0), (1, 1))
         self.deleted = False
+        self.PaperUnits = 1
+        self.PlotOrigin = (0.0, 0.0)
 
     def CopyFrom(self, other):
         for name, value in vars(other).items():
-            if name not in ("deleted", "Name"):
+            if name not in ("deleted", "Name", "Delete"):
                 setattr(self, name, deepcopy(value))
 
     def RefreshPlotDeviceInfo(self):
@@ -33,6 +36,12 @@ class Layout:
 
     def SetWindowToPlot(self, low, high):
         self.window = (tuple(low.value), tuple(high.value))
+
+    def GetWindowToPlot(self):
+        return self.window
+
+    def GetCustomScale(self):
+        return (1, 1)
 
 
 @pytest.mark.parametrize("failure", [None, "plot_false", "timeout", "plot_error"])
@@ -65,10 +74,18 @@ def test_foreground_capture_restores_all_settings(tmp_path, failure, unresolved_
         backup.Name = name
         return SimpleNamespace() if unresolved_add else backup
 
-    doc = SimpleNamespace(ActiveLayout=layout, Plot=plot,
+    class Configurations:
+        Add = staticmethod(add)
+        Item = staticmethod(lambda key: backup)
+
+        @property
+        def Count(self):
+            return int(bool(adds) and not backup.deleted)
+
+    doc = SimpleNamespace(Name="fixture.dwg", ActiveLayout=layout, Plot=plot,
                           ModelSpace=SimpleNamespace(Count=1), Regen=lambda _mode: None,
                           Utility=SimpleNamespace(TranslateCoordinates=lambda point, *_args: tuple(point.value)),
-                          PlotConfigurations=SimpleNamespace(Add=add, Item=lambda _name: backup),
+                          PlotConfigurations=Configurations(),
                           GetVariable=lambda key: variables[key],
                           SetVariable=lambda key, value: variables.__setitem__(key, value))
     ctrl = CADController(SimpleNamespace(document=doc))
@@ -84,7 +101,7 @@ def test_foreground_capture_restores_all_settings(tmp_path, failure, unresolved_
     else:
         assert ctrl.export_current_view(str(path)) == str(path)
     assert vars(layout) == before
-    assert backup.deleted
+    assert backup.deleted is (failure != "plot_error")
     assert variables["BACKGROUNDPLOT"] == 3
     assert not plot.QuietErrorMode
     assert calls == ["plot"]
@@ -117,23 +134,34 @@ def test_backup_failure_preserves_first_error_and_restores_other_state(tmp_path,
         sets.append((key, value))
         variables[key] = value
 
-    doc = SimpleNamespace(ActiveLayout=layout, Plot=plot, ModelSpace=SimpleNamespace(Count=0),
+    class Configurations:
+        Add = staticmethod(add)
+        Item = staticmethod(lambda key: backup)
+
+        @property
+        def Count(self):
+            return int(bool(adds) and not backup.deleted)
+
+    doc = SimpleNamespace(Name="fixture.dwg", ActiveLayout=layout, Plot=plot, ModelSpace=SimpleNamespace(Count=0),
                           Regen=lambda _mode: None,
-                          PlotConfigurations=SimpleNamespace(Add=add, Item=lambda _name: backup),
+                          PlotConfigurations=Configurations(),
                           GetVariable=lambda key: variables[key], SetVariable=set_variable)
     monkeypatch.setattr("autocad_mcp.cad.controller.time.sleep", lambda _seconds: None)
     ctrl = CADController(SimpleNamespace(document=doc))
     ctrl._wait_for_stable_file = lambda *_args: None
-    with pytest.raises(RuntimeError, match="CAD_PLOT_RESTORE_FAILED") as error:
+    with pytest.raises(CADCaptureError) as error:
         ctrl.export_current_view(str(tmp_path / "capture.png"))
     assert len(adds) == 1
-    assert sets[-1] == ("BACKGROUNDPLOT", 3)
+    assert variables["BACKGROUNDPLOT"] == 3
     assert not plot.QuietErrorMode
     assert not backup.deleted  # failed layout restore retains its recovery copy
     if failure == "unready":
-        assert "snapshot.CopyFrom" in str(error.value) and "snapshot.Delete" in str(error.value)
+        assert not sets  # Failed backup readiness never changed runtime variables.
+        assert "snapshot.CopyFrom" in str(error.value)
+        assert "snapshot.Delete" in str(error.value.evidence["restoration_errors"])
     else:
-        assert "layout restore failed" in str(error.value)
+        assert sets[-1] == ("BACKGROUNDPLOT", 3)
+        assert "layout restore failed" in str(error.value.evidence["restoration_errors"])
 
 
 def test_existing_capture_target_refused_before_native_state_changes(tmp_path):

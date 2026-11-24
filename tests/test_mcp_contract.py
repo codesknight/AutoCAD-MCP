@@ -17,7 +17,7 @@ CALLS = json.loads((FIXTURES / "mcp-calls-v0.1.json").read_text(encoding="utf-8"
 
 
 def stable_schema(tool):
-    return {key: tool[key] for key in ("name", "description", "inputSchema", "outputSchema")}
+    return {key: tool.get(key) for key in ("name", "description", "inputSchema", "outputSchema")}
 
 
 def normalized(value):

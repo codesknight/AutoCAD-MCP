@@ -38,7 +38,9 @@
 
 **44 registered MCP tools.** Default COM provides the existing CAD tool surface. Eight additive tools expose runtime status, atomic batches, pagination and controlled working drawings with saved-artifact reopening. Experimental HTTP supports a smaller, documented subset. See the [tool migration matrix](docs/design/tool-migration-matrix.md).
 
-**Cader integration:** an explicit seven-tool [`cader-cad/1` stdio profile](docs/design/cader-managed-profile.md) provides versioned DTOs, native job identity and revision tracking. Two actual Cader CLI runs passed drawing → DWG save → read-only reopen → independent verification for the reviewed line/circle/text fixture. [Evidence and limits](docs/validation/2026-11-19-cader-managed-profile.md).
+**Companion agent — [Cader](https://github.com/codesknight/Cader):** an extensible CAD Agent Harness that plans tasks, calls CAD tools through AutoCAD-MCP, and verifies results. AutoCAD-MCP provides the CAD operations; Cader coordinates the agent workflow.
+
+An explicit seven-tool [`cader-cad/1` stdio profile](docs/design/cader-managed-profile.md) provides versioned DTOs, native job identity and revision tracking. Two actual Cader CLI runs passed drawing → DWG save → read-only reopen → independent verification for the reviewed line/circle/text fixture. [Evidence and limits](docs/validation/2026-11-19-cader-managed-profile.md).
 
 ## Quick start
 
@@ -233,3 +235,13 @@ Reference drawings, symbol DWGs and the optional VQA model/service are external 
 Released under the [MIT license](LICENSE). Inspired by [daobataotie/CAD-MCP](https://github.com/daobataotie/CAD-MCP); see the [reference analysis](docs/references/cad-mcp-analysis.md).
 
 <p align="center"><a href="README.zh-CN.md">切换到简体中文 →</a></p>
+
+## Verified model-view capture (2026-11-24)
+
+`export_current_view(file_path="", request_id="")` preflights model-space count/extents and COM method readiness before plot changes. A foreground print is invoked once. Layout ownership, affected plot settings, BACKGROUNDPLOT, QuietErrorMode and temporary configuration cleanup are checked by readback. Unknown mutations retain recovery evidence; captures require the model layout and never switch a user's paper layout automatically.
+
+Legacy successful calls retain the path text and structured `result`. Supplying `request_id` also returns an `autocad-capture/1` receipt; errors retain `isError=true` and stage/restoration evidence. The nonce is correlation, not replay authority. Clients must validate the entire receipt and matching request/path/document; old unknowns are not retrospectively released. See [capture regression and limitations](docs/validation/2026-11-24-capture-restoration.md).
+
+## Native new-document safety (2026-11-23)
+
+COM attach no longer implicitly creates drawings. Explicit new_drawing resolves native Add metadata with bounded read-only readiness, invokes once, and binds only a uniquely new active document. Failures after invocation never retry creation. Optional request_id correlates native preflight/call/binding evidence; it is not idempotency or replay authority. MCP errors retain isError=true and native evidence. Legacy no-argument calls and successful document-name results remain compatible. This tool omits its former success-only outputSchema so error evidence is not misvalidated. Clients must validate full evidence and request identity; old errors cannot retrospectively prove no execution. Tests and limits: issue41 and docs/logs/devlog.md.

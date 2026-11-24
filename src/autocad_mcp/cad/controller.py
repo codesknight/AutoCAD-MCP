@@ -1,12 +1,8 @@
 """Drawing operations, wrapping AutoCAD ModelSpace COM methods."""
 import math
 import os
-import tempfile
 import time
-import uuid
 from contextlib import contextmanager
-
-import pythoncom
 
 from autocad_mcp.cad.connection import CADConnection
 from autocad_mcp.cad.geometry import (
@@ -158,9 +154,11 @@ class CADController:
 
     def create_layer(self, name: str, color: int | None = None) -> None:
         """color 是 AutoCAD 颜色索引（ACI），常用：1=红 2=黄 3=绿 4=青 5=蓝 6=洋红 7=白/黑。"""
-        layer = self.connection.document.Layers.Add(name)
+        from autocad_mcp.cad.capture import method, prop, put
+        # Resolve Add metadata read-only; never retry the native layer creation.
+        layer = method(prop(self.connection.document, "Layers"), "Add")(name)
         if color is not None:
-            layer.Color = color
+            put(layer, "Color", color)
 
     def set_layer_properties(
         self, name: str, color: int | None = None, locked: bool | None = None,
@@ -221,121 +219,16 @@ class CADController:
                 )
         self.connection.document.SaveAs(file_path)
 
-    def export_current_view(self, file_path: str | None = None, timeout: float = 30.0) -> str:
-        """把当前图纸的全图导出成光栅图片（用 AutoCAD 自带的
-        PublishToWeb PNG.pc3 光栅打印驱动），给 VQA 等看图工具用。
-        不给 file_path 就自动在系统临时目录生成一个，返回实际用的路径。
-        使用前台打印，完整恢复打印设置和 BACKGROUNDPLOT；不重放打印。
-        返回成功前仍需确认文件已出现且大小稳定。
-        """
-        if not file_path:
-            export_dir = os.path.join(tempfile.gettempdir(), "autocad_mcp_exports")
-            os.makedirs(export_dir, exist_ok=True)
-            file_path = os.path.join(export_dir, f"{uuid.uuid4().hex}.png")
+    def export_current_view(self, file_path: str | None = None, timeout: float = 30.0,
+                            request_id: str = "") -> str | dict:
+        """Export the model layout once, restoring and verifying native plot state.
 
-        if os.path.exists(file_path):
-            raise FileExistsError(f"Export target already exists: {file_path}")
-        doc = self.connection.document
-        layout = doc.ActiveLayout
-        background = doc.GetVariable("BACKGROUNDPLOT")
-        quiet = doc.Plot.QuietErrorMode
-        backup = None
-        backup_name = "_MCP_CAPTURE_" + uuid.uuid4().hex
-        backup_created = False
-        copied = False
-        original_error = None
-        restore_errors = []
-        try:
-            # CopyFrom restores media, scale, origin, rotation and the initial
-            # empty/None device too; assigning ConfigName="" is invalid COM.
-            # Add can return an unresolved pywin32 wrapper. Never repeat Add;
-            # reacquire the acknowledged object by its unique native name.
-            doc.PlotConfigurations.Add(backup_name, layout.ModelType)
-            backup_created = True
-            for attempt in range(6):
-                try:
-                    backup = doc.PlotConfigurations.Item(backup_name)
-                    if backup.Name != backup_name:
-                        raise RuntimeError("CAD_PLOT_BACKUP_IDENTITY_MISMATCH")
-                    _ = backup.CopyFrom, backup.Delete
-                    break
-                except (AttributeError, pythoncom.com_error):
-                    if attempt == 5:
-                        raise
-                    time.sleep(0.1)
-            backup.CopyFrom(layout)
-            copied = True
-            # Autodesk requires this for foreground ActiveX plotting. Waiting
-            # for a background job starves/delays completion on this COM path.
-            doc.SetVariable("BACKGROUNDPLOT", 0)
-            doc.Plot.QuietErrorMode = True
-            layout.ConfigName = "PublishToWeb PNG.pc3"
-            # Switching plot device leaves the old paper size/media assigned,
-            # which silently breaks the plot job unless refreshed explicitly.
-            # RefreshPlotDeviceInfo() picks a sane default media itself (this
-            # device's media names are pixel-resolution presets like
-            # "FHD_(1920.00_x_1080.00_Pixels)", not a generic "MaxSize").
-            layout.RefreshPlotDeviceInfo()
-            # RefreshPlotDeviceInfo() defaults to PlotRotation=1 (90°) to
-            # best-fit the drawing extents to the media aspect ratio, which
-            # sideways-rotates the whole image -- force upright output since
-            # a rotated engineering drawing is harder for a VQA model to read.
-            layout.PlotRotation = 0
-            doc.Regen(1)  # refresh native extents after geometry changes
-            if layout.ModelType and doc.ModelSpace.Count:
-                low, high = doc.GetVariable("EXTMIN"), doc.GetVariable("EXTMAX")
-                if any(not math.isfinite(v) for v in (*low, *high)) or any(a > b for a, b in zip(low, high)):
-                    raise ValueError("CAD_CAPTURE_EXTENTS_INVALID")
-                # Plot windows use display coordinates. Project every corner,
-                # then add a native-coordinate margin before fit-to-page.
-                corners = [doc.Utility.TranslateCoordinates(to_variant_point(x, y, z), 0, 2, False)
-                           for x in (low[0], high[0]) for y in (low[1], high[1]) for z in (low[2], high[2])]
-                left, right = min(p[0] for p in corners), max(p[0] for p in corners)
-                bottom, top = min(p[1] for p in corners), max(p[1] for p in corners)
-                margin = max(max(right - left, top - bottom) * 0.05, 1e-6)
-                layout.SetWindowToPlot(to_variant_double_array([left - margin, bottom - margin]),
-                                       to_variant_double_array([right + margin, top + margin]))
-                layout.PlotType = 4  # acWindow; SetWindowToPlot must precede this
-            else:
-                layout.PlotType = 1  # acExtents for an empty/paper layout
-            layout.UseStandardScale = True
-            layout.StandardScale = 0  # acScaleToFit
-            layout.CenterPlot = True
-            doc.Regen(1)
-            if not doc.Plot.PlotToFile(file_path):
-                raise RuntimeError("CAD_PLOT_REJECTED: PlotToFile returned false")
-            self._wait_for_stable_file(file_path, timeout)
-        except Exception as error:
-            original_error = error
-        finally:
-            actions = []
-            restored = not copied
-            if copied:
-                try:
-                    layout.CopyFrom(backup)
-                    restored = True
-                except Exception as error:
-                    restore_errors.append(str(error))
-            if backup_created and restored:
-                # Resolve methods inside the protected action, not while
-                # building this list: lookup failures must not skip restoration.
-                actions.append(lambda: doc.PlotConfigurations.Item(backup_name).Delete())
-            actions.extend([
-                lambda: doc.SetVariable("BACKGROUNDPLOT", background),
-                lambda: setattr(doc.Plot, "QuietErrorMode", quiet),
-            ])
-            for restore in actions:
-                try:
-                    restore()
-                except Exception as error:
-                    restore_errors.append(str(error))
-        if restore_errors:
-            raise RuntimeError(
-                f"CAD_PLOT_RESTORE_FAILED: original={original_error}; restore_errors={restore_errors}"
-            ) from original_error
-        if original_error is not None:
-            raise original_error
-        return file_path
+        A correlated caller receives the restoration receipt as plain data.
+        Legacy callers retain the successful path string.
+        """
+        from autocad_mcp.cad.capture import export_view
+        return export_view(self.connection, file_path, timeout,
+                           self._wait_for_stable_file, request_id)
 
     @staticmethod
     def _wait_for_stable_file(file_path: str, timeout: float) -> None:

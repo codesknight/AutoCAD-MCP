@@ -38,7 +38,9 @@
 
 **共注册 44 个 MCP 工具。** 默认 COM 后端提供既有 CAD 工具能力；新增八项工具提供运行时状态、原子批处理、分页和受控工作图的保存重开。实验性 HTTP 后端目前支持其中一部分。逐项状态见[工具迁移矩阵](docs/design/tool-migration-matrix.md)。
 
-**Cader 集成：**独立的七工具 [`cader-cad/1` stdio 入口](docs/design/cader-managed-profile.md)提供版本化 DTO、原生 job 身份与 revision 对账。两轮真实 Cader CLI 已通过直线/圆/文字固定计划的绘制→保存 DWG→只读重开→独立验收；[查看证据和适用范围](docs/validation/2026-11-19-cader-managed-profile.md)。
+**配套 Agent：[Cader](https://github.com/codesknight/Cader)。** Cader 是可扩展的 CAD Agent Harness，规划任务、通过 AutoCAD-MCP 调用 CAD 工具并验证结果；本项目提供 CAD 操作能力，Cader 负责 Agent 工作流。
+
+独立的七工具 [`cader-cad/1` stdio 入口](docs/design/cader-managed-profile.md)提供版本化 DTO、原生 job 身份与 revision 对账。两轮真实 Cader CLI 已通过直线/圆/文字固定计划的绘制→保存 DWG→只读重开→独立验收；[查看证据和适用范围](docs/validation/2026-11-19-cader-managed-profile.md)。
 
 ## 快速开始
 
@@ -233,3 +235,13 @@ docs/              设计、验证记录、视觉素材与开发日志
 本项目采用 [MIT 许可证](LICENSE)。参考并改进自 [daobataotie/CAD-MCP](https://github.com/daobataotie/CAD-MCP)，详见[参考项目分析](docs/references/cad-mcp-analysis.md)。
 
 <p align="center"><a href="README.md">Switch to English →</a></p>
+
+## 模型视图捕获与恢复核验（2026-11-24）
+
+`export_current_view(file_path="", request_id="")`在修改打印状态前检查模型实体数、范围和COM方法就绪；前台原生打印只调用一次。恢复后读回核对布局归属、涉及的打印参数、BACKGROUNDPLOT、QuietErrorMode及临时配置清理。未知变更保留恢复证据，捕获要求模型布局，不自动切换用户纸布局。
+
+旧成功调用保留路径文本及structured result包装；传request_id时附autocad-capture/1回执，失败保留isError=true和阶段/恢复证据。关联值不是幂等或重放授权，客户端须完整核对回执及请求/路径/文档；旧unknown不追溯解除。[真实回归与限制](docs/validation/2026-11-24-capture-restoration.md)。
+
+## 原生新图创建保护（2026-11-23）
+
+COM连接不再隐式造图。显式new_drawing只读解析Add原生元数据并有界等待，创建只调用一次，绑定须确认唯一新增活动文档。调用后异常不重试创建。可选request_id用于关联前置/调用/绑定证据，不是幂等或重放授权；错误保留isError=true及原生证据。旧无参调用、成功图名兼容；该工具取消只声明成功的outputSchema，避免错误证据被误校验。客户端须完整校验关联证据，不能回溯证明旧错误未执行。测试及限制见issue41与docs/logs/devlog.md。
