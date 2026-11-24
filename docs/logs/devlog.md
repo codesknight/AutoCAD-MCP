@@ -584,3 +584,13 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 真实AutoCAD连续3次各只增加1张测试图，绑定正确并只关闭自建图；耗时约812/500/813ms，原有Drawing5保留。证据私有Cader .cader/native-create-live.json。真实模型/绘本任务的后续质量、超时与预算分开记录，不把原生创建通过冒充完整图纸验收。旧unknown屏障未改写，既有web/backend、训练资料及tests/images修改不混入提交。
 
 - 最终全量235 passed/33 skipped，改动3文件isolated ruff I/F通过。Cader最终原始绘本任务整体ok=true、8/8、47确认/0unknown、1轮自主修正、2次真实视觉/Harness复用；只调用一次new_drawing。Cader另修父子时限/视觉交接/格式恢复与结果汇总，未把这些改动塞入MCP。自建Drawing6–12已清理，用户Drawing5保留，旧unknown屏障hash未变。提交及CI跟踪MCP#41、Cader#20，保留所有早期失败。
+
+
+## 2026-11-24：截图就绪、恢复回执与原始绘本回归
+
+- 来源MCP#43 / Cader#20 REQ-043，用户明确授权两仓库修复并保留旧图/unknown。Count/范围读取移到打印设置修改前，原生方法使用只读有界解析及DISPIDs，恢复方法预绑定，GetWindowToPlot/GetCustomScale传BYREF输出；每次原生变更/PlotToFile只调用一次。
+- 恢复后读回涉及的布局参数/BACKGROUNDPLOT/QuietErrorMode/配置集合，全部一致才删除临时备份。异常保留阶段、原始错误、动作确认及恢复证据；可选request_id关联autocad-capture/1，旧成功路径包装兼容，仅export_current_view发现基线更新。纸布局在变更前拒绝，检查布局所属文档及ObjectID，不自动改用户布局。
+- 首轮真实回归在Layers.Add遇动态方法失效，补只读就绪/单次原生调用及颜色设置，失败Drawing18保留；未按错误文字回溯证明未执行。
+- 原始房子/红屋顶蓝墙/大树/儿童绘本需求两次整体通过（5/5和8/8，36/35确认、unknown0），另一次4图恢复正常但风格uncertain、3轮修正后pending，原失败不抹除。复杂模型图各5次原生重复捕获，共10次恢复/清理核对通过，非圆形替代。完整私有运行ID、hash及限制见docs/validation/2026-11-24-capture-restoration.md。
+- Drawing17的51实体指纹及真实模型布局打印参数不变，旧屏障/执行审计hash不变。保留17和本轮未知18，仅清理无unknown的19/20/21；用户CAD进程未退出。相邻web/backend、训练资料、tests/images既有改动不混入提交。
+- 本地全量pytest246 passed/33 skipped，改动Python文件isolated ruff I/F通过；Cader另有138项、typecheck/smoke及真实失败×/!展示验证，双方CI/提交另在关联Issue补记。旧unknown、视觉风格不确定、保存验收及纸布局自动路由不宣称解决。

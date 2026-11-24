@@ -234,6 +234,12 @@ Released under the [MIT license](LICENSE). Inspired by [daobataotie/CAD-MCP](htt
 
 <p align="center"><a href="README.zh-CN.md">切换到简体中文 →</a></p>
 
+## Verified model-view capture (2026-11-24)
+
+`export_current_view(file_path="", request_id="")` preflights model-space count/extents and COM method readiness before plot changes. A foreground print is invoked once. Layout ownership, affected plot settings, BACKGROUNDPLOT, QuietErrorMode and temporary configuration cleanup are checked by readback. Unknown mutations retain recovery evidence; captures require the model layout and never switch a user's paper layout automatically.
+
+Legacy successful calls retain the path text and structured `result`. Supplying `request_id` also returns an `autocad-capture/1` receipt; errors retain `isError=true` and stage/restoration evidence. The nonce is correlation, not replay authority. Clients must validate the entire receipt and matching request/path/document; old unknowns are not retrospectively released. See [capture regression and limitations](docs/validation/2026-11-24-capture-restoration.md).
+
 ## Native new-document safety (2026-11-23)
 
 COM attach no longer implicitly creates drawings. Explicit new_drawing resolves native Add metadata with bounded read-only readiness, invokes once, and binds only a uniquely new active document. Failures after invocation never retry creation. Optional request_id correlates native preflight/call/binding evidence; it is not idempotency or replay authority. MCP errors retain isError=true and native evidence. Legacy no-argument calls and successful document-name results remain compatible. This tool omits its former success-only outputSchema so error evidence is not misvalidated. Clients must validate full evidence and request identity; old errors cannot retrospectively prove no execution. Tests and limits: issue41 and docs/logs/devlog.md.

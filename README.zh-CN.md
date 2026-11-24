@@ -234,6 +234,12 @@ docs/              设计、验证记录、视觉素材与开发日志
 
 <p align="center"><a href="README.md">Switch to English →</a></p>
 
+## 模型视图捕获与恢复核验（2026-11-24）
+
+`export_current_view(file_path="", request_id="")`在修改打印状态前检查模型实体数、范围和COM方法就绪；前台原生打印只调用一次。恢复后读回核对布局归属、涉及的打印参数、BACKGROUNDPLOT、QuietErrorMode及临时配置清理。未知变更保留恢复证据，捕获要求模型布局，不自动切换用户纸布局。
+
+旧成功调用保留路径文本及structured result包装；传request_id时附autocad-capture/1回执，失败保留isError=true和阶段/恢复证据。关联值不是幂等或重放授权，客户端须完整核对回执及请求/路径/文档；旧unknown不追溯解除。[真实回归与限制](docs/validation/2026-11-24-capture-restoration.md)。
+
 ## 原生新图创建保护（2026-11-23）
 
 COM连接不再隐式造图。显式new_drawing只读解析Add原生元数据并有界等待，创建只调用一次，绑定须确认唯一新增活动文档。调用后异常不重试创建。可选request_id用于关联前置/调用/绑定证据，不是幂等或重放授权；错误保留isError=true及原生证据。旧无参调用、成功图名兼容；该工具取消只声明成功的outputSchema，避免错误证据被误校验。客户端须完整校验关联证据，不能回溯证明旧错误未执行。测试及限制见issue41与docs/logs/devlog.md。

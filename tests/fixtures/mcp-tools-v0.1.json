@@ -782,29 +782,21 @@
   },
   {
     "name": "export_current_view",
-    "description": "把当前 AutoCAD 图纸的全图导出成 PNG 图片，方便交给看图工具\n        （比如 ask_drawing_vqa）分析。不填 file_path 会自动生成一个临时文件路径。\n        返回实际导出的图片路径。\n        ",
+    "description": "把当前 AutoCAD 模型布局全图导出成 PNG；纸布局在修改前拒绝，不自动切换。\n        不填 file_path 会生成临时路径。可选 request_id 关联打印状态恢复证据，\n        不是重放授权。成功返回路径，关联调用附恢复回执；失败保留阶段及恢复证据。\n        ",
     "inputSchema": {
       "properties": {
         "file_path": {
           "default": "",
           "title": "File Path",
           "type": "string"
-        }
-      },
-      "title": "export_current_viewArguments",
-      "type": "object"
-    },
-    "outputSchema": {
-      "properties": {
-        "result": {
-          "title": "Result",
+        },
+        "request_id": {
+          "default": "",
+          "title": "Request Id",
           "type": "string"
         }
       },
-      "required": [
-        "result"
-      ],
-      "title": "export_current_viewOutput",
+      "title": "export_current_viewArguments",
       "type": "object"
     }
   },

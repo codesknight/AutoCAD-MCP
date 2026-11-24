@@ -5,6 +5,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp.types import CallToolResult, TextContent
 
 from autocad_mcp import state
+from autocad_mcp.cad.capture import CADCaptureError
 from autocad_mcp.cad.connection import CADNewDocumentError
 from autocad_mcp.state import get_controller
 
@@ -34,9 +35,18 @@ def register(mcp: FastMCP) -> None:
         return f"saved to {file_path}"
 
     @mcp.tool()
-    def export_current_view(file_path: str = "") -> str:
-        """把当前 AutoCAD 图纸的全图导出成 PNG 图片，方便交给看图工具
-        （比如 ask_drawing_vqa）分析。不填 file_path 会自动生成一个临时文件路径。
-        返回实际导出的图片路径。
+    def export_current_view(file_path: str = "", request_id: str = "") -> CallToolResult:
+        """把当前 AutoCAD 模型布局全图导出成 PNG；纸布局在修改前拒绝，不自动切换。
+        不填 file_path 会生成临时路径。可选 request_id 关联打印状态恢复证据，
+        不是重放授权。成功返回路径，关联调用附恢复回执；失败保留阶段及恢复证据。
         """
-        return get_controller().export_current_view(file_path or None)
+        try:
+            controller = get_controller()
+            value = (controller.export_current_view(file_path or None, request_id=request_id)
+                     if request_id else controller.export_current_view(file_path or None))
+            payload = value if isinstance(value, dict) else {"result": value}
+            return CallToolResult(content=[TextContent(type="text", text=payload["result"])],
+                                  structuredContent=payload)
+        except CADCaptureError as exc:
+            return CallToolResult(isError=True, structuredContent=exc.evidence,
+                                  content=[TextContent(type="text", text=json.dumps(exc.evidence, ensure_ascii=False))])
