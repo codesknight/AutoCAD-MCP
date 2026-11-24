@@ -38,7 +38,9 @@
 
 **共注册 44 个 MCP 工具。** 默认 COM 后端提供既有 CAD 工具能力；新增八项工具提供运行时状态、原子批处理、分页和受控工作图的保存重开。实验性 HTTP 后端目前支持其中一部分。逐项状态见[工具迁移矩阵](docs/design/tool-migration-matrix.md)。
 
-**Cader 集成：**独立的七工具 [`cader-cad/1` stdio 入口](docs/design/cader-managed-profile.md)提供版本化 DTO、原生 job 身份与 revision 对账。两轮真实 Cader CLI 已通过直线/圆/文字固定计划的绘制→保存 DWG→只读重开→独立验收；[查看证据和适用范围](docs/validation/2026-11-19-cader-managed-profile.md)。
+**配套 Agent：[Cader](https://github.com/codesknight/Cader)。** Cader 是可扩展的 CAD Agent Harness，规划任务、通过 AutoCAD-MCP 调用 CAD 工具并验证结果；本项目提供 CAD 操作能力，Cader 负责 Agent 工作流。
+
+独立的七工具 [`cader-cad/1` stdio 入口](docs/design/cader-managed-profile.md)提供版本化 DTO、原生 job 身份与 revision 对账。两轮真实 Cader CLI 已通过直线/圆/文字固定计划的绘制→保存 DWG→只读重开→独立验收；[查看证据和适用范围](docs/validation/2026-11-19-cader-managed-profile.md)。
 
 ## 快速开始
 

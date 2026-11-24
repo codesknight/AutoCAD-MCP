@@ -596,3 +596,10 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 本地全量pytest246 passed/33 skipped，改动Python文件isolated ruff I/F通过；Cader另有138项、typecheck/smoke及真实失败×/!展示验证，双方CI/提交另在关联Issue补记。旧unknown、视觉风格不确定、保存验收及纸布局自动路由不宣称解决。
 
 - 实现736d40b已普通推送PR42，push CI https://github.com/codesknight/AutoCAD-MCP/actions/runs/45334329245 与PR CI https://github.com/codesknight/AutoCAD-MCP/actions/runs/45334339162 均success。配套Cader043fc93的Windows/Ubuntu CI也全绿。PR仍draft未合并，#43记录分支修复及验收，不以此改写旧unknown。用户既有web/backend和资料改动保持原样。
+
+
+## 2026-11-24（续）：合并远程修复与配套 Cader 入口
+
+- 根据用户明确授权推进 PR #42，从草稿转为待合并并检查最终提交 CI；保留历史故障、unknown 和验收限制，不将已通过的固定计划扩大为图片重绘通过。
+- 中英文 README 补充配套 Cader 仓库链接，说明 Agent Harness 的任务规划、工具调用与结果验证职责，以及 AutoCAD-MCP 提供 CAD 操作能力的分工；保留独立版本化 HTTP profile、COM 默认和既有报告。
+- 本次追加仅修改双语 README 与开发日志；既有 Web、训练资料、脚本和测试图片改动不混入提交，不启动 AutoCAD。
