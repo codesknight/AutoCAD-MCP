@@ -330,3 +330,56 @@ def test_actual_mcp_receipt_is_error_but_preserves_correlated_facts(fixture_back
             queried=await client.call_tool("get_execution_status",dict(instance_id=binding["instance_id"],request_id="mcp-lost"))
             assert not queried.isError and queried.structuredContent==receipt
     asyncio.run(run());state.close_backend()
+
+
+@pytest.mark.parametrize("failures", [0, 2, 100])
+def test_new_document_label_uses_safe_property_read_without_repeating_add(failures):
+    from autocad_mcp.cad.execution import native_action
+    calls = {"add": 0, "name": 0}
+
+    class Ole:
+        def GetIDsOfNames(self, name):
+            assert name == "Name"
+            return 1
+
+        def Invoke(self, *args):
+            calls["name"] += 1
+            if calls["name"] <= failures:
+                raise AttributeError("fresh wrapper metadata unavailable")
+            return "fresh.dwg"
+
+    class Document:
+        _oleobj_ = Ole()
+
+        @property
+        def Name(self):
+            raise AssertionError("Unsafe wrapper property must not be used")
+
+    def create():
+        def add():
+            calls["add"] += 1
+        native_action("Documents.Add", add)
+
+    binding = dict(instance_id="fixture", document_id="fresh", name="fresh.dwg",
+                   managed=True, read_only=False, revision=None, revision_mode="unsupported")
+    session = COMSession.__new__(COMSession)
+    session.connection = SimpleNamespace(new_document=create, document=Document(),
+                                         binding=lambda: binding, disconnect=lambda: None)
+    backend = COMBackend(CFG, session_factory=lambda _: session)
+    try:
+        result = backend.execute_evidenced("new_document", {}, request_id="fresh",
+                                          instance_id=backend.instance_id)
+        receipt = result["receipt"]
+        assert calls["add"] == 1
+        assert receipt["native_acknowledged"] is True
+        assert len(receipt["native_actions"]) == 1
+        if failures < 20:
+            assert receipt["status"] == "succeeded"
+            assert result["result"] == "fresh.dwg"
+            assert receipt["result_document_id"] == "fresh"
+        else:
+            assert receipt["stage"] == "observation_failed"
+            assert receipt["result_document_id"] is None
+            assert calls["name"] == 20
+    finally:
+        backend.close()
