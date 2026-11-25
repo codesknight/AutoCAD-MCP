@@ -1,0 +1,465 @@
+[
+  {
+    "receipt": {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "request_id": "832372f92ab447979c02aa2e66415d24",
+      "operation": "new_document",
+      "request_document_id": null,
+      "request_instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "result_document_id": "f0a345f04ba34c9782c54dfefb63dec1",
+      "status": "succeeded",
+      "stage": "completed",
+      "revision": null,
+      "revision_mode": "unsupported",
+      "native_actions": [
+        {
+          "name": "Documents.Add",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "error": null,
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "retention": {
+        "scope": "python_backend_lifetime",
+        "terminal_ttl_seconds": 600,
+        "capacity": 2048
+      },
+      "service_request_fingerprint": "fc87dac4f897768cf13ee8ef481fbb7bde637edf5e9c6af348de7d0e2e596a0f",
+      "fingerprint_algorithm": "sha256-canonical-com-request-v1"
+    },
+    "result": "Drawing3.dwg"
+  },
+  {
+    "receipt": {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "request_id": "6b5e94ee59544da0bb8a343a3a8f1c29",
+      "operation": "save_drawing",
+      "request_document_id": "f0a345f04ba34c9782c54dfefb63dec1",
+      "request_instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "result_document_id": "f0a345f04ba34c9782c54dfefb63dec1",
+      "status": "succeeded",
+      "stage": "completed",
+      "revision": null,
+      "revision_mode": "unsupported",
+      "native_actions": [
+        {
+          "name": "SaveAs",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "error": null,
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "retention": {
+        "scope": "python_backend_lifetime",
+        "terminal_ttl_seconds": 600,
+        "capacity": 2048
+      },
+      "service_request_fingerprint": "5b16c1843792ec031f7a87d796c36f55aea128766c2e1cebb1e50312d467d3c3",
+      "fingerprint_algorithm": "sha256-canonical-com-request-v1"
+    },
+    "result": null
+  },
+  {
+    "receipt": {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "request_id": "dc0ab8e5ee0f43d888d6c24930ca4beb",
+      "operation": "new_document",
+      "request_document_id": null,
+      "request_instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "result_document_id": "4a81d1a770f8485bad9ac00b2ccc6510",
+      "status": "succeeded",
+      "stage": "completed",
+      "revision": null,
+      "revision_mode": "unsupported",
+      "native_actions": [
+        {
+          "name": "Documents.Add",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "error": null,
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "retention": {
+        "scope": "python_backend_lifetime",
+        "terminal_ttl_seconds": 600,
+        "capacity": 2048
+      },
+      "service_request_fingerprint": "fc87dac4f897768cf13ee8ef481fbb7bde637edf5e9c6af348de7d0e2e596a0f",
+      "fingerprint_algorithm": "sha256-canonical-com-request-v1"
+    },
+    "result": "Drawing4.dwg"
+  },
+  {
+    "receipt": {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "request_id": "2ea29b85f28146f9b9fdaa44bf998cc9",
+      "operation": "save_drawing",
+      "request_document_id": "4a81d1a770f8485bad9ac00b2ccc6510",
+      "request_instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "result_document_id": "4a81d1a770f8485bad9ac00b2ccc6510",
+      "status": "succeeded",
+      "stage": "completed",
+      "revision": null,
+      "revision_mode": "unsupported",
+      "native_actions": [
+        {
+          "name": "SaveAs",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "error": null,
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "retention": {
+        "scope": "python_backend_lifetime",
+        "terminal_ttl_seconds": 600,
+        "capacity": 2048
+      },
+      "service_request_fingerprint": "30267ec6eb50acd9ceb18361abdbf638ff6e9b706665cfab7105ba917327d22c",
+      "fingerprint_algorithm": "sha256-canonical-com-request-v1"
+    },
+    "result": null
+  },
+  {
+    "receipt": {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "request_id": "f15654bab816424dafdfc127e572920c",
+      "operation": "draw_line",
+      "request_document_id": "4a81d1a770f8485bad9ac00b2ccc6510",
+      "request_instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "result_document_id": null,
+      "status": "failed",
+      "stage": "not_dispatched",
+      "revision": null,
+      "revision_mode": "unsupported",
+      "native_actions": [],
+      "native_invoked": false,
+      "native_acknowledged": false,
+      "observation": "failed",
+      "error": {
+        "type": "CADDocumentChangedError",
+        "message": "AutoCAD active document changed; call new_drawing for a new scratch document or explicitly close/recreate the backend to select the active document",
+        "hresult": null,
+        "causes": []
+      },
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": false
+      },
+      "retention": {
+        "scope": "python_backend_lifetime",
+        "terminal_ttl_seconds": 600,
+        "capacity": 2048
+      },
+      "service_request_fingerprint": "1c7319c05ebd39a6492998b5fdbb9460dfad2859ccca28c836ba745bcfdfcfa4",
+      "fingerprint_algorithm": "sha256-canonical-com-request-v1",
+      "native_detail": null
+    },
+    "result": null
+  },
+  {
+    "receipt": {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "request_id": "de9f7c79083b4c7194455e3eb8c0d005",
+      "operation": "draw_line",
+      "request_document_id": "4a81d1a770f8485bad9ac00b2ccc6510",
+      "request_instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "result_document_id": "4a81d1a770f8485bad9ac00b2ccc6510",
+      "status": "succeeded",
+      "stage": "completed",
+      "revision": null,
+      "revision_mode": "unsupported",
+      "native_actions": [
+        {
+          "name": "AddLine",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "error": null,
+      "affected_entities": {
+        "created": [
+          "1793847331056"
+        ],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "retention": {
+        "scope": "python_backend_lifetime",
+        "terminal_ttl_seconds": 600,
+        "capacity": 2048
+      },
+      "service_request_fingerprint": "1c7319c05ebd39a6492998b5fdbb9460dfad2859ccca28c836ba745bcfdfcfa4",
+      "fingerprint_algorithm": "sha256-canonical-com-request-v1"
+    },
+    "result": 1793847331056
+  },
+  {
+    "receipt": {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "request_id": "c71870559c7b4af896e1501799f71a85",
+      "operation": "draw_line",
+      "request_document_id": "4a81d1a770f8485bad9ac00b2ccc6510",
+      "request_instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "result_document_id": null,
+      "status": "failed",
+      "stage": "result_unknown",
+      "revision": null,
+      "revision_mode": "unsupported",
+      "native_actions": [
+        {
+          "name": "AddLine",
+          "acknowledged": false
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": false,
+      "observation": "failed",
+      "error": {
+        "type": "RuntimeError",
+        "message": "TEST_INJECTION: real AddLine return suppressed before ACK recording",
+        "hresult": null,
+        "causes": []
+      },
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": false
+      },
+      "retention": {
+        "scope": "python_backend_lifetime",
+        "terminal_ttl_seconds": 600,
+        "capacity": 2048
+      },
+      "service_request_fingerprint": "00f8ff8f24f6227069905e9a4fe72f55b2ddda660d727b16de66a365da0cb57a",
+      "fingerprint_algorithm": "sha256-canonical-com-request-v1",
+      "native_detail": null
+    },
+    "result": null
+  },
+  {
+    "receipt": {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "request_id": "163512dd0b6d419d9c36ee164192c534",
+      "operation": "new_document",
+      "request_document_id": null,
+      "request_instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "result_document_id": "602b0d5ceddc44efaf4157dc00cdd16c",
+      "status": "succeeded",
+      "stage": "completed",
+      "revision": null,
+      "revision_mode": "unsupported",
+      "native_actions": [
+        {
+          "name": "Documents.Add",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "error": null,
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "retention": {
+        "scope": "python_backend_lifetime",
+        "terminal_ttl_seconds": 600,
+        "capacity": 2048
+      },
+      "service_request_fingerprint": "fc87dac4f897768cf13ee8ef481fbb7bde637edf5e9c6af348de7d0e2e596a0f",
+      "fingerprint_algorithm": "sha256-canonical-com-request-v1"
+    },
+    "result": "Drawing5.dwg"
+  },
+  {
+    "receipt": {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "request_id": "0e3e42fe90174c9499642dba87f69158",
+      "operation": "draw_line",
+      "request_document_id": "602b0d5ceddc44efaf4157dc00cdd16c",
+      "request_instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "result_document_id": null,
+      "status": "failed",
+      "stage": "observation_failed",
+      "revision": null,
+      "revision_mode": "unsupported",
+      "native_actions": [
+        {
+          "name": "AddLine",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "failed",
+      "error": {
+        "type": "RuntimeError",
+        "message": "TEST_INJECTION: post-ACK binding read unavailable",
+        "hresult": null,
+        "causes": []
+      },
+      "affected_entities": {
+        "created": [
+          "1793860188304"
+        ],
+        "modified": [],
+        "deleted": [],
+        "complete": false
+      },
+      "retention": {
+        "scope": "python_backend_lifetime",
+        "terminal_ttl_seconds": 600,
+        "capacity": 2048
+      },
+      "service_request_fingerprint": "8ac7ff4be87a6949deb09534cfdaf972915b79830f060a1c8a89d61397d27402",
+      "fingerprint_algorithm": "sha256-canonical-com-request-v1",
+      "native_detail": null
+    },
+    "result": null
+  },
+  {
+    "receipt": {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "request_id": "bb548d4ad9614693b4b18ae41e4e7c67",
+      "operation": "new_document",
+      "request_document_id": null,
+      "request_instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "result_document_id": "29594c930772479d88453675498e1015",
+      "status": "succeeded",
+      "stage": "completed",
+      "revision": null,
+      "revision_mode": "unsupported",
+      "native_actions": [
+        {
+          "name": "Documents.Add",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "error": null,
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "retention": {
+        "scope": "python_backend_lifetime",
+        "terminal_ttl_seconds": 600,
+        "capacity": 2048
+      },
+      "service_request_fingerprint": "fc87dac4f897768cf13ee8ef481fbb7bde637edf5e9c6af348de7d0e2e596a0f",
+      "fingerprint_algorithm": "sha256-canonical-com-request-v1"
+    },
+    "result": "Drawing6.dwg"
+  },
+  {
+    "receipt": {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "request_id": "308a5aa826154d1fa788fbaa414b2d0a",
+      "operation": "draw_line",
+      "request_document_id": "29594c930772479d88453675498e1015",
+      "request_instance_id": "d26bb74f372a4c40821f0257cb4bd176",
+      "result_document_id": null,
+      "status": "failed",
+      "stage": "observation_failed",
+      "revision": null,
+      "revision_mode": "unsupported",
+      "native_actions": [
+        {
+          "name": "AddLine",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "failed",
+      "error": {
+        "type": "AttributeError",
+        "message": "<unknown>.ObjectID",
+        "hresult": null,
+        "causes": []
+      },
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": false
+      },
+      "retention": {
+        "scope": "python_backend_lifetime",
+        "terminal_ttl_seconds": 600,
+        "capacity": 2048
+      },
+      "service_request_fingerprint": "243f74b924d3d2ea2fb76b29024a452e1ac26442e444166ffa260b7c6c3555a2",
+      "fingerprint_algorithm": "sha256-canonical-com-request-v1",
+      "native_detail": null
+    },
+    "result": null
+  }
+]

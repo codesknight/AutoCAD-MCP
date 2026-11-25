@@ -1,7 +1,28 @@
 using Autodesk.AutoCAD.Runtime;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 
 [assembly: CommandClass(typeof(AutoCADBridge.NativeTests.Commands))]
+[assembly: ExtensionApplication(typeof(AutoCADBridge.NativeTests.InstanceFixture))]
 namespace AutoCADBridge.NativeTests;
+
+// Test-only explicit targeting of a dedicated CAD process. AutoCAD registers
+// duplicate application monikers; GetActiveObject may always select the user's
+// first process. Never install this helper as an auto-loaded production plugin.
+public sealed class InstanceFixture : IExtensionApplication
+{
+    [DllImport("ole32.dll")] private static extern int GetRunningObjectTable(int reserved, out IRunningObjectTable table);
+    [DllImport("ole32.dll", CharSet = CharSet.Unicode)] private static extern int CreateItemMoniker(string delimiter, string item, out IMoniker moniker);
+    private IRunningObjectTable? table;
+    private int cookie;
+    public void Initialize() {
+        Marshal.ThrowExceptionForHR(GetRunningObjectTable(0, out var rot));
+        Marshal.ThrowExceptionForHR(CreateItemMoniker("!", "AutoCADMCP-NativeTests-" + Environment.ProcessId, out var moniker));
+        table = rot;
+        cookie = rot.Register(1, Autodesk.AutoCAD.ApplicationServices.Application.AcadApplication, moniker);
+    }
+    public void Terminate() { if (table is not null) table.Revoke(cookie); }
+}
 
 // Explicitly NETLOADed opt-in fixture. No listener, network endpoint or startup hook.
 public static class Commands

@@ -1,0 +1,355 @@
+[
+  {
+    "receipt": {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "937c96014596436289e1448a50eabc8f",
+      "request_id": "8fd2f635b0e34cae84b372e19dcd0a47",
+      "operation": "new_document",
+      "request_document_id": null,
+      "result_document_id": "8049ca90aaeb4452abe53341989e32b2",
+      "status": "succeeded",
+      "stage": "completed",
+      "revision": null,
+      "revision_mode": "unsupported",
+      "native_actions": [
+        {
+          "name": "Documents.Add",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "error": null,
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "retention": {
+        "scope": "python_backend_lifetime",
+        "terminal_ttl_seconds": 600,
+        "capacity": 2048
+      },
+      "request_sha256": "47a4e690fe03f474cb639efebc81c29532f3c717c4fac7f9b07fa7c42e2cc394"
+    },
+    "result": "Drawing47.dwg"
+  },
+  {
+    "receipt": {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "937c96014596436289e1448a50eabc8f",
+      "request_id": "0c281c2adf31410f8bf6b58e4d82737f",
+      "operation": "save_drawing",
+      "request_document_id": "8049ca90aaeb4452abe53341989e32b2",
+      "result_document_id": "8049ca90aaeb4452abe53341989e32b2",
+      "status": "succeeded",
+      "stage": "completed",
+      "revision": null,
+      "revision_mode": "unsupported",
+      "native_actions": [
+        {
+          "name": "SaveAs",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "error": null,
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "retention": {
+        "scope": "python_backend_lifetime",
+        "terminal_ttl_seconds": 600,
+        "capacity": 2048
+      },
+      "request_sha256": "25569147abc3f6da0074e39d33b2ee2c9bb3aa0c82256ace774d2a264e43ee7d"
+    },
+    "result": null
+  },
+  {
+    "receipt": {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "937c96014596436289e1448a50eabc8f",
+      "request_id": "c1a73f87c6e94897bb22f93a666aea6b",
+      "operation": "new_document",
+      "request_document_id": null,
+      "result_document_id": "2d43f5793da2431399879b452acf3e5b",
+      "status": "succeeded",
+      "stage": "completed",
+      "revision": null,
+      "revision_mode": "unsupported",
+      "native_actions": [
+        {
+          "name": "Documents.Add",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "error": null,
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "retention": {
+        "scope": "python_backend_lifetime",
+        "terminal_ttl_seconds": 600,
+        "capacity": 2048
+      },
+      "request_sha256": "47a4e690fe03f474cb639efebc81c29532f3c717c4fac7f9b07fa7c42e2cc394"
+    },
+    "result": "Drawing48.dwg"
+  },
+  {
+    "receipt": {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "937c96014596436289e1448a50eabc8f",
+      "request_id": "715f4cb236a74fd998eac2d64504d771",
+      "operation": "save_drawing",
+      "request_document_id": "2d43f5793da2431399879b452acf3e5b",
+      "result_document_id": "2d43f5793da2431399879b452acf3e5b",
+      "status": "succeeded",
+      "stage": "completed",
+      "revision": null,
+      "revision_mode": "unsupported",
+      "native_actions": [
+        {
+          "name": "SaveAs",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "error": null,
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "retention": {
+        "scope": "python_backend_lifetime",
+        "terminal_ttl_seconds": 600,
+        "capacity": 2048
+      },
+      "request_sha256": "657dd08f63e2301fde1b1685a34519961ff6a33f8b4c58677c6e4b57dafdfcf3"
+    },
+    "result": null
+  },
+  {
+    "receipt": {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "937c96014596436289e1448a50eabc8f",
+      "request_id": "c5d999681cef4967a13d8ae826bca0da",
+      "operation": "draw_line",
+      "request_document_id": "2d43f5793da2431399879b452acf3e5b",
+      "result_document_id": null,
+      "status": "failed",
+      "stage": "not_dispatched",
+      "revision": null,
+      "revision_mode": "unsupported",
+      "native_actions": [],
+      "native_invoked": false,
+      "native_acknowledged": false,
+      "observation": "failed",
+      "error": {
+        "type": "CADDocumentChangedError",
+        "message": "AutoCAD active document changed; call new_drawing for a new scratch document or explicitly close/recreate the backend to select the active document"
+      },
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": false
+      },
+      "retention": {
+        "scope": "python_backend_lifetime",
+        "terminal_ttl_seconds": 600,
+        "capacity": 2048
+      },
+      "request_sha256": "a551dc389ce63d40c8add5b1f8f6490e1cf0cc43f5bb3302c135bdaa075495ae",
+      "native_detail": null
+    },
+    "result": null
+  },
+  {
+    "receipt": {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "937c96014596436289e1448a50eabc8f",
+      "request_id": "10edafdfe2364a91b39b2b802060cea5",
+      "operation": "draw_line",
+      "request_document_id": "2d43f5793da2431399879b452acf3e5b",
+      "result_document_id": "2d43f5793da2431399879b452acf3e5b",
+      "status": "succeeded",
+      "stage": "completed",
+      "revision": null,
+      "revision_mode": "unsupported",
+      "native_actions": [
+        {
+          "name": "AddLine",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "error": null,
+      "affected_entities": {
+        "created": [
+          "2277571365104"
+        ],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "retention": {
+        "scope": "python_backend_lifetime",
+        "terminal_ttl_seconds": 600,
+        "capacity": 2048
+      },
+      "request_sha256": "a551dc389ce63d40c8add5b1f8f6490e1cf0cc43f5bb3302c135bdaa075495ae"
+    },
+    "result": 2277571365104
+  },
+  {
+    "receipt": {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "937c96014596436289e1448a50eabc8f",
+      "request_id": "92d6efb010434bd9aaa0e1568ae813f2",
+      "operation": "draw_line",
+      "request_document_id": "2d43f5793da2431399879b452acf3e5b",
+      "result_document_id": null,
+      "status": "failed",
+      "stage": "result_unknown",
+      "revision": null,
+      "revision_mode": "unsupported",
+      "native_actions": [
+        {
+          "name": "AddLine",
+          "acknowledged": false
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": false,
+      "observation": "failed",
+      "error": {
+        "type": "RuntimeError",
+        "message": "TEST_INJECTION: real AddLine return suppressed before ACK recording"
+      },
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": false
+      },
+      "retention": {
+        "scope": "python_backend_lifetime",
+        "terminal_ttl_seconds": 600,
+        "capacity": 2048
+      },
+      "request_sha256": "4fbd8f87617b6de28b15375e4f56a0dd18fe9ff516fb9a1d72d9a3d9d34dc1b8",
+      "native_detail": null
+    },
+    "result": null
+  },
+  {
+    "receipt": {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "937c96014596436289e1448a50eabc8f",
+      "request_id": "51e4cbadcf9d4a509537715525a0e367",
+      "operation": "new_document",
+      "request_document_id": null,
+      "result_document_id": "7e0bb5688de94f7883f9da6251bd7d99",
+      "status": "succeeded",
+      "stage": "completed",
+      "revision": null,
+      "revision_mode": "unsupported",
+      "native_actions": [
+        {
+          "name": "Documents.Add",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "error": null,
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "retention": {
+        "scope": "python_backend_lifetime",
+        "terminal_ttl_seconds": 600,
+        "capacity": 2048
+      },
+      "request_sha256": "47a4e690fe03f474cb639efebc81c29532f3c717c4fac7f9b07fa7c42e2cc394"
+    },
+    "result": "Drawing49.dwg"
+  },
+  {
+    "receipt": {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "937c96014596436289e1448a50eabc8f",
+      "request_id": "0932a12209124c3cb19f74ac083cb400",
+      "operation": "draw_line",
+      "request_document_id": "7e0bb5688de94f7883f9da6251bd7d99",
+      "result_document_id": null,
+      "status": "failed",
+      "stage": "observation_failed",
+      "revision": null,
+      "revision_mode": "unsupported",
+      "native_actions": [
+        {
+          "name": "AddLine",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "failed",
+      "error": {
+        "type": "RuntimeError",
+        "message": "TEST_INJECTION: post-ACK binding read unavailable"
+      },
+      "affected_entities": {
+        "created": [
+          "2277289400464"
+        ],
+        "modified": [],
+        "deleted": [],
+        "complete": false
+      },
+      "retention": {
+        "scope": "python_backend_lifetime",
+        "terminal_ttl_seconds": 600,
+        "capacity": 2048
+      },
+      "request_sha256": "828c5698289315612227e66b3f3b228c34f46b705ca52de23f4a44d002d6423a",
+      "native_detail": null
+    },
+    "result": null
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "files_checked": 3,
+  "unchanged": true,
+  "files": {
+    "<CADER_WORKSPACE>\\.cader\\runs\\quality-4c795262-f31c-4732-9b76-6d4d0c31753c\\.cader\\locks\\managed-write.json": "810cc550a82013cc4f9118edf66d3fceee114907455b070e6d5b0c20291af4fb",
+    "<CADER_WORKSPACE>\\.cader\\locks\\managed-write.json": "052aeccde3bd199ee8c6e80bed8de1f67d42874d12da2330db4d46ad7c66cb2c",
+    "<CADER_WORKSPACE>\\.cader\\workspaces\\drawing-20261125\\.cader\\locks\\managed-write.json": "0b9e4443a371ef6edbebca1ad3005b2b4d1f37c8323a7d7995bea104c16a8f59"
+  },
+  "note": "No unknown barrier was cleared; no automatic write replay."
+}

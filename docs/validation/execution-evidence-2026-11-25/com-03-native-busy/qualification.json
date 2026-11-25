@@ -1,0 +1,69 @@
+{
+  "passed": false,
+  "completed": true,
+  "process_id": 32216,
+  "injection": "adapter_return_and_post_read_hooks_over_real_native_mutations",
+  "lost_ack_independent_entities": [
+    {
+      "object_id": 1793860176112,
+      "type": "AcDbLine",
+      "layer": "0",
+      "start_point": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "end_point": [
+        10.0,
+        0.0,
+        0.0
+      ],
+      "bounding_box": {
+        "min": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "max": [
+          10.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "object_id": 1793860176128,
+      "type": "AcDbLine",
+      "layer": "0",
+      "start_point": [
+        30.0,
+        0.0,
+        0.0
+      ],
+      "end_point": [
+        40.0,
+        0.0,
+        0.0
+      ],
+      "bounding_box": {
+        "min": [
+          30.0,
+          0.0,
+          0.0
+        ],
+        "max": [
+          40.0,
+          0.0,
+          0.0
+        ]
+      }
+    }
+  ],
+  "error": {
+    "type": "AssertionError",
+    "message": "{'contract': 'autocad-execution/1', 'backend': 'com', 'instance_id': 'b3ea0bcd38444331a94c4acfb723e16e', 'request_id': '84142779d0564b38af4f7093191f2e94', 'operation': 'draw_line', 'request_document_id': '241420b8d8c24ce492a8fa9dd00c8c2e', 'request_instance_id': 'b3ea0bcd38444331a94c4acfb723e16e', 'result_document_id': '241420b8d8c24ce492a8fa9dd00c8c2e', 'status': 'succeeded', 'stage': 'completed', 'revision': None, 'revision_mode': 'unsupported', 'native_actions': [{'name': 'AddLine', 'acknowledged': True}], 'native_invoked': True, 'native_acknowledged': True, 'observation': 'succeeded', 'error': None, 'affected_entities': {'created': ['1793624991888'], 'modified': [], 'deleted': [], 'complete': True}, 'retention': {'scope': 'python_backend_lifetime', 'terminal_ttl_seconds': 600, 'capacity': 2048}, 'service_request_fingerprint': '4d0131907f37bd13d153e8ea4e027f6b2b9eefa302c154b2d941676dee527a85', 'fingerprint_algorithm': 'sha256-canonical-com-request-v1'}"
+  },
+  "original_documents_unchanged": true,
+  "before_sha256": "c11a44a0d2a7d91bf1e6637c03c641607640392ca8d8c506e92bab66ce6cbfa2",
+  "after_sha256": "c11a44a0d2a7d91bf1e6637c03c641607640392ca8d8c506e92bab66ce6cbfa2"
+}

@@ -1,0 +1,107 @@
+{
+  "owned_pid": 32216,
+  "owned_documents": [
+    {
+      "name": "Drawing1.dwg",
+      "path": "",
+      "entities": []
+    },
+    {
+      "name": "Drawing2.dwg",
+      "path": "",
+      "entities": [
+        {
+          "type": "AcDbLine",
+          "start": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "end": [
+            10.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "type": "AcDbLine",
+          "start": [
+            20.0,
+            0.0,
+            0.0
+          ],
+          "end": [
+            30.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "type": "AcDbLine",
+          "start": [
+            40.0,
+            0.0,
+            0.0
+          ],
+          "end": [
+            50.0,
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Drawing19.dwg",
+      "path": "",
+      "entities": [
+        {
+          "type": "AcDbLine",
+          "start": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "end": [
+            10.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "type": "AcDbLine",
+          "start": [
+            20.0,
+            0.0,
+            0.0
+          ],
+          "end": [
+            30.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "type": "AcDbLine",
+          "start": [
+            40.0,
+            0.0,
+            0.0
+          ],
+          "end": [
+            50.0,
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    }
+  ],
+  "preexisting_pid": 33272,
+  "preexisting_pid_missing_before_cleanup": true,
+  "quit_invoked": true,
+  "remaining_documents": 0,
+  "quit_returned": true,
+  "remaining_acad_processes": [],
+  "process_exit_confirmed": true
+}

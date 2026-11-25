@@ -1,0 +1,6 @@
+{
+  "stage": "configuration",
+  "error_code": "CONFIG_INVALID",
+  "cli_exit": 1,
+  "reason": "MCP config outside Cader workspace; no CAD write authorized"
+}

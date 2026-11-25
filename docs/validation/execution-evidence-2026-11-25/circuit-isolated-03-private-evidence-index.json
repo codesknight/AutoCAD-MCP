@@ -1,0 +1,11 @@
+{
+  "run_directory": "<CADER_WORKSPACE>\\.cader\\runs\\quality-b492811a-6a58-48d6-bed4-a0d14a98c518",
+  "execution_audit_files": [
+    {
+      "path": "<CADER_WORKSPACE>\\.cader\\runs\\quality-b492811a-6a58-48d6-bed4-a0d14a98c518\\.cader\\runs\\execution-485e15b8-c755-4387-8568-d785bf8850af\\execution.jsonl",
+      "sha256": "7bdf4fb0e7633d8241a67081a18c18a46c58129fb34cd05359cc3cb189c40167"
+    }
+  ],
+  "quality_json_sha256": "d4e744eb2e85c92d47d20beb4572b0ad4eaa5108880b71f2e5a27f90beeeadfb",
+  "note": "Original private evidence retained; hashes refer to original bytes, not sanitized data."
+}

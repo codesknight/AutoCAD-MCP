@@ -50,7 +50,7 @@ def test_real_mcp_stdio_create_and_query():
         async with stdio_client(params) as (read, write):
             async with ClientSession(read, write) as client:
                 await client.initialize()
-                assert len((await client.list_tools()).tools) == 44
+                assert len((await client.list_tools()).tools) == 47
                 async def call(name, arguments):
                     result = await client.call_tool(name, arguments)
                     assert not result.isError, result.content

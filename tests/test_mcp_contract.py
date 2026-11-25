@@ -34,13 +34,18 @@ def test_actual_stdio_tool_discovery_matches_baseline(tmp_path):
     baseline={tool['name']:stable_schema(tool) for tool in TOOLS}
     discovered={tool['name']:stable_schema(tool) for tool in actual}
     assert {name:discovered[name] for name in baseline} == baseline
-    assert set(discovered)-set(baseline) == {
+    execution_names = {'get_document_binding','execute_observed_operation','get_execution_status'}
+    assert set(discovered)-set(baseline)-execution_names == {
         'get_backend_status','get_job_status','execute_atomic_batch','query_entities_page',
         'create_working_drawing','get_working_drawing','save_working_drawing','reopen_saved_drawing',
     }
     runtime=json.loads((FIXTURES/'mcp-runtime-tools-v0.2.json').read_text(encoding='utf-8'))
-    assert {name:discovered[name] for name in set(discovered)-set(baseline)} == {
+    assert {name:discovered[name] for name in set(discovered)-set(baseline)-execution_names} == {
         tool['name']:stable_schema(tool) for tool in runtime
+    }
+    execution=json.loads((FIXTURES/'mcp-execution-tools-v1.json').read_text(encoding='utf-8'))
+    assert {name:discovered[name] for name in execution_names} == {
+        tool['name']:stable_schema(tool) for tool in execution
     }
 
 

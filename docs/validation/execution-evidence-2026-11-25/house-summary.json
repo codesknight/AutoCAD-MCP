@@ -1,0 +1,59 @@
+{
+  "kind": "legacy_house",
+  "run_id": "quality-68d8598c-efe9-406b-9e7d-8a76e18041e8",
+  "ok": true,
+  "cli_exit": 0,
+  "checks": {
+    "completed": true,
+    "autonomousVision": true,
+    "realImageRequest": true,
+    "taskApproval": true
+  },
+  "phase": "complete",
+  "quality_accepted": true,
+  "requirement_checks": [
+    {
+      "id": "new-doc",
+      "status": "pass",
+      "evidence": "本任务new_drawing已确认"
+    },
+    {
+      "id": "house-body",
+      "status": "pass",
+      "evidence": "actual=1, expected=1..unbounded"
+    },
+    {
+      "id": "roof-shape",
+      "status": "pass",
+      "evidence": "actual=1, expected=1..unbounded"
+    },
+    {
+      "id": "tree-crown",
+      "status": "pass",
+      "evidence": "actual=4, expected=3..unbounded"
+    },
+    {
+      "id": "tree-trunk",
+      "status": "pass",
+      "evidence": "actual=1, expected=1..unbounded"
+    },
+    {
+      "id": "visual-style",
+      "status": "pass",
+      "evidence": "红屋顶、蓝墙房子与旁侧大树均实色填充，分离不重叠，比例协调；配色红/蓝/绿/黄/橙鲜艳，构图明快，整体符合儿童绘本风格。"
+    }
+  ],
+  "execution_counts": {
+    "committed": 34,
+    "committed_observation_failed": 0,
+    "unknown": 0,
+    "blocked_not_dispatched": 0,
+    "failed_before_dispatch": 2
+  },
+  "frozen": false,
+  "freeze_operation": null,
+  "failure": null,
+  "artifact": null,
+  "visual_model_calls": 2,
+  "source_sha256": null
+}

@@ -5,6 +5,7 @@ import time
 from contextlib import contextmanager
 
 from autocad_mcp.cad.connection import CADConnection
+from autocad_mcp.cad.execution import invoke_mutator, observing_execution, set_property
 from autocad_mcp.cad.geometry import (
     Point,
     to_variant_double_array,
@@ -19,6 +20,13 @@ _SAVE_DRAWING_EXTENSIONS = {".dwg", ".dxf", ".dwt", ".dws"}
 class CADController:
     def __init__(self, connection: CADConnection):
         self.connection = connection
+
+    @staticmethod
+    def _entity_id(entity):
+        if observing_execution():
+            from autocad_mcp.cad.capture import prop
+            return prop(entity,"ObjectID")
+        return entity.ObjectID
 
     def _validate_layer(self, layer: str | None) -> None:
         """Resolve dependencies before Add*: setter failures must not leave geometry."""
@@ -42,7 +50,7 @@ class CADController:
             cleanup_errors = []
             for entity in reversed(created):
                 try:
-                    entity.Delete()
+                    invoke_mutator(entity, "Delete")
                 except Exception as cleanup:
                     cleanup_errors.append(str(cleanup))
             if cleanup_errors:
@@ -56,11 +64,16 @@ class CADController:
         with self._creation_scope() as created:
             created.append(entity)
             for name, value in properties.items():
-                setattr(entity, name, value)
+                set_property(entity, name, value)
             if layer:
-                entity.Layer = layer
+                set_property(entity, "Layer", layer)
+            if observing_execution():
+                # A pure ObjectID observation failure after acknowledged setters
+                # must not trigger another native mutation (Delete). Preserve
+                # execution facts for explicit clients to reconcile read-only.
+                created.clear()
             # Include response construction in the cleanup scope.
-            _ = entity.ObjectID
+            _ = self._entity_id(entity)
             return entity
 
     def _ensure_cjk_text_style(self) -> str:
@@ -72,23 +85,23 @@ class CADController:
         try:
             styles.Item(_CJK_TEXT_STYLE)
         except Exception:
-            style = styles.Add(_CJK_TEXT_STYLE)
-            style.SetFont("SimSun", False, False, 134, 0)
+            style = invoke_mutator(styles, "Add", _CJK_TEXT_STYLE)
+            invoke_mutator(style, "SetFont", "SimSun", False, False, 134, 0)
         return _CJK_TEXT_STYLE
 
     def draw_line(self, start: Point, end: Point, layer: str | None = None) -> int:
         """Draw a line and return the new entity's ObjectID handle."""
         self._validate_layer(layer)
         model_space = self.connection.model_space
-        line = model_space.AddLine(to_variant_point(*start), to_variant_point(*end))
-        return self._configure_entity(line, layer).ObjectID
+        line = invoke_mutator(model_space, "AddLine", to_variant_point(*start), to_variant_point(*end))
+        return self._entity_id(self._configure_entity(line, layer))
 
     def draw_circle(self, center: Point, radius: float, layer: str | None = None) -> int:
         """Draw a circle and return the new entity's ObjectID handle."""
         self._validate_layer(layer)
         model_space = self.connection.model_space
-        circle = model_space.AddCircle(to_variant_point(*center), radius)
-        return self._configure_entity(circle, layer).ObjectID
+        circle = invoke_mutator(model_space, "AddCircle", to_variant_point(*center), radius)
+        return self._entity_id(self._configure_entity(circle, layer))
 
     def draw_arc(
         self, center: Point, radius: float, start_angle: float, end_angle: float,
@@ -123,8 +136,8 @@ class CADController:
         self._validate_layer(layer)
         style = self._ensure_cjk_text_style()
         model_space = self.connection.model_space
-        text_obj = model_space.AddText(text, to_variant_point(*position), height)
-        return self._configure_entity(text_obj, layer, StyleName=style, Rotation=math.radians(rotation)).ObjectID
+        text_obj = invoke_mutator(model_space, "AddText", text, to_variant_point(*position), height)
+        return self._entity_id(self._configure_entity(text_obj, layer, StyleName=style, Rotation=math.radians(rotation)))
 
     def draw_mtext(self, position: Point, text: str, width: float = 100.0, height: float = 2.5, layer: str | None = None) -> int:
         """多行富文本。width 是文本框宽度（超出会自动换行），height 是字高。"""
@@ -217,7 +230,7 @@ class CADController:
                     f"目标路径和当前文档的原始文件路径相同（{current_path!r}），"
                     "这会覆盖用户正在编辑的真实图纸。如果确实要覆盖原文件，请显式传 overwrite=True。"
                 )
-        self.connection.document.SaveAs(file_path)
+        invoke_mutator(self.connection.document, "SaveAs", file_path)
 
     def export_current_view(self, file_path: str | None = None, timeout: float = 30.0,
                             request_id: str = "") -> str | dict:
