@@ -20,6 +20,8 @@ from autocad_mcp.cad.backends.base import (
     copy_data,
     operation_signature,
 )
+from autocad_mcp.cad.com_artifacts import OPERATIONS as FILE_OPERATIONS
+from autocad_mcp.cad.com_artifacts import COMArtifacts
 from autocad_mcp.cad.errors import (
     BackendClosedError,
     BackendQueueFullError,
@@ -54,6 +56,7 @@ class COMSession:
             raise
         self.controller = CADController(self.connection)
         self.query = CADQuery(self.connection)
+        self.files = COMArtifacts(self.connection)
 
     def execute(self, operation: str, payload: dict):
         if operation == "new_document":
@@ -136,7 +139,10 @@ class COMBackend:
                 raise UnsupportedOperationError("Operation has no declared COM execution receipt")
             if (operation == "new_document") != (document_id is None):
                 raise ValueError("DOCUMENT_ID_REQUIRED: new_document alone requires null input document")
-            signature = operation_signature(operation)
+            from inspect import signature as inspect_signature
+            signature = (inspect_signature(getattr(COMArtifacts,operation)).replace(
+                parameters=list(inspect_signature(getattr(COMArtifacts,operation)).parameters.values())[1:])
+                if operation in FILE_OPERATIONS else operation_signature(operation))
             bound = signature.bind(**args)
             values = {name:(TypeAdapter(signature.parameters[name].annotation).validate_python(value)
                       if signature.parameters[name].annotation is not Parameter.empty else value)
@@ -161,7 +167,11 @@ class COMBackend:
         self.journal.update(request_id, stage="preflight")
         try:
             with ExecutionTrace(self.journal, request_id):
-                if operation != "new_document":
+                if not hasattr(session,"files"):
+                    session.files=COMArtifacts(connection)
+                if operation in FILE_OPERATIONS:
+                    session.files.progress=None
+                if operation not in {"new_document","query_verification_entities"}:
                     binding = connection.binding()
                     if binding["document_id"] != data["document_id"]:
                         raise ValueError("DOCUMENT_ID_MISMATCH")
@@ -171,18 +181,29 @@ class COMBackend:
                         raise ValueError("UNMANAGED_DOCUMENT: create a new working document in this session")
                 if operation in READS:
                     self.journal.update(request_id, stage="observing", observation="pending")
-                result = copy_data(session.execute(operation, args))
+                if operation == "query_verification_entities" and args["document_id"]!=data["document_id"]:
+                    raise ValueError("VERIFICATION_DOCUMENT_ID_MISMATCH")
+                if operation in FILE_OPERATIONS:
+                    session.files.progress=None
+                    result=copy_data(getattr(session.files,operation)(**args))
+                    self.journal.update(request_id,file_result=result,file_progress=session.files.progress)
+                else:
+                    result = copy_data(session.execute(operation, args))
                 affected = dict(created=[],modified=[],deleted=[],complete=True)
                 if operation in {"draw_line","draw_circle","draw_text"}:
                     affected["created"] = [str(result)]
                 if operation in {"move_entity","delete_entity"}:
                     affected["deleted" if operation=="delete_entity" else "modified"] = [str(args["object_id"])]
                 self.journal.update(request_id, observation="pending", affected_entities=affected)
-                binding = connection.binding()
-                with self._lock:
-                    self._last_binding = copy_data(binding)
+                if operation == "query_verification_entities":
+                    binding={"document_id":args["document_id"]}
+                else:
+                    binding = connection.binding()
+                    with self._lock:
+                        self._last_binding = copy_data(binding)
+                result_document=(result["document_id"] if operation=="reopen_document_artifact" else binding["document_id"])
                 self.journal.update(request_id, status="succeeded",stage="completed",observation="succeeded",
-                                    result_document_id=binding["document_id"],affected_entities=affected)
+                                    result_document_id=result_document,affected_entities=affected)
                 return dict(receipt=self.execution_status(self.instance_id, request_id), result=result)
         except Exception as error:
             record = self.execution_status(self.instance_id, request_id)
@@ -192,6 +213,8 @@ class COMBackend:
                                 affected_entities={**record["affected_entities"],"complete":False},
                                 error=error_details(error),
                                 native_detail=getattr(error,"evidence",None))
+            if operation in FILE_OPERATIONS:
+                self.journal.update(request_id,file_progress=getattr(session.files,"progress",None))
             return dict(receipt=self.execution_status(self.instance_id, request_id),result=None)
 
     def execute(self, operation: str, payload: dict):

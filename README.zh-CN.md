@@ -42,7 +42,7 @@
 
 独立的七工具 [`cader-cad/1` stdio 入口](docs/design/cader-managed-profile.md)提供版本化 DTO、原生 job 身份与 revision 对账。两轮真实 Cader CLI 已通过直线/圆/文字固定计划的绘制→保存 DWG→只读重开→独立验收；[查看证据和适用范围](docs/validation/2026-11-19-cader-managed-profile.md)。
 
-最新[执行证据 P0 报告](docs/validation/2026-11-25-execution-evidence-p0.md)分别记录 COM/HTTP 故障检查和真实 Cader 任务：房子/大树任务通过，复杂手稿仍未完成验收，失败与写入冻结证据均保留。
+[首批执行证据 P0 报告](docs/validation/2026-11-25-execution-evidence-p0.md)保留早期失败与写入冻结记录；[后续联合回归](https://github.com/codesknight/AutoCAD-MCP/pull/46)已通过房子及原始电路用例。P1 第一批提供[普通 COM 文件保存、哈希和独立只读重开](docs/design/com-file-artifacts.md)，[实机接口回归](docs/validation/2026-11-25-com-artifact-p1.md)复用已验收 DWG；Cader 接入这些新操作后仍需单独验收。
 
 ## 快速开始
 

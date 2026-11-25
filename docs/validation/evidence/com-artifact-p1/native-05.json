@@ -1,0 +1,416 @@
+{
+  "trial": "native-05",
+  "qualification": {
+    "passed": true,
+    "existing_pids": [
+      48984,
+      49292,
+      59304
+    ],
+    "cases": [
+      {
+        "case": "final_house",
+        "entities": 48,
+        "native_geometry_matches": true,
+        "original_file_unchanged": true,
+        "artifact": {
+          "contract": "autocad-file-artifact/1",
+          "artifact_id": "fbd319567d4e48608bc67c26b2ad59bc",
+          "instance_id": "3c6adc25f23a418dbc7409630162519a",
+          "source_document_id": "b3511b5b6536405f9258dd2798fa72a6",
+          "revision": null,
+          "revision_mode": "unsupported",
+          "output_directory": "<MCP_ROOT>\\.git\\p1-com-artifacts-20261125\\native-05",
+          "path": "<MCP_ROOT>\\.git\\p1-com-artifacts-20261125\\native-05\\artifact-fbd319567d4e48608bc67c26b2ad59bc\\final_house.dwg",
+          "sha256": "3a102e42e40c326c67fae8e8d2a2a925f976d11adfd71bb473c9c402f3a28249",
+          "byte_size": 24483,
+          "state": "saved",
+          "saved_at": "2026-11-25T15:01:02.734196+00:00",
+          "save_semantics": "save_as_renames_source",
+          "verification": "not_performed"
+        },
+        "verification": {
+          "contract": "autocad-verification-document/1",
+          "instance_id": "3c6adc25f23a418dbc7409630162519a",
+          "document_id": "a2e0d849827540f794422df5dcb308fa",
+          "source_document_id": "b3511b5b6536405f9258dd2798fa72a6",
+          "source_artifact_id": "fbd319567d4e48608bc67c26b2ad59bc",
+          "managed": false,
+          "read_only": true,
+          "revision": null,
+          "revision_mode": "unsupported",
+          "path": "<MCP_ROOT>\\.git\\p1-com-artifacts-20261125\\native-05\\artifact-fbd319567d4e48608bc67c26b2ad59bc\\verification-d3b10070afbc4337885a8b1507e963ae\\verification-82f8e948a78c4a8099df64ee3a27fd50.dwg",
+          "sha256": "3a102e42e40c326c67fae8e8d2a2a925f976d11adfd71bb473c9c402f3a28249",
+          "byte_size": 24483,
+          "verification": "content_not_yet_compared"
+        }
+      },
+      {
+        "case": "original_circuit",
+        "entities": 77,
+        "native_geometry_matches": true,
+        "original_file_unchanged": true,
+        "artifact": {
+          "contract": "autocad-file-artifact/1",
+          "artifact_id": "a52982e4086b403dab5c8daf39d6d36d",
+          "instance_id": "3c6adc25f23a418dbc7409630162519a",
+          "source_document_id": "c70503069cc94b87a19d90bd24b2554e",
+          "revision": null,
+          "revision_mode": "unsupported",
+          "output_directory": "<MCP_ROOT>\\.git\\p1-com-artifacts-20261125\\native-05",
+          "path": "<MCP_ROOT>\\.git\\p1-com-artifacts-20261125\\native-05\\artifact-a52982e4086b403dab5c8daf39d6d36d\\original_circuit.dwg",
+          "sha256": "9c225aeda00d691389366ae51c73072754f4615a0d0196fa47484d2773f5e043",
+          "byte_size": 23163,
+          "state": "saved",
+          "saved_at": "2026-11-25T15:01:16.239724+00:00",
+          "save_semantics": "save_as_renames_source",
+          "verification": "not_performed"
+        },
+        "verification": {
+          "contract": "autocad-verification-document/1",
+          "instance_id": "3c6adc25f23a418dbc7409630162519a",
+          "document_id": "8f046fcd953e4f1f84242ef7abbd3c16",
+          "source_document_id": "c70503069cc94b87a19d90bd24b2554e",
+          "source_artifact_id": "a52982e4086b403dab5c8daf39d6d36d",
+          "managed": false,
+          "read_only": true,
+          "revision": null,
+          "revision_mode": "unsupported",
+          "path": "<MCP_ROOT>\\.git\\p1-com-artifacts-20261125\\native-05\\artifact-a52982e4086b403dab5c8daf39d6d36d\\verification-bd3248f33bbb44529978a1152e4ddd56\\verification-f5456136d4d242e9a9898eb7208a038a.dwg",
+          "sha256": "9c225aeda00d691389366ae51c73072754f4615a0d0196fa47484d2773f5e043",
+          "byte_size": 23163,
+          "verification": "content_not_yet_compared"
+        }
+      }
+    ],
+    "cleanup": true,
+    "owned_pid": 19172
+  },
+  "receipts": [
+    {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "3c6adc25f23a418dbc7409630162519a",
+      "request_id": "233cce2642334b9593626080d4fd4409",
+      "operation": "new_document",
+      "request_document_id": null,
+      "result_document_id": "b3511b5b6536405f9258dd2798fa72a6",
+      "status": "succeeded",
+      "stage": "completed",
+      "native_actions": [
+        {
+          "name": "Documents.Add",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "error": null
+    },
+    {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "3c6adc25f23a418dbc7409630162519a",
+      "request_id": "d3d1ae6dc813479ea1c6a34ab4716664",
+      "operation": "save_document_artifact",
+      "request_document_id": "b3511b5b6536405f9258dd2798fa72a6",
+      "result_document_id": "b3511b5b6536405f9258dd2798fa72a6",
+      "status": "succeeded",
+      "stage": "completed",
+      "native_actions": [
+        {
+          "name": "SaveAs",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "file_progress": {
+        "operation": "save_document_artifact",
+        "state": "saved",
+        "path": "<MCP_ROOT>\\.git\\p1-com-artifacts-20261125\\native-05\\artifact-fbd319567d4e48608bc67c26b2ad59bc\\final_house.dwg",
+        "source_document_id": "b3511b5b6536405f9258dd2798fa72a6",
+        "artifact_id": "fbd319567d4e48608bc67c26b2ad59bc"
+      },
+      "error": null
+    },
+    {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "3c6adc25f23a418dbc7409630162519a",
+      "request_id": "b5eacfef7031486694a89c98216afc31",
+      "operation": "reopen_document_artifact",
+      "request_document_id": "b3511b5b6536405f9258dd2798fa72a6",
+      "result_document_id": "a2e0d849827540f794422df5dcb308fa",
+      "status": "succeeded",
+      "stage": "completed",
+      "native_actions": [
+        {
+          "name": "Open",
+          "acknowledged": true
+        },
+        {
+          "name": "Activate",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "file_progress": {
+        "operation": "reopen_document_artifact",
+        "state": "readonly_opened",
+        "artifact_id": "fbd319567d4e48608bc67c26b2ad59bc",
+        "path": "<MCP_ROOT>\\.git\\p1-com-artifacts-20261125\\native-05\\artifact-fbd319567d4e48608bc67c26b2ad59bc\\verification-d3b10070afbc4337885a8b1507e963ae\\verification-82f8e948a78c4a8099df64ee3a27fd50.dwg",
+        "document_observation": {
+          "before": [
+            "b3511b5b6536405f9258dd2798fa72a6"
+          ],
+          "after": [
+            "a2e0d849827540f794422df5dcb308fa",
+            "b3511b5b6536405f9258dd2798fa72a6"
+          ],
+          "documents": [
+            {
+              "document_id": "b3511b5b6536405f9258dd2798fa72a6",
+              "name": "final_house.dwg"
+            },
+            {
+              "document_id": "a2e0d849827540f794422df5dcb308fa",
+              "name": "verification-82f8e948a78c4a8099df64ee3a27fd50.dwg"
+            }
+          ]
+        },
+        "document_id": "a2e0d849827540f794422df5dcb308fa",
+        "verification_binding": {
+          "contract": "autocad-verification-document/1",
+          "instance_id": "3c6adc25f23a418dbc7409630162519a",
+          "document_id": "a2e0d849827540f794422df5dcb308fa",
+          "source_document_id": "b3511b5b6536405f9258dd2798fa72a6",
+          "source_artifact_id": "fbd319567d4e48608bc67c26b2ad59bc",
+          "managed": false,
+          "read_only": true,
+          "revision": null,
+          "revision_mode": "unsupported",
+          "path": "<MCP_ROOT>\\.git\\p1-com-artifacts-20261125\\native-05\\artifact-fbd319567d4e48608bc67c26b2ad59bc\\verification-d3b10070afbc4337885a8b1507e963ae\\verification-82f8e948a78c4a8099df64ee3a27fd50.dwg",
+          "sha256": "3a102e42e40c326c67fae8e8d2a2a925f976d11adfd71bb473c9c402f3a28249",
+          "byte_size": 24483,
+          "verification": "content_not_yet_compared"
+        }
+      },
+      "error": null
+    },
+    {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "3c6adc25f23a418dbc7409630162519a",
+      "request_id": "b124e96843d94e9bbb5c6ab26aef702d",
+      "operation": "query_verification_entities",
+      "request_document_id": "a2e0d849827540f794422df5dcb308fa",
+      "result_document_id": "a2e0d849827540f794422df5dcb308fa",
+      "status": "succeeded",
+      "stage": "completed",
+      "native_actions": [],
+      "native_invoked": false,
+      "native_acknowledged": false,
+      "observation": "succeeded",
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "file_progress": null,
+      "error": null
+    },
+    {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "3c6adc25f23a418dbc7409630162519a",
+      "request_id": "47568b53ecb249b9bb57cd41dd39870b",
+      "operation": "new_document",
+      "request_document_id": null,
+      "result_document_id": "c70503069cc94b87a19d90bd24b2554e",
+      "status": "succeeded",
+      "stage": "completed",
+      "native_actions": [
+        {
+          "name": "Documents.Add",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "error": null
+    },
+    {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "3c6adc25f23a418dbc7409630162519a",
+      "request_id": "714fd0df9a8f441a886b6ab2a42b96f8",
+      "operation": "save_document_artifact",
+      "request_document_id": "c70503069cc94b87a19d90bd24b2554e",
+      "result_document_id": "c70503069cc94b87a19d90bd24b2554e",
+      "status": "succeeded",
+      "stage": "completed",
+      "native_actions": [
+        {
+          "name": "SaveAs",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "file_progress": {
+        "operation": "save_document_artifact",
+        "state": "saved",
+        "path": "<MCP_ROOT>\\.git\\p1-com-artifacts-20261125\\native-05\\artifact-a52982e4086b403dab5c8daf39d6d36d\\original_circuit.dwg",
+        "source_document_id": "c70503069cc94b87a19d90bd24b2554e",
+        "artifact_id": "a52982e4086b403dab5c8daf39d6d36d"
+      },
+      "error": null
+    },
+    {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "3c6adc25f23a418dbc7409630162519a",
+      "request_id": "01b78ccc0a7f46fdb25bf456997ef112",
+      "operation": "reopen_document_artifact",
+      "request_document_id": "c70503069cc94b87a19d90bd24b2554e",
+      "result_document_id": "8f046fcd953e4f1f84242ef7abbd3c16",
+      "status": "succeeded",
+      "stage": "completed",
+      "native_actions": [
+        {
+          "name": "Open",
+          "acknowledged": true
+        },
+        {
+          "name": "Activate",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "file_progress": {
+        "operation": "reopen_document_artifact",
+        "state": "readonly_opened",
+        "artifact_id": "a52982e4086b403dab5c8daf39d6d36d",
+        "path": "<MCP_ROOT>\\.git\\p1-com-artifacts-20261125\\native-05\\artifact-a52982e4086b403dab5c8daf39d6d36d\\verification-bd3248f33bbb44529978a1152e4ddd56\\verification-f5456136d4d242e9a9898eb7208a038a.dwg",
+        "document_observation": {
+          "before": [
+            "a2e0d849827540f794422df5dcb308fa",
+            "b3511b5b6536405f9258dd2798fa72a6",
+            "c70503069cc94b87a19d90bd24b2554e"
+          ],
+          "after": [
+            "8f046fcd953e4f1f84242ef7abbd3c16",
+            "a2e0d849827540f794422df5dcb308fa",
+            "b3511b5b6536405f9258dd2798fa72a6",
+            "c70503069cc94b87a19d90bd24b2554e"
+          ],
+          "documents": [
+            {
+              "document_id": "b3511b5b6536405f9258dd2798fa72a6",
+              "name": "final_house.dwg"
+            },
+            {
+              "document_id": "a2e0d849827540f794422df5dcb308fa",
+              "name": "verification-82f8e948a78c4a8099df64ee3a27fd50.dwg"
+            },
+            {
+              "document_id": "c70503069cc94b87a19d90bd24b2554e",
+              "name": "original_circuit.dwg"
+            },
+            {
+              "document_id": "8f046fcd953e4f1f84242ef7abbd3c16",
+              "name": "verification-f5456136d4d242e9a9898eb7208a038a.dwg"
+            }
+          ]
+        },
+        "document_id": "8f046fcd953e4f1f84242ef7abbd3c16",
+        "verification_binding": {
+          "contract": "autocad-verification-document/1",
+          "instance_id": "3c6adc25f23a418dbc7409630162519a",
+          "document_id": "8f046fcd953e4f1f84242ef7abbd3c16",
+          "source_document_id": "c70503069cc94b87a19d90bd24b2554e",
+          "source_artifact_id": "a52982e4086b403dab5c8daf39d6d36d",
+          "managed": false,
+          "read_only": true,
+          "revision": null,
+          "revision_mode": "unsupported",
+          "path": "<MCP_ROOT>\\.git\\p1-com-artifacts-20261125\\native-05\\artifact-a52982e4086b403dab5c8daf39d6d36d\\verification-bd3248f33bbb44529978a1152e4ddd56\\verification-f5456136d4d242e9a9898eb7208a038a.dwg",
+          "sha256": "9c225aeda00d691389366ae51c73072754f4615a0d0196fa47484d2773f5e043",
+          "byte_size": 23163,
+          "verification": "content_not_yet_compared"
+        }
+      },
+      "error": null
+    },
+    {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "3c6adc25f23a418dbc7409630162519a",
+      "request_id": "9ea7581fc2b24d08a1e4db2fc4dfdf3d",
+      "operation": "query_verification_entities",
+      "request_document_id": "8f046fcd953e4f1f84242ef7abbd3c16",
+      "result_document_id": "8f046fcd953e4f1f84242ef7abbd3c16",
+      "status": "succeeded",
+      "stage": "completed",
+      "native_actions": [],
+      "native_invoked": false,
+      "native_acknowledged": false,
+      "observation": "succeeded",
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "file_progress": null,
+      "error": null
+    }
+  ],
+  "private_qualification_sha256": "9028a6f6c826d439abaf11621f086c1fb7aca69839bea17e719bd2a43d030357"
+}

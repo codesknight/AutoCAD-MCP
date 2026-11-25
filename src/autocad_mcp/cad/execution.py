@@ -10,8 +10,9 @@ from threading import RLock
 VERSION = "autocad-execution/1"
 SUPPORTED = frozenset({"new_document", "draw_line", "draw_circle", "draw_text",
                        "move_entity", "delete_entity", "save_drawing",
-                       "get_entity", "query_entities", "export_current_view"})
-READS = frozenset({"get_entity", "query_entities"})
+                       "get_entity", "query_entities", "export_current_view",
+                       "save_document_artifact","reopen_document_artifact","query_verification_entities"})
+READS = frozenset({"get_entity", "query_entities","query_verification_entities"})
 _trace = ContextVar("cad_execution_trace", default=None)
 
 
@@ -165,8 +166,13 @@ def support_matrix(backend, native=None):
                             terminal_ttl_seconds=native.get("job_ttl_seconds", 600) if http else 600,
                             capacity=2048, missing_record_proves_not_executed=False),
         readonly_reopen=dict(supported=(bool(native.get("controlled_documents")) and
-                             "reopen_artifact" in native.get("operations",[])) if http else False,
-                             scope="instance_owned_artifacts" if http else "unsupported"),
+                             "reopen_artifact" in native.get("operations",[])) if http else True,
+                             scope="instance_owned_artifacts" if http else "python_backend_owned_artifacts"),
+        file_artifacts=dict(contract="autocad-file-artifact/1" if not http else None,
+                            persistent=False,source_revision_authoritative=revision,
+                            save_semantics="copy_save" if http else "save_as_renames_source",
+                            output_namespace="unique_artifact_subdirectory" if not http else "bound_directory",
+                            overwrite=False,atomic_with_entities=False),
         capture=dict(receipt_contract="autocad-capture/1" if not http else None,
                      state_restoration=not http, pixel_to_cad="unavailable"),
         batch=dict(atomic=bool(native.get("atomic_batch")) if http else False,

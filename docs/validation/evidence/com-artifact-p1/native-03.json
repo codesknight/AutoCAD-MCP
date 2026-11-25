@@ -1,0 +1,122 @@
+{
+  "trial": "native-03",
+  "qualification": {
+    "passed": false,
+    "existing_pids": [
+      48984,
+      49292,
+      59304
+    ],
+    "cases": [],
+    "cleanup": false,
+    "owned_pid": 77672,
+    "error": {
+      "type": "AssertionError",
+      "message": "{'receipt': {'contract': 'autocad-execution/1', 'backend': 'com', 'instance_id': 'bd8dd369a6fe4ceea9f782a04c6707c6', 'request_id': '4ca820f1c7c244ab90e9e3779e9f1e22', 'operation': 'reopen_document_artifact', 'request_document_id': '197a595b73f04b108ed16febaf20a2c6', 'request_instance_id': 'bd8dd369a6fe4ceea9f782a04c6707c6', 'result_document_id': None, 'status': 'failed', 'stage': 'observation_failed', 'revision': None, 'revision_mode': 'unsupported', 'native_actions': [{'name': 'Open', 'acknowledged': True}], 'native_invoked': True, 'native_acknowledged': True, 'observation': 'failed', 'error': {'type': 'ValueError', 'message': 'REOPEN_DOCUMENT_SET_MISMATCH', 'hresult': None, 'causes': []}, 'affected_entities': {'created': [], 'modified': [], 'deleted': [], 'complete': False}, 'retention': {'scope': 'python_backend_lifetime', 'terminal_ttl_seconds': 600, 'capacity': 2048}, 'service_request_fingerprint': '881bfa0e38d9897432a49cb6eda2ce04291289e8cb0e680a465538e1add18b4b', 'fingerprint_algorithm': 'sha256-canonical-com-request-v1', 'native_detail': None, 'file_progress': {'operation': 'reopen_document_artifact', 'state': 'native_acknowledged_unverified', 'artifact_id': 'dd713f66e6274e7f89f84996935f9ec4', 'path': '<MCP_ROOT>\\\\.git\\\\p1-com-artifacts-20261125\\\\native-03\\\\artifact-dd713f66e6274e7f89f84996935f9ec4\\\\verification-aa5ddafba1784cf6b5c19c94c441fce1\\\\verification-86dd7fd6e0024040b68de8aa5a8f4670.dwg'}}, 'result': None}"
+    }
+  },
+  "receipts": [
+    {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "bd8dd369a6fe4ceea9f782a04c6707c6",
+      "request_id": "5869b03e8b494654a3b1ed3d1469e720",
+      "operation": "new_document",
+      "request_document_id": null,
+      "result_document_id": "197a595b73f04b108ed16febaf20a2c6",
+      "status": "succeeded",
+      "stage": "completed",
+      "native_actions": [
+        {
+          "name": "Documents.Add",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "error": null
+    },
+    {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "bd8dd369a6fe4ceea9f782a04c6707c6",
+      "request_id": "b24a59ea1b524241b9e2ea6b92d8ffca",
+      "operation": "save_document_artifact",
+      "request_document_id": "197a595b73f04b108ed16febaf20a2c6",
+      "result_document_id": "197a595b73f04b108ed16febaf20a2c6",
+      "status": "succeeded",
+      "stage": "completed",
+      "native_actions": [
+        {
+          "name": "SaveAs",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "file_progress": {
+        "operation": "save_document_artifact",
+        "state": "saved",
+        "path": "<MCP_ROOT>\\.git\\p1-com-artifacts-20261125\\native-03\\artifact-dd713f66e6274e7f89f84996935f9ec4\\final_house.dwg",
+        "source_document_id": "197a595b73f04b108ed16febaf20a2c6",
+        "artifact_id": "dd713f66e6274e7f89f84996935f9ec4"
+      },
+      "error": null
+    },
+    {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "bd8dd369a6fe4ceea9f782a04c6707c6",
+      "request_id": "4ca820f1c7c244ab90e9e3779e9f1e22",
+      "operation": "reopen_document_artifact",
+      "request_document_id": "197a595b73f04b108ed16febaf20a2c6",
+      "result_document_id": null,
+      "status": "failed",
+      "stage": "observation_failed",
+      "native_actions": [
+        {
+          "name": "Open",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "failed",
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": false
+      },
+      "file_progress": {
+        "operation": "reopen_document_artifact",
+        "state": "native_acknowledged_unverified",
+        "artifact_id": "dd713f66e6274e7f89f84996935f9ec4",
+        "path": "<MCP_ROOT>\\.git\\p1-com-artifacts-20261125\\native-03\\artifact-dd713f66e6274e7f89f84996935f9ec4\\verification-aa5ddafba1784cf6b5c19c94c441fce1\\verification-86dd7fd6e0024040b68de8aa5a8f4670.dwg"
+      },
+      "error": {
+        "type": "ValueError",
+        "message": "REOPEN_DOCUMENT_SET_MISMATCH",
+        "hresult": null,
+        "causes": []
+      },
+      "native_detail": null
+    }
+  ],
+  "private_qualification_sha256": "c1f1102ff6efefb9da53b0268c1092bba8a2b174131317595b80ecdba4d6076a",
+  "subsequent_cleanup": "Owned PID force-closed after independently checking the owned_pid record; original failed/incomplete qualification retained."
+}

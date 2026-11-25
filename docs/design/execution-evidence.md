@@ -1,6 +1,6 @@
 # 后端能力、文档身份与执行回执
 
-状态：首批 P0 实现；[真实运行报告](../validation/2026-11-25-execution-evidence-p0.md)记录原生故障通过与复杂手稿未通过的不同结论。普通入口新增三个显式工具，原 44 项工具的参数及成功内容保持兼容；`cader-cad/1` 专用入口仍使用自己的七项 DTO。
+状态：P0 后续已完成房子与原始电路的联合回归（见 [PR #46](https://github.com/codesknight/AutoCAD-MCP/pull/46)）；[首批真实运行报告](../validation/2026-11-25-execution-evidence-p0.md)保留当时原生故障通过与复杂手稿未通过的历史。P1 第一批增加[普通 COM 文件交付契约](com-file-artifacts.md)。普通入口共 47 项工具，原 44 项工具的参数及成功内容保持兼容；`cader-cad/1` 专用入口仍使用自己的七项 DTO。
 
 ## 能力矩阵
 
@@ -16,7 +16,7 @@
 | 记录保留 | 最多 2048 项；终态十分钟，排队/执行中不按 TTL 淘汰 | 原生 journal 最多 2048 项，终态十分钟 |
 | 原生动作 ACK | 显式回执列明逐项调用返回事实 | job/事务结果；不冒充逐个 ActiveX 调用 ACK |
 | 原子批次 | 不支持；串行不是事务 | 原生批处理白名单；专用 profile 范围更小 |
-| 独立只读重开 | 普通路径未提供同等保证 | 本实例记录的 artifact_id、文件 hash、独立新文档 |
+| 独立只读重开 | 当前 Python backend 登记的 artifact、hash、独立只读文档；SaveAs 改工作图路径，见 P1 契约 | 本实例记录的 artifact_id、文件 hash、独立新文档 |
 | 分页 / 字段投影 | 不支持版本绑定分页 | 支持；按工具 schema 的可选字段，revision 变化使游标失效 |
 | since_revision / 像素到 CAD 变换 | 不支持 / unavailable | 不支持 / unavailable |
 
