@@ -42,7 +42,7 @@
 
 An explicit seven-tool [`cader-cad/1` stdio profile](docs/design/cader-managed-profile.md) provides versioned DTOs, native job identity and revision tracking. Two actual Cader CLI runs passed drawing → DWG save → read-only reopen → independent verification for the reviewed line/circle/text fixture. [Evidence and limits](docs/validation/2026-11-19-cader-managed-profile.md).
 
-The latest [execution-evidence P0 report](docs/validation/2026-11-25-execution-evidence-p0.md) separates COM/HTTP fault checks from real Cader tasks: the house/tree task passed; complex-sketch acceptance remains incomplete, with failures and frozen-write evidence retained.
+The [initial execution-evidence P0 report](docs/validation/2026-11-25-execution-evidence-p0.md) retains early failures and frozen-write evidence; [subsequent joint regression](https://github.com/codesknight/AutoCAD-MCP/pull/46) passed the house and original circuit cases. The first P1 delivery adds [COM artifact save, hashing and independent read-only reopening](docs/design/com-file-artifacts.md). Its [native API regression](docs/validation/2026-11-25-com-artifact-p1.md) reuses the accepted DWGs; Cader adoption of these new operations remains a separate check.
 
 ## Quick start
 

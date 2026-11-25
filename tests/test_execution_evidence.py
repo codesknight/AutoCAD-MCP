@@ -283,7 +283,8 @@ def test_capability_matrix_does_not_invent_revision_or_mapping():
     com=support_matrix("com")
     assert com["revision"]==dict(authoritative=False,manual_edits_observed=False,mode="unsupported",value=None)
     assert com["capture"]["pixel_to_cad"]=="unavailable"
-    assert not com["batch"]["atomic"] and not com["readonly_reopen"]["supported"]
+    assert not com["batch"]["atomic"] and com["readonly_reopen"]["supported"]
+    assert com["file_artifacts"]["source_revision_authoritative"] is False
     assert not support_matrix("http")["revision"]["authoritative"]
     http=support_matrix("http",dict(revision_mode="observed_database_events",query_pagination=True,atomic_batch=True,controlled_documents=True))
     assert http["revision"]["manual_edits_observed"] and http["query"]["revision_bound"]

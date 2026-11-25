@@ -1,0 +1,48 @@
+{
+  "contract": "com-artifact-p1-validation/1",
+  "scope": "Accepted DWG imports through new COM artifact APIs; not a fresh Cader/model run",
+  "trials": [
+    {
+      "trial": "native-01",
+      "passed": false,
+      "cleanup_at_trial": false,
+      "owned_pid": 25444,
+      "cases": 0
+    },
+    {
+      "trial": "native-02",
+      "passed": false,
+      "cleanup_at_trial": false,
+      "owned_pid": 34428,
+      "cases": 0
+    },
+    {
+      "trial": "native-03",
+      "passed": false,
+      "cleanup_at_trial": false,
+      "owned_pid": 77672,
+      "cases": 0
+    },
+    {
+      "trial": "native-04",
+      "passed": true,
+      "cleanup_at_trial": true,
+      "owned_pid": 76764,
+      "cases": 2
+    },
+    {
+      "trial": "native-05",
+      "passed": true,
+      "cleanup_at_trial": true,
+      "owned_pid": 19172,
+      "cases": 2
+    }
+  ],
+  "unrelated_files_unchanged": 21,
+  "preserved_existing_pids": [
+    48984,
+    49292,
+    59304
+  ],
+  "all_owned_pids_absent_on_independent_process_check": true
+}

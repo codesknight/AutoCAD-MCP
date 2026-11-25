@@ -1,0 +1,45 @@
+{
+  "trial": "native-01",
+  "qualification": {
+    "passed": false,
+    "existing_pids": [
+      48984,
+      49292,
+      59304
+    ],
+    "cases": [],
+    "cleanup": false,
+    "owned_pid": 25444
+  },
+  "receipts": [
+    {
+      "contract": "autocad-execution/1",
+      "backend": "com",
+      "instance_id": "457985ee19db43acb0e53cda0e975724",
+      "request_id": "a5dd9f10bd6a4035bb3eaabf646dd437",
+      "operation": "new_document",
+      "request_document_id": null,
+      "result_document_id": "497b432cca8141368ba356ec47fb4aff",
+      "status": "succeeded",
+      "stage": "completed",
+      "native_actions": [
+        {
+          "name": "Documents.Add",
+          "acknowledged": true
+        }
+      ],
+      "native_invoked": true,
+      "native_acknowledged": true,
+      "observation": "succeeded",
+      "affected_entities": {
+        "created": [],
+        "modified": [],
+        "deleted": [],
+        "complete": true
+      },
+      "error": null
+    }
+  ],
+  "private_qualification_sha256": "f406b0f1ee621990c3eda553b8cf74865bd63844f89363a6958541a3c4045ac8",
+  "subsequent_cleanup": "Owned PID force-closed after independently checking the owned_pid record; original failed/incomplete qualification retained."
+}
