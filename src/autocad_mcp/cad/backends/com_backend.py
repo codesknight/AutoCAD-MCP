@@ -58,7 +58,8 @@ class COMSession:
     def execute(self, operation: str, payload: dict):
         if operation == "new_document":
             self.connection.new_document()
-            return self.connection.document.Name
+            from autocad_mcp.cad.capture import prop
+            return prop(self.connection.document, "Name")
         self.connection.ensure_document()
         if operation in CONTROLLER_OPERATIONS:
             return getattr(self.controller, operation)(**payload)
