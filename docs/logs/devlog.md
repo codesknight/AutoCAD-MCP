@@ -603,3 +603,22 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 根据用户明确授权推进 PR #42，从草稿转为待合并并检查最终提交 CI；保留历史故障、unknown 和验收限制，不将已通过的固定计划扩大为图片重绘通过。
 - 中英文 README 补充配套 Cader 仓库链接，说明 Agent Harness 的任务规划、工具调用与结果验证职责，以及 AutoCAD-MCP 提供 CAD 操作能力的分工；保留独立版本化 HTTP profile、COM 默认和既有报告。
 - 本次追加仅修改双语 README 与开发日志；既有 Web、训练资料、脚本和测试图片改动不混入提交，不启动 AutoCAD。
+
+
+## 2026-11-25：执行证据 P0 与后端保证范围
+
+- 对应协同建议 #44：普通入口新增 get_document_binding / execute_observed_operation / get_execution_status 三项显式工具，总数 47；保留原 44 项发现 schema 及成功内容，专用 cader-cad/1 七项入口不变。后端能力矩阵明确 revision、手工编辑、身份作用域、原子批次、查询、只读重开、截图映射和对账保留窗口；COM 不声明权威 revision 或像素变换。
+- COM 写目标由名称守卫改为 canonical IUnknown 生命周期身份，SaveAs 不改 ID，同名/关闭后重开不共用 ID；新显式写入口只接受本连接创建的工作图，重新创建 backend 后身份失效。状态是明确标注的缓存快照，显式绑定查询走 STA 且仅附着现有 CAD。
+- 新内存 journal 在派发前登记并校验客户端 request_id、参数及实例/文档；重复相同请求只返回回执，冲突保留原记录。逐项原生调用区分未派发、无 ACK、已 ACK 后观测失败；已知实体集合与完整性分开，失败和补偿动作不冒充事务回滚。记录缺失/过期/实例改变不证明可以重放，不解除 Cader 旧 unknown。
+- HTTP 只读对账复用原生 request records；修复冷客户端先读取 /status 导致 CAD 忙时无法查 journal 的问题，改为健康身份校验后直接读原记录。补充错请求、错实例、缺失/损坏记录、参数拒绝、同名图、SaveAs、延迟完成和保留窗口的正反例；所有写调用仍只派发一次。
+- 首轮真实 COM 在 33272 的新建临时图纸中验证同名 DWG、SaveAs、切图拒绝、真实 AddLine 返回抑制与 ACK 后观测故障，原复杂图指纹前后完全一致，三张自建图已关闭。适配层故障钩子与原生真实忙碌测试分列；没有把钩子异常称为真实 CAD HRESULT。
+- 独立测试实例 32216 运行 HTTP Bridge；NativeTests 仅显式加载，新增进程专属临时 ROT 标识以避免多实例 GetActiveObject 总指向用户原实例，保留固定五秒忙碌故障命令。插件构建零警告零错误，当前安全确认由用户手动处理，后续实机结果另行追加。
+- 已用未修改的 Cader CLI 完成红屋顶/蓝墙/大树儿童绘本任务，质量检查通过；原始复杂手稿沿用已有九处数值与回线确认，正在独立真实回归。旧工具兼容回归与新显式回执验收分别报告，不把 Cader 旧路径成功当成它已接入新回执。
+
+- 后续实机：用户手动加载 NativeTests 后，HTTP 两轮均通过，包含真实转发 POST 后丢响应、冷客户端在主线程阻塞时查原 journal、排队超时/延迟完成、外部编辑 revision 拒绝、错 request/document/instance 回包注入、查无记录及 Bridge 服务重启失效。原生 DLL 未新增生产故障端点。
+- COM 原生忙碌首轮因 pywin32 将 ObjectID 读取错误包装为 AttributeError 而未满足过严 HRESULT 断言；改显式入口的原生属性读取并禁止纯观察失败触发 Delete 后，读取可等待五秒后成功。保留两次旧验收断言失败；最终 com-05 增加跨文档实体、真实查询/移动/删除，全部通过。记录实际等待约五秒和一次 AddLine，不编造 CAD 未发出的 HRESULT。
+- Cader 房子任务34确认/0unknown、质量与视觉通过，未要求保存DWG。复杂原图首轮发现导线重叠，后续 delete_entity 触发身份守卫，旧路径缺匹配回执而89确认/1unknown冻结；原PID33272后续被观察退出，原因未确定，本轮未向其发Quit/终止命令。新配置显式绑定32216的独立原图回归在SOURCE_COMPONENT_INVENTORY_FAILED处阻断，0 CAD写入。三处既有屏障及原审计保留，不接管旧任务，不以首批新API通过解除unknown。
+- 最终275 passed/33 skipped、29项执行专项、C#57项断言、isolated ruff I/F全过。227个Cader tracked源文件及21个用户既有文件摘要未变。自建32216内剩余三张图核对几何后关闭并正常Quit，OS确认无acad进程；首次清理因名称列表过窄而在关闭前拒绝，原记录保留。
+- 发布后端矩阵/版本化回执说明、脱敏原生证据与三轮真实Cader结果；复杂手稿/DWG联合验收明确未通过。Cader仍需按能力/身份/请求接入新入口并处理重叠导线及源inventory报告；未修改其代码/策略/默认配置，未提交凭据、原图或DWG。
+
+- 发布前补只读附着不改变既有窗口可见性的负例，避免显式绑定观测产生额外显示状态变更；此增量由离线断言覆盖，原生测试实例原本已可见。最终数量更新为276 passed/33 skipped、执行专项30项；此前275/29作为当时检查记录保留。

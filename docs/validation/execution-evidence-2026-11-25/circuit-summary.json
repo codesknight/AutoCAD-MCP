@@ -1,0 +1,171 @@
+{
+  "kind": "legacy_complex",
+  "run_id": "quality-4c795262-f31c-4732-9b76-6d4d0c31753c",
+  "ok": false,
+  "cli_exit": 1,
+  "checks": {
+    "completed": false,
+    "autonomousVision": true,
+    "realImageRequest": true,
+    "taskApproval": true
+  },
+  "phase": "blocked",
+  "quality_accepted": false,
+  "requirement_checks": [
+    {
+      "id": "new_doc",
+      "status": "pass",
+      "evidence": "本任务new_drawing已确认"
+    },
+    {
+      "id": "label_10k",
+      "status": "pass",
+      "evidence": "matching text entities=2278401947904,2278401947920,2278401947984,2278401948000; proximity=not requested; literal=10kΩ; SI case preserved"
+    },
+    {
+      "id": "label_1uF",
+      "status": "pass",
+      "evidence": "matching text entities=2278401947936,2278401947968; proximity=not requested; literal=1µF; SI case preserved"
+    },
+    {
+      "id": "label_100",
+      "status": "pass",
+      "evidence": "matching text entities=2278401948016; proximity=not requested; literal=100Ω; SI case preserved"
+    },
+    {
+      "id": "label_9V",
+      "status": "pass",
+      "evidence": "matching text entities=2278401947872; proximity=not requested; literal=9V; SI case preserved"
+    },
+    {
+      "id": "label_2N2222",
+      "status": "pass",
+      "evidence": "matching text entities=2278401947952; proximity=not requested; literal=2N2222; SI case preserved"
+    },
+    {
+      "id": "labels_clear",
+      "status": "pass",
+      "evidence": "wire intersects text bounding box=false"
+    },
+    {
+      "id": "topology",
+      "status": "fail",
+      "evidence": "external net partition=false; supported=true; overlapping=true; mismatches=0; disconnected pins=0; dangling=0; orphan=0; component evidence=true",
+      "details": {
+        "tolerance": 1e-05,
+        "mismatches": [],
+        "unconnected_ports": [],
+        "missing_symbol_contacts": [],
+        "dangling_endpoints": [],
+        "orphan_wire_ids": [],
+        "missing_junction_markers": [],
+        "overlapping_wire_pairs": [
+          {
+            "wire_ids": [
+              2278401947648,
+              2278401947664
+            ],
+            "axis": 1,
+            "interval": [
+              268.182,
+              270
+            ],
+            "segments": [
+              [
+                [
+                  621.023,
+                  285,
+                  0
+                ],
+                [
+                  621.023,
+                  268.182,
+                  0
+                ]
+              ],
+              [
+                [
+                  621.023,
+                  268.182,
+                  0
+                ],
+                [
+                  621.023,
+                  270,
+                  0
+                ]
+              ]
+            ]
+          }
+        ],
+        "overlapping_wire_pair_count": 1,
+        "overlap": true,
+        "supported": true
+      }
+    },
+    {
+      "id": "no_short",
+      "status": "pass",
+      "evidence": "wire crosses component interior=false"
+    },
+    {
+      "id": "symbols_layout",
+      "status": "pass",
+      "evidence": "B 具备五只竖直锯齿电阻、左上水平电容、右中竖直平行板电容、NPN（基极左、集电极右上无箭头、发射极右下带箭头）、两只圆形+/-电源、右上倒三角接地；整体左电源-电容-晶体管-右负载相对位置与 A 一致；标注 10kΩ×4、1µF×2、100Ω、9V、2N2222 可读"
+    },
+    {
+      "id": "source_topology_fidelity",
+      "status": "not_run",
+      "evidence": "B 视觉上①-③、⑤-⑧ 与源图相符；④ 底部回线在 A 原图有笔触断缝，仅依据用户确认判为连通，纯视觉读数按不确定计"
+    },
+    {
+      "id": "saved",
+      "status": "not_run",
+      "evidence": "等待程序保存/文件校验，不能从截图判断"
+    }
+  ],
+  "execution_counts": {
+    "committed": 89,
+    "committed_observation_failed": 0,
+    "unknown": 1,
+    "blocked_not_dispatched": 0,
+    "failed_before_dispatch": 1
+  },
+  "frozen": true,
+  "freeze_operation": {
+    "operation_id": "81c3137a-11b8-47d3-89cf-8bbb261220ca",
+    "tool_call_id": "call_00_UI38OubOixzlUpqfM3Ae0170:patch:1",
+    "agent_id": "cader-main-c458a953-5b24-450b-85fc-d891682aeb3d",
+    "tool": "delete_entity",
+    "target": "Drawing51.dwg",
+    "stage": "dispatch",
+    "outcome": "unknown",
+    "dispatched": true,
+    "duration_ms": 7,
+    "transport_dispatched": true,
+    "error": {
+      "name": "McpCallError",
+      "message": "MCP_TOOL_FAILED: delete_entity",
+      "code": "MCP_TOOL_FAILED",
+      "hresult": null,
+      "native_code": null,
+      "stack": "McpCallError: MCP_TOOL_FAILED: delete_entity\n    at Object.call (file:///<CADER_WORKSPACE>/packages/dsh-adapter/dist/managed-client.js:83:27)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async file:///<CADER_WORKSPACE>/packages/profile/dist/execution.js:567:36",
+      "protocol_failure": {
+        "error": {
+          "message": "Error executing tool delete_entity: AutoCAD active document changed; call new_drawing for a new scratch document or explicitly close/recreate the backend to select the active document"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Error: Error executing tool delete_entity: AutoCAD active document changed; call new_drawing for a new scratch document or explicitly close/recreate the backend to select the active document"
+          }
+        ]
+      }
+    }
+  },
+  "failure": null,
+  "artifact": null,
+  "visual_model_calls": 2,
+  "source_sha256": "e73426e0fac2dcb60a654a7ca17128332a956e561ee3b5c1c985a99bc0d76f71",
+  "runtime_note": "Initial PID 33272 was absent after the run; exit cause unobserved. Identity refusal remains an unmatched legacy error/unknown; no barrier was cleared."
+}

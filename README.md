@@ -36,11 +36,13 @@
 | **Choose a model** | Streaming Web UI: Anthropic, OpenAI, OpenAI-compatible endpoints and Doubao |
 | **Extend understanding** | Optional local drawing VQA service |
 
-**44 registered MCP tools.** Default COM provides the existing CAD tool surface. Eight additive tools expose runtime status, atomic batches, pagination and controlled working drawings with saved-artifact reopening. Experimental HTTP supports a smaller, documented subset. See the [tool migration matrix](docs/design/tool-migration-matrix.md).
+**47 registered MCP tools.** Default COM provides the existing CAD tool surface. Eight additive tools expose runtime status, atomic batches, pagination and controlled working drawings with saved-artifact reopening; three explicit [execution-evidence tools](docs/design/execution-evidence.md) add document binding, scoped COM receipts and read-only request reconciliation. The previous 44 tool signatures remain compatible. Experimental HTTP supports a smaller, documented subset. See the [tool migration matrix](docs/design/tool-migration-matrix.md).
 
 **Companion agent — [Cader](https://github.com/codesknight/Cader):** an extensible CAD Agent Harness that plans tasks, calls CAD tools through AutoCAD-MCP, and verifies results. AutoCAD-MCP provides the CAD operations; Cader coordinates the agent workflow.
 
 An explicit seven-tool [`cader-cad/1` stdio profile](docs/design/cader-managed-profile.md) provides versioned DTOs, native job identity and revision tracking. Two actual Cader CLI runs passed drawing → DWG save → read-only reopen → independent verification for the reviewed line/circle/text fixture. [Evidence and limits](docs/validation/2026-11-19-cader-managed-profile.md).
+
+The latest [execution-evidence P0 report](docs/validation/2026-11-25-execution-evidence-p0.md) separates COM/HTTP fault checks from real Cader tasks: the house/tree task passed; complex-sketch acceptance remains incomplete, with failures and frozen-write evidence retained.
 
 ## Quick start
 

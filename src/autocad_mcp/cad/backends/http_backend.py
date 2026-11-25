@@ -1,17 +1,22 @@
 """Authenticated loopback Bridge client. Never retries/replays a write request."""
 import os
 import re
-from threading import RLock
 import time
+from threading import RLock
 from uuid import uuid4
 
 import httpx
 from pydantic import ValidationError
 
-from autocad_mcp.config import Config
 from autocad_mcp.cad.backends.base import copy_data, operation_signature
-from autocad_mcp.cad.errors import BackendClosedError, BackendError, UnsupportedOperationError
-from autocad_mcp.cad.models import BridgeJob, WorkingDocumentJob, SavedArtifactJob
+from autocad_mcp.cad.errors import (
+    BackendClosedError,
+    BackendError,
+    UnsupportedOperationError,
+)
+from autocad_mcp.cad.models import BridgeJob, SavedArtifactJob, WorkingDocumentJob
+from autocad_mcp.config import Config
+
 
 class BridgeRemoteError(BackendError):
     def __init__(self, code, message, *, request_id=None, outcome="not_executed"):
@@ -219,8 +224,57 @@ class HTTPBackend:
     def runtime_status(self):
         with self._lock:
             status=self.status()
+            from autocad_mcp.cad.execution import support_matrix
             return {"backend":"http","state":"ready","instance_id":self._instance,
-                    "capabilities":copy_data(self._capabilities),"bound_document_id":self._document,**status}
+                    "capabilities":{**copy_data(self._capabilities),
+                        "evidence_support":support_matrix("http",{**self._capabilities,
+                            "revision_mode":status.get("revision_mode")})},
+                    "bound_document_id":self._document,**status}
+
+    def document_binding(self):
+        with self._lock:
+            self._connect()
+            if not self._document:
+                raise BridgeRemoteError("DOCUMENT_NOT_FOUND","No legacy HTTP document is bound")
+            return self.document_job("get_document_info",{},instance_id=self._instance,
+                                     document_id=self._document)["result"] | {"instance_id":self._instance,
+                                     "revision_mode":"observed_database_events"}
+
+    def execution_status(self, instance_id, request_id):
+        with self._lock:
+            # Journal lookup must not bootstrap /status on the CAD thread. A new
+            # Python client must reconcile even while that thread is busy.
+            if self._instance is None:
+                health=self._request("GET","/v1/health")
+                if health.get("protocol_version")!="1" or not health.get("instance_id"):
+                    raise BridgeRemoteError("PROTOCOL_ERROR","Missing Bridge identity")
+                self._instance=health["instance_id"]
+            if instance_id != self._instance:
+                return dict(instance_id=self._instance,request_id=request_id,status="unresolved",
+                            reason="INSTANCE_MISMATCH",replay_safe=False)
+            try:
+                if not re.fullmatch(r"[A-Za-z0-9._-]{1,128}",request_id):
+                    raise ValueError("Invalid request ID")
+                data=self._request("GET",f"/v1/requests/{request_id}",request_id=request_id)
+                job=BridgeJob.model_validate({"instance_id":self._instance,**data["job"]})
+                if data["request_id"]!=request_id or job.request_id!=request_id or job.instance_id!=self._instance:
+                    raise ValueError("Request identity differs")
+                if (not isinstance(data["operation"],str) or not data["operation"]
+                        or not re.fullmatch(r"[A-Fa-f0-9]{64}",data["native_request_hash"])):
+                    raise ValueError("Incomplete request identity")
+                for field in ("request_document_id","source_artifact_id"):
+                    identity=data[field]
+                    if identity is not None and not re.fullmatch(r"[A-Za-z0-9._-]{1,128}",identity):
+                        raise ValueError("Invalid recorded identity")
+                revision=data["expected_revision"]
+                if revision is not None and (type(revision) is not int or revision<0):
+                    raise ValueError("Invalid submitted revision")
+                if data["request_document_id"] and job.status=="succeeded" and job.document_id!=data["request_document_id"]:
+                    raise ValueError("Recorded result document differs")
+                return {**data,"contract":"bridge-request/1","job":job.model_dump()}
+            except (BridgeRemoteError,ValueError,TypeError,KeyError):
+                return dict(instance_id=self._instance,request_id=request_id,status="unresolved",
+                            reason="RECORD_NOT_AVAILABLE_OR_INVALID",replay_safe=False)
 
     def query_page(self,document_id,*,entity_type="",layer="",fields=None,limit=200,cursor=""):
         if not document_id:

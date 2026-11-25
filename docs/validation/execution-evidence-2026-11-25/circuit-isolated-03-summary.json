@@ -1,0 +1,33 @@
+{
+  "kind": "isolated_complex",
+  "run_id": "quality-b492811a-6a58-48d6-bed4-a0d14a98c518",
+  "ok": false,
+  "cli_exit": 1,
+  "checks": {
+    "completed": false,
+    "autonomousVision": false,
+    "realImageRequest": true,
+    "taskApproval": false
+  },
+  "phase": "blocked",
+  "quality_accepted": false,
+  "requirement_checks": [],
+  "execution_counts": {
+    "committed": 0,
+    "committed_observation_failed": 0,
+    "unknown": 0,
+    "blocked_not_dispatched": 0,
+    "failed_before_dispatch": 1
+  },
+  "frozen": false,
+  "freeze_operation": null,
+  "failure": {
+    "stage": "reference",
+    "code": "SOURCE_COMPONENT_INVENTORY_FAILED",
+    "source": "verification"
+  },
+  "artifact": null,
+  "visual_model_calls": 0,
+  "source_sha256": "e73426e0fac2dcb60a654a7ca17128332a956e561ee3b5c1c985a99bc0d76f71",
+  "runtime_note": "New independent configuration pinned to NativeTests PID 32216; source inventory gate failed before any CAD mutation. No old request/task resumed."
+}

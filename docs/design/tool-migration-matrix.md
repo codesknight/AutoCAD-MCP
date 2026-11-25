@@ -62,3 +62,8 @@
 原子批处理现支持图层、直线、圆、圆弧、矩形、多段线、文字、多行文字和标注；文件操作独立于数据库事务。能力清单区分单次、批处理及保存/重开。
 
 契约见 [controlled-working-drawings.md](controlled-working-drawings.md)，真实创建—绘制—保存—只读重开—独立查询证据见[实机报告](../validation/2026-11-19-controlled-documents.md)。
+
+
+## 执行证据增量（2026-11-25）
+
+新增 get_document_binding / execute_observed_operation / get_execution_status，总数 47；原 44 项工具签名和成功内容保持兼容。COM 文档检查改用生命周期身份，不再按名称放行；回执为显式 opt-in，不把旧工具返回值冒充新契约。HTTP 保留原生 journal，新增只读对账不依赖 CAD 主线程状态。精确后端矩阵、作用域和限制见[执行证据说明](execution-evidence.md)。

@@ -1,0 +1,83 @@
+[
+  {
+    "name": "execute_observed_operation",
+    "description": "Explicit autocad-execution/1 COM entrypoint; inspect evidence_support first.\n        Uses internal CAD argument names (start/end/position/object_id, not flattened MCP names).\n        new_document requires null document_id; other operations require the exact bound ID.\n        Native mutators run once; ACK and later observation are separate. No atomic rollback,\n        authoritative COM revision, automatic write replay or recovery after Python restart.\n        HTTP clients use existing controlled document/batch/job APIs instead.\n        ",
+    "inputSchema": {
+      "properties": {
+        "instance_id": {
+          "pattern": "^[A-Za-z0-9._-]{1,128}$",
+          "title": "Instance Id",
+          "type": "string"
+        },
+        "request_id": {
+          "pattern": "^[A-Za-z0-9._-]{1,128}$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "operation": {
+          "title": "Operation",
+          "type": "string"
+        },
+        "arguments": {
+          "additionalProperties": true,
+          "title": "Arguments",
+          "type": "object"
+        },
+        "document_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z0-9._-]{1,128}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Document Id"
+        }
+      },
+      "required": [
+        "instance_id",
+        "request_id",
+        "operation",
+        "arguments"
+      ],
+      "title": "execute_observed_operationArguments",
+      "type": "object"
+    }
+  },
+  {
+    "name": "get_document_binding",
+    "description": "Explicitly observe the bound CAD document lifecycle identity. COM attaches only;\n        this can perform native reads, unlike cached get_backend_status. Names are labels,\n        revision may be unsupported/null, and reconnect invalidates the previous COM identity.\n        ",
+    "inputSchema": {
+      "properties": {},
+      "title": "get_document_bindingArguments",
+      "type": "object"
+    }
+  },
+  {
+    "name": "get_execution_status",
+    "description": "Read the original execution record without dispatching any write. COM records live\n        only in this Python backend; HTTP records belong to the Bridge. Missing/expired/foreign\n        records remain unresolved and never prove that it is safe to replay a write.\n        ",
+    "inputSchema": {
+      "properties": {
+        "instance_id": {
+          "pattern": "^[A-Za-z0-9._-]{1,128}$",
+          "title": "Instance Id",
+          "type": "string"
+        },
+        "request_id": {
+          "pattern": "^[A-Za-z0-9._-]{1,128}$",
+          "title": "Request Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "instance_id",
+        "request_id"
+      ],
+      "title": "get_execution_statusArguments",
+      "type": "object"
+    }
+  }
+]

@@ -36,11 +36,13 @@
 | **选择模型** | 流式 Web UI：Anthropic、OpenAI、OpenAI 兼容接口与豆包 |
 | **扩展图纸理解** | 可选的本地图纸视觉问答（VQA）服务 |
 
-**共注册 44 个 MCP 工具。** 默认 COM 后端提供既有 CAD 工具能力；新增八项工具提供运行时状态、原子批处理、分页和受控工作图的保存重开。实验性 HTTP 后端目前支持其中一部分。逐项状态见[工具迁移矩阵](docs/design/tool-migration-matrix.md)。
+**共注册 47 个 MCP 工具。** 默认 COM 后端提供既有 CAD 工具能力；八项工具提供运行时状态、原子批处理、分页和受控工作图的保存重开，另有三项显式[执行证据工具](docs/design/execution-evidence.md)提供文档绑定、限域 COM 回执和只读请求对账。原 44 项工具签名保持兼容。实验性 HTTP 后端目前支持其中一部分。逐项状态见[工具迁移矩阵](docs/design/tool-migration-matrix.md)。
 
 **配套 Agent：[Cader](https://github.com/codesknight/Cader)。** Cader 是可扩展的 CAD Agent Harness，规划任务、通过 AutoCAD-MCP 调用 CAD 工具并验证结果；本项目提供 CAD 操作能力，Cader 负责 Agent 工作流。
 
 独立的七工具 [`cader-cad/1` stdio 入口](docs/design/cader-managed-profile.md)提供版本化 DTO、原生 job 身份与 revision 对账。两轮真实 Cader CLI 已通过直线/圆/文字固定计划的绘制→保存 DWG→只读重开→独立验收；[查看证据和适用范围](docs/validation/2026-11-19-cader-managed-profile.md)。
+
+最新[执行证据 P0 报告](docs/validation/2026-11-25-execution-evidence-p0.md)分别记录 COM/HTTP 故障检查和真实 Cader 任务：房子/大树任务通过，复杂手稿仍未完成验收，失败与写入冻结证据均保留。
 
 ## 快速开始
 

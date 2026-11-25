@@ -7,7 +7,8 @@ import math
 import pythoncom
 import win32com.client
 
-from autocad_mcp.cad.connection import CADConnection
+from autocad_mcp.cad.connection import CADConnection, CADDocumentChangedError
+from autocad_mcp.cad.execution import invoke_mutator
 from autocad_mcp.cad.geometry import Point, to_variant_point
 
 # ObjectName（ActiveX 类名）到 DXF group-0 类型名的映射，只收录这个项目实际会画出来的
@@ -85,7 +86,13 @@ class CADQuery:
         # 几百倍（1500 个实体的图纸里，扫描到中间要 3.4s，ObjectIdToObject 只要
         # 0.0045s，见 devlog #11）。
         try:
-            return self.connection.document.ObjectIdToObject(object_id)
+            from autocad_mcp.cad.capture import method, prop
+            entity = method(self.connection.document,"ObjectIdToObject")(object_id)
+            if getattr(entity,"_oleobj_",None) is not None or hasattr(entity,"Document"):
+                owner = prop(entity,"Document")
+                if self.connection.document_id(owner) != self.connection.document_id(self.connection.document):
+                    raise CADDocumentChangedError("Entity belongs to another document; no mutation dispatched")
+            return entity
         except pythoncom.com_error as exc:
             raise KeyError(f"未找到 ObjectID={object_id} 的实体") from exc
 
@@ -160,12 +167,12 @@ class CADQuery:
         return _entity_summary(self._find_entity(object_id))
 
     def delete_entity(self, object_id: int) -> None:
-        self._find_entity(object_id).Delete()
+        invoke_mutator(self._find_entity(object_id), "Delete")
 
     def move_entity(self, object_id: int, offset: Point) -> None:
         """把实体沿 offset 向量平移（不是移动到绝对坐标，是相对位移）。"""
         entity = self._find_entity(object_id)
-        entity.Move(to_variant_point(0, 0, 0), to_variant_point(*offset))
+        invoke_mutator(entity, "Move", to_variant_point(0, 0, 0), to_variant_point(*offset))
 
     def rotate_entity(self, object_id: int, base_point: Point, angle: float) -> None:
         """绕 base_point 旋转，angle 单位为度。"""

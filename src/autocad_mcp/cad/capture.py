@@ -14,6 +14,7 @@ import pythoncom
 from win32com.client import VARIANT
 from win32com.client.dynamic import DumbDispatch
 
+from autocad_mcp.cad.execution import native_action
 from autocad_mcp.cad.geometry import to_variant_double_array, to_variant_point
 
 FIELDS = ("ConfigName", "CanonicalMediaName", "PlotType", "PlotRotation",
@@ -154,7 +155,7 @@ def export_view(connection, file_path, timeout, wait_file, request_id=""):
         evidence["capture_mutations_started"] = True
         evidence["actions"].append(record)
         try:
-            result = action()
+            result = native_action(name, action)
             record["acknowledged"] = True
             return result
         except Exception:

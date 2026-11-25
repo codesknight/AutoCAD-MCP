@@ -1,0 +1,74 @@
+{
+  "passed": true,
+  "completed": true,
+  "process_id": 33272,
+  "injection": "adapter_return_and_post_read_hooks_over_real_native_mutations",
+  "lost_ack_independent_entities": [
+    {
+      "object_id": 2277571365104,
+      "type": "AcDbLine",
+      "layer": "0",
+      "start_point": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "end_point": [
+        10.0,
+        0.0,
+        0.0
+      ],
+      "bounding_box": {
+        "min": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "max": [
+          10.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "object_id": 2277571365120,
+      "type": "AcDbLine",
+      "layer": "0",
+      "start_point": [
+        30.0,
+        0.0,
+        0.0
+      ],
+      "end_point": [
+        40.0,
+        0.0,
+        0.0
+      ],
+      "bounding_box": {
+        "min": [
+          30.0,
+          0.0,
+          0.0
+        ],
+        "max": [
+          40.0,
+          0.0,
+          0.0
+        ]
+      }
+    }
+  ],
+  "fresh_backend_lookup": {
+    "contract": "autocad-execution/1",
+    "backend": "com",
+    "instance_id": "32bd71f9514f46d3b1455cdb98c6cfb8",
+    "request_id": "92d6efb010434bd9aaa0e1568ae813f2",
+    "status": "unresolved",
+    "reason": "INSTANCE_MISMATCH",
+    "replay_safe": false
+  },
+  "original_documents_unchanged": true,
+  "before_sha256": "cdb37a205c69a45eb07d5aeea8b2a295027153ee0af24d6377eba5618cb0f297",
+  "after_sha256": "cdb37a205c69a45eb07d5aeea8b2a295027153ee0af24d6377eba5618cb0f297"
+}

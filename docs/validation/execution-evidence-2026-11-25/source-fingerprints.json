@@ -1,0 +1,25 @@
+{
+  "algorithm": "sha256 after CRLF to LF normalization",
+  "files": {
+    "src/autocad_mcp/cad/execution.py": "d6b94d31a8645dc2c468831e470aeebc935f47265f14404739c4b0ce0a2eb28f",
+    "src/autocad_mcp/cad/connection.py": "10b63ab646389a8c115263c3a35c0024d7a1a286fc567fa45dbf073c8d8dbe37",
+    "src/autocad_mcp/cad/backends/com_backend.py": "c91e6201a3050f4110312c5bb87c1ab0f6f9f2a4cc4dd070dba779b2a50a3263",
+    "src/autocad_mcp/cad/backends/http_backend.py": "c33323853bab683f0a6635ceeb2b7ea33be4f630ea45868e10dab1b14e8b78cd",
+    "src/autocad_mcp/cad/controller.py": "509391f2b171c08834ca3f17458f014d6e44eb010e0f0dee8773943cc29995c6",
+    "src/autocad_mcp/cad/query.py": "2359a0facace122722e4d068c5d06d7bbd7ed6207146be62e957e85c03a18524",
+    "src/autocad_mcp/cad/capture.py": "42a891da9561af12f58e7d573bc47b685de4f6e1288249a7312dac8036c89182",
+    "src/autocad_mcp/tools/execution_tools.py": "b6330b57e0320e5407942e97ce7b1134efa78b990c0217780bb7030cb88e0bc6",
+    "src/autocad_mcp/server.py": "50c44c9db36801479f5924bae4db78cd9e232ee917e25b4913ebdec05bc94cb8",
+    "scripts/verify_execution_com.py": "e60246fd2337664aee7f368424c2c3daa720e1387ba59a3ca2a62fe4c30127bb",
+    "scripts/verify_execution_http.py": "4fc97da360a67c8de78b7b0ee88d255498e5be6e3663d8620bd92a6462d72811",
+    "scripts/native_test_target.py": "77d1a5fe097dfbeef024ccefc2e28dea8f37ae09148dc635ce25f85524027a1f",
+    "scripts/serve_native_test_instance.py": "183ed83827622d6ea357d12766ce34a8e4d9c13418b06b7d5d8655fcd3f6f41b",
+    "plugin/AutoCADBridge.NativeTests/Commands.cs": "ad407926d7107d5114548766f92be88abf73be23a7de2ed8a2025a0a9374e8b2"
+  },
+  "cader_commit": "a2ee0b120e817bfaccd2598a341fe793c1bf57dc",
+  "mcp_base_commit": "05aec6bbd7ac2def6798a6356280324f70b75055",
+  "native_bridge_sha256": "dd8321e2aae125354e9cdaa4170873332539c849ff47b1acf45ba239d284a642",
+  "fixture_dll_sha256": "e7cdd55def336f45c151309a9095827e77dc533e6eed486af1e6ea32b518e6a4",
+  "scope": "Final native COM/HTTP qualification plus final source fingerprint. Cader used legacy tools; explicit receipt API is separately qualified.",
+  "late_unit_only_refinement": "Attach-only observation leaves existing window visibility unchanged; covered by final offline regression. Native cases used an already-visible dedicated instance."
+}
