@@ -42,6 +42,43 @@ class Docs:
         return d
 
 
+class InteropDocs:
+    """Fixture whose Python map goes stale after Open but DISPIDs stay valid."""
+
+    def __init__(self, underlying, count_faults=0):
+        self.underlying = underlying
+        self.count_faults = count_faults
+        self.native_count_reads = 0
+        self._oleobj_ = self
+
+    def GetIDsOfNames(self, name):
+        return {"Count": 1, "Item": 2, "Open": 3}[name]
+
+    def Invoke(self, dispid, _lcid, _kind, _result, *args):
+        if dispid == 1:
+            self.native_count_reads += 1
+            if self.underlying.opens and self.count_faults:
+                self.count_faults -= 1
+                raise AttributeError("<unknown>.Count")
+            return len(self.underlying.items)
+        if dispid == 2:
+            return self.underlying.items[args[0]]
+        if dispid == 3:
+            return self.underlying.Open(*args)
+        raise AssertionError("Unexpected fixture DISPID")
+
+    @property
+    def Count(self):
+        if self.underlying.opens:
+            raise AttributeError("<unknown>.Count")
+        return len(self.underlying.items)
+
+    def Item(self, index):
+        if self.underlying.opens:
+            raise AttributeError("<unknown>.Item")
+        return self.underlying.items[index]
+
+
 @pytest.fixture
 def service():
     conn = CADConnection(Config(cad_type="AutoCAD", prog_id="fixture"))
@@ -304,3 +341,74 @@ def test_symlink_and_parent_traversal_rejected(tmp_path):
         pytest.skip("symlinks require developer mode")
     with pytest.raises(ValueError):
         validated_directory(str(link))
+
+
+def test_snapshot_uses_native_collection_dispids_after_python_map_goes_stale(service):
+    files, _ = service
+    conn = files.connection
+    docs = conn.app.Documents
+    wrapper = InteropDocs(docs)
+    conn.app.Documents = wrapper
+    docs.opens = 1  # Stale-map condition only; no native Open in this fixture.
+    rows, ids = conn.document_snapshot()
+    assert rows == [conn.document]
+    assert ids == {conn.document_id(conn.document)}
+    assert wrapper.native_count_reads == 1
+
+
+def test_reopen_retries_only_native_count_reads_after_one_acknowledged_open(
+    service, tmp_path, monkeypatch
+):
+    from autocad_mcp.cad import capture
+
+    monkeypatch.setattr(capture.time, "sleep", lambda _: None)
+    monkeypatch.setattr(capture.pythoncom, "PumpWaitingMessages", lambda: None)
+    files, saves = service
+    source = files.connection.document
+    docs = files.connection.app.Documents
+    wrapper = InteropDocs(docs, count_faults=1)
+    files.connection.app.Documents = wrapper
+    artifact = files.save_document_artifact(str(tmp_path), "one.dwg")
+    result = files.reopen_document_artifact(artifact["artifact_id"])
+    assert docs.opens == 1 and len(saves) == 1
+    assert wrapper.count_faults == 0
+    assert result["read_only"] and result["document_id"] != artifact["source_document_id"]
+    assert files.connection.document is source
+    assert files.connection.app.ActiveDocument is source
+
+
+def test_reopen_count_read_exhaustion_keeps_ack_and_never_replays_open(
+    service, tmp_path, monkeypatch
+):
+    from autocad_mcp.cad import capture
+    from autocad_mcp.cad.backends.com_backend import COMBackend
+
+    monkeypatch.setattr(capture.time, "sleep", lambda _: None)
+    monkeypatch.setattr(capture.pythoncom, "PumpWaitingMessages", lambda: None)
+    files, saves = service
+    source = files.connection.document
+    docs = files.connection.app.Documents
+    files.connection.app.Documents = InteropDocs(docs, count_faults=100)
+    artifact = files.save_document_artifact(str(tmp_path), "retained.dwg")
+    session = SimpleNamespace(connection=files.connection, files=files, close=lambda: None)
+    backend = COMBackend(files.connection.config, session_factory=lambda _: session)
+    args = {"artifact_id": artifact["artifact_id"]}
+    kwargs = dict(
+        request_id="reopen-count-failure",
+        instance_id=backend.instance_id,
+        document_id=artifact["source_document_id"],
+    )
+    try:
+        result = backend.execute_evidenced("reopen_document_artifact", args, **kwargs)
+        receipt = result["receipt"]
+        assert receipt["stage"] == "observation_failed"
+        assert receipt["native_acknowledged"] is True
+        assert receipt["native_actions"] == [{"name": "Open", "acknowledged": True}]
+        assert files.progress["state"] == "native_acknowledged_unverified"
+        assert Path(files.progress["path"]).is_file()
+        assert not files.verifications and files.connection.document is source
+        duplicate = backend.execute_evidenced("reopen_document_artifact", args, **kwargs)
+        assert duplicate["receipt"] == receipt
+        assert docs.opens == 1 and len(saves) == 1
+    finally:
+        backend.close()

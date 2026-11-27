@@ -45,6 +45,64 @@ def fixture(tmp_path):
     return ctrl, doc, configs, calls, path
 
 
+@pytest.mark.parametrize("unsupported", [False, True])
+def test_native_local_window_uses_real_raster_media_and_restores_plot_state(tmp_path, unsupported):
+    ctrl, doc, configs, calls, path = fixture(tmp_path)
+    original = capture.signature(doc.ActiveLayout)
+    old_get = doc.GetVariable
+    doc.GetVariable = lambda key: {"VIEWDIR": (0, 0, 1), "VIEWTWIST": 0}.get(key, None) if key in ("VIEWDIR", "VIEWTWIST") else old_get(key)
+    doc.Utility = SimpleNamespace(TranslateCoordinates=lambda p, *_: tuple(p.value))
+    doc.ActiveLayout.GetCanonicalMediaNames = lambda: (("Sun_Hi-Res_(1600.00_x_1280.00_Pixels)",) if unsupported else
+        ("Sun_Hi-Res_(1600.00_x_1280.00_Pixels)", "Custom_(2560.00_x_2048.00_Pixels)", "Huge_(10000.00_x_10000.00_Pixels)"))
+
+    def plot(_):
+        calls.append("plot")
+        assert doc.ActiveLayout.window == ((10, 20), (30, 40))
+        assert doc.ActiveLayout.CanonicalMediaName == "Custom_(2560.00_x_2048.00_Pixels)"
+        return True
+    doc.Plot.PlotToFile = plot
+    if unsupported:
+        with pytest.raises(CADCaptureError) as caught:
+            ctrl.export_current_view(str(path), request_id="local", world_window=[10, 20, 30, 40], min_long_edge=2048)
+        assert caught.value.evidence["restoration_verified"]
+        assert not caught.value.evidence["mutation_uncertain"]
+        assert "RESOLUTION_UNSUPPORTED" in caught.value.evidence["error"]["message"]
+        assert "plot" not in calls
+    else:
+        result = ctrl.export_current_view(str(path), request_id="local", world_window=[10, 20, 30, 40], min_long_edge=2048)
+        proof = result["capture"]
+        assert proof["view_evidence"]["expected_pixels"] == [2560, 2048]
+        assert proof["view_evidence"]["configuration_verified"]
+        assert proof["view_evidence"]["world_window"] == [10, 20, 30, 40]
+        assert proof["restoration_verified"] and proof["cleanup_verified"]
+        assert calls.count("plot") == 1
+    assert capture.signature(doc.ActiveLayout) == original
+    assert not configs
+
+
+def test_silent_window_setter_is_not_a_verified_local_capture(tmp_path):
+    ctrl, doc, configs, calls, path = fixture(tmp_path)
+    old_get = doc.GetVariable
+    doc.GetVariable = lambda key: {"VIEWDIR": (0, 0, 1), "VIEWTWIST": 0}[key] if key in ("VIEWDIR", "VIEWTWIST") else old_get(key)
+    doc.Utility = SimpleNamespace(TranslateCoordinates=lambda p, *_: tuple(p.value))
+    doc.ActiveLayout.SetWindowToPlot = lambda *_: None
+    with pytest.raises(CADCaptureError) as caught:
+        ctrl.export_current_view(str(path), request_id="silent-window", world_window=[10, 20, 30, 40])
+    assert "WINDOW_NOT_APPLIED" in caught.value.evidence["error"]["message"]
+    assert caught.value.evidence["restoration_verified"]
+    assert not caught.value.evidence["view_evidence"]["configuration_verified"]
+    assert "plot" not in calls and not configs
+
+
+@pytest.mark.parametrize("window,pixels", [([1, 2, 1, 3], 2048), ([0, 0, float("inf"), 1], 2048), ([0, 0, 1, 1], 5000)])
+def test_invalid_local_capture_is_rejected_before_plot_mutation(tmp_path, window, pixels):
+    ctrl, _, configs, calls, path = fixture(tmp_path)
+    with pytest.raises(CADCaptureError) as caught:
+        ctrl.export_current_view(str(path), request_id="invalid", world_window=window, min_long_edge=pixels)
+    assert not caught.value.evidence["capture_mutations_started"]
+    assert not calls and not configs
+
+
 @pytest.mark.parametrize("transient", [True, False])
 def test_count_read_retries_precede_all_plot_changes(tmp_path, monkeypatch, transient):
     ctrl, doc, configs, calls, path = fixture(tmp_path)

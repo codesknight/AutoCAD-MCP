@@ -48,18 +48,28 @@ def register(mcp: FastMCP) -> None:
     @mcp.tool()
     def draw_text(
         position_x: float, position_y: float, position_z: float,
-        text: str, height: float, layer: str = "", rotation: float = 0.0,
+        text: str, height: float, layer: str = "", rotation: float = 0.0, width_factor: float = 1.0, fit_box: list[float] | None = None,
     ) -> str:
-        """在指定位置插入文字（rotation 单位为度），返回新实体的 ObjectID。"""
+        """在指定位置插入文字（rotation为度），返回ObjectID。width_factor为正字宽系数；
+        可选fit_box=[xmin,ymin,xmax,ymax]拟合本次新文字的原生XY范围，仅支持90度整数倍旋转。
+        默认参数保留既有行为，不修改旧实体。
+        """
+        extra = {}
+        if width_factor != 1:
+            extra["width_factor"] = width_factor
+        if fit_box is not None:
+            extra["fit_box"] = fit_box
         object_id = get_controller().draw_text(
-            (position_x, position_y, position_z), text, height, layer or None, rotation
+            (position_x, position_y, position_z), text, height, layer or None, rotation, **extra
         )
         return f"draw_text ok, object_id={object_id}"
 
     @mcp.tool()
-    def draw_polyline(points: list[list[float]], closed: bool = False, layer: str = "") -> str:
-        """画一条多段线，points 是 [x,y,z] 坐标点的列表，返回新实体的 ObjectID。"""
-        object_id = get_controller().draw_polyline([tuple(p) for p in points], closed, layer or None)
+    def draw_polyline(points: list[list[float]], closed: bool = False, layer: str = "", width: float = 0.0) -> str:
+        """画多段线，points为[x,y,z]列表，返回ObjectID。width为非负原生ConstantWidth，默认0。
+        原生查询提供顶点、OCS法向/高程、闭合、宽度和bulge；bbox不能代替顶点验证。
+        """
+        object_id = get_controller().draw_polyline([tuple(p) for p in points], closed, layer or None, **({"width": width} if width else {}))
         return f"draw_polyline ok, object_id={object_id}"
 
     @mcp.tool()

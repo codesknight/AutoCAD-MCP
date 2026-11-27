@@ -8,7 +8,7 @@ from copy import deepcopy
 from threading import RLock
 
 VERSION = "autocad-execution/1"
-SUPPORTED = frozenset({"new_document", "draw_line", "draw_circle", "draw_text",
+SUPPORTED = frozenset({"new_document", "draw_line", "draw_circle", "draw_text", "draw_polyline",
                        "move_entity", "delete_entity", "save_drawing",
                        "get_entity", "query_entities", "export_current_view",
                        "save_document_artifact","reopen_document_artifact","query_verification_entities"})

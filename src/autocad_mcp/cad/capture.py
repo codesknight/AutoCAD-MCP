@@ -5,6 +5,7 @@ are invoked once; a lost mutation acknowledgement is never reclassified as safe.
 """
 import math
 import os
+import re
 import tempfile
 import time
 import traceback
@@ -103,7 +104,8 @@ def signature(layout):
     return result
 
 
-def export_view(connection, file_path, timeout, wait_file, request_id=""):
+def export_view(connection, file_path, timeout, wait_file, request_id="", *,
+                world_window=None, min_long_edge=0):
     if not file_path:
         directory = os.path.join(tempfile.gettempdir(), "autocad_mcp_exports")
         os.makedirs(directory, exist_ok=True)
@@ -117,6 +119,9 @@ def export_view(connection, file_path, timeout, wait_file, request_id=""):
                 "cleanup_verified": False, "before": None, "after": None,
                 "backup_name": "_MCP_CAPTURE_" + uuid4().hex,
                 "actions": [], "restoration_errors": [], "error": None}
+    if world_window is not None or min_long_edge:
+        evidence["requested_view"] = {"world_window": world_window, "min_long_edge": min_long_edge}
+        evidence["view_evidence"] = None
     backup_created = copied = settings_touched = False
     backup = delete_backup = None
     before_names = None
@@ -163,6 +168,12 @@ def export_view(connection, file_path, timeout, wait_file, request_id=""):
             raise
 
     try:
+        if (world_window is not None and (len(world_window) != 4
+                or any(type(v) not in (int, float) or not math.isfinite(v) or abs(v) > 1e9 for v in world_window)
+                or world_window[0] >= world_window[2] or world_window[1] >= world_window[3])):
+            raise ValueError("CAD_CAPTURE_WINDOW_INVALID")
+        if type(min_long_edge) is not int or min_long_edge and not 512 <= min_long_edge <= 4096:
+            raise ValueError("CAD_CAPTURE_RESOLUTION_INVALID")
         doc = connection.document
         layout, plot, configs = prop(doc, "ActiveLayout"), prop(doc, "Plot"), prop(doc, "PlotConfigurations")
         evidence["document"], evidence["layout"] = prop(doc, "Name"), prop(layout, "Name")
@@ -176,7 +187,20 @@ def export_view(connection, file_path, timeout, wait_file, request_id=""):
         method(doc, "Regen")(1)
         ready()
         window = None
-        if count:
+        if world_window is not None:
+            get_variable = method(doc, "GetVariable")
+            direction = retry_read(lambda: get_variable("VIEWDIR"))
+            twist = retry_read(lambda: get_variable("VIEWTWIST"))
+            if (len(direction) != 3 or any(abs(a-b) > 1e-8 for a, b in zip(direction, (0, 0, 1)))
+                    or abs(math.remainder(float(twist), math.tau)) > 1e-8):
+                raise ValueError("CAD_CAPTURE_TOP_VIEW_REQUIRED")
+            translate = method(prop(doc, "Utility"), "TranslateCoordinates")
+            x0, y0, x1, y1 = world_window
+            corners = [retry_read(lambda x=x, y=y: translate(to_variant_point(x, y, 0), 0, 2, False))
+                       for x in (x0, x1) for y in (y0, y1)]
+            window = ([min(p[0] for p in corners), min(p[1] for p in corners)],
+                      [max(p[0] for p in corners), max(p[1] for p in corners)])
+        elif count:
             get_variable = method(doc, "GetVariable")
             low, high = retry_read(lambda: get_variable("EXTMIN")), retry_read(lambda: get_variable("EXTMAX"))
             if any(not math.isfinite(v) for v in (*low, *high)) or any(a > b for a, b in zip(low, high)):
@@ -214,6 +238,28 @@ def export_view(connection, file_path, timeout, wait_file, request_id=""):
         mutate("quiet", lambda: put(plot, "QuietErrorMode", True))
         mutate("device", lambda: put(layout, "ConfigName", "PublishToWeb PNG.pc3"))
         mutate("refresh_device", refresh)
+        media = None
+        if min_long_edge:
+            candidates = []
+            for name in method(layout, "GetCanonicalMediaNames")():
+                match = re.search(r"\(([\d.]+)_x_([\d.]+)_Pixels\)", name)
+                if match:
+                    width, height = (int(float(v)) for v in match.groups())
+                    if min_long_edge <= max(width, height) <= 4096 and width * height <= 16_777_216:
+                        candidates.append((width * height, name, width, height))
+            if not candidates:
+                raise ValueError("CAD_CAPTURE_RESOLUTION_UNSUPPORTED")
+            _, media, width, height = min(candidates)
+            mutate("media", lambda: put(layout, "CanonicalMediaName", media))
+            if prop(layout, "CanonicalMediaName") != media:
+                raise RuntimeError("CAD_CAPTURE_MEDIA_NOT_APPLIED")
+        if world_window is not None or min_long_edge:
+            evidence["view_evidence"] = {"world_window": world_window,
+                "dcs_window": plain(window), "canonical_media": media,
+                "expected_pixels": [width, height] if min_long_edge else None,
+                "configuration_verified": False,
+                "projection": "WCS_XY_TOP" if world_window is not None else "backend_extents",
+                "pixel_to_world": None, "mapping_mode": "window_and_fit; exact pixel mapping unsupported"}
         mutate("rotation", lambda: put(layout, "PlotRotation", 0))
         if window:
             mutate("window", lambda: set_window(*(to_variant_double_array(p) for p in window)))
@@ -223,6 +269,16 @@ def export_view(connection, file_path, timeout, wait_file, request_id=""):
         mutate("center", lambda: put(layout, "CenterPlot", True))
         method(doc, "Regen")(1)
         ready()
+        if world_window is not None or min_long_edge:
+            configured = signature(layout)
+            if (configured["PlotType"] != (4 if window else 1)
+                    or configured["PlotRotation"] != 0 or not configured["UseStandardScale"]
+                    or configured["StandardScale"] != 0 or not configured["CenterPlot"]
+                    or window is not None and configured["window"] != plain(window)
+                    or media is not None and configured["CanonicalMediaName"] != media):
+                raise RuntimeError("CAD_CAPTURE_WINDOW_NOT_APPLIED")
+            evidence["view_evidence"]["configuration_verified"] = True
+            evidence["view_evidence"]["dcs_window"] = configured["window"]
         evidence["stage"] = "plot"
         if not mutate("plot_to_file", lambda: plot_file(file_path)):
             raise RuntimeError("CAD_PLOT_REJECTED")
