@@ -190,7 +190,7 @@ class COMBackend:
                 else:
                     result = copy_data(session.execute(operation, args))
                 affected = dict(created=[],modified=[],deleted=[],complete=True)
-                if operation in {"draw_line","draw_circle","draw_text"}:
+                if operation in {"draw_line","draw_circle","draw_text","draw_polyline"}:
                     affected["created"] = [str(result)]
                 if operation in {"move_entity","delete_entity"}:
                     affected["deleted" if operation=="delete_entity" else "modified"] = [str(args["object_id"])]

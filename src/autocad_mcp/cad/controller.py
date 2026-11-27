@@ -119,11 +119,16 @@ class CADController:
         self._validate_layer(layer)
         model_space = self.connection.model_space
         flat = [coord for point in points for coord in point]
-        polyline = model_space.AddPolyline(to_variant_double_array(flat))
+        polyline = invoke_mutator(model_space, "AddPolyline", to_variant_double_array(flat))
         return self._configure_entity(polyline, layer, Closed=closed)
 
-    def draw_polyline(self, points: list[Point], closed: bool = False, layer: str | None = None) -> int:
-        return self._add_polyline(points, closed, layer).ObjectID
+    def draw_polyline(self, points: list[Point], closed: bool = False, layer: str | None = None, width: float = 0.0) -> int:
+        if not math.isfinite(width) or width < 0:
+            raise ValueError("POLYLINE_WIDTH_INVALID")
+        entity = self._add_polyline(points, closed, layer)
+        if width:
+            set_property(entity, "ConstantWidth", width)
+        return self._entity_id(entity)
 
     def draw_rectangle(self, corner1: Point, corner2: Point, layer: str | None = None) -> int:
         x1, y1, z = corner1
@@ -131,13 +136,47 @@ class CADController:
         points = [(x1, y1, z), (x2, y1, z), (x2, y2, z), (x1, y2, z)]
         return self.draw_polyline(points, closed=True, layer=layer)
 
-    def draw_text(self, position: Point, text: str, height: float, layer: str | None = None, rotation: float = 0.0) -> int:
-        """rotation 单位为度。"""
+    def draw_text(self, position: Point, text: str, height: float, layer: str | None = None, rotation: float = 0.0, width_factor: float = 1.0, fit_box: list[float] | None = None) -> int:
+        """rotation 单位为度；fit_box 只拟合本次新建文字，不编辑既有实体。"""
+        if not math.isfinite(width_factor) or width_factor <= 0:
+            raise ValueError("TEXT_WIDTH_FACTOR_INVALID")
+        if fit_box is not None and (len(fit_box) != 4 or not all(math.isfinite(x) for x in fit_box) or fit_box[0] >= fit_box[2] or fit_box[1] >= fit_box[3]):
+            raise ValueError("TEXT_FIT_BOX_INVALID")
+        if fit_box is not None and (not math.isfinite(rotation) or abs(rotation/90-round(rotation/90)) > 1e-8):
+            raise ValueError("TEXT_FIT_REQUIRES_ORTHOGONAL_ROTATION")
         self._validate_layer(layer)
         style = self._ensure_cjk_text_style()
         model_space = self.connection.model_space
         text_obj = invoke_mutator(model_space, "AddText", text, to_variant_point(*position), height)
-        return self._entity_id(self._configure_entity(text_obj, layer, StyleName=style, Rotation=math.radians(rotation)))
+        self._configure_entity(text_obj, layer, StyleName=style, Rotation=math.radians(rotation))
+        if width_factor != 1:
+            set_property(text_obj, "ScaleFactor", width_factor)
+        if fit_box is not None:
+            self._fit_created_text(text_obj, fit_box, rotation)
+        return self._entity_id(text_obj)
+
+    @staticmethod
+    def _fit_created_text(entity, box, rotation):
+        import pythoncom
+        from autocad_mcp.cad.capture import prop, retry_read
+        def bounds():
+            ole = getattr(entity, "_oleobj_", None)
+            if ole is None:
+                return entity.GetBoundingBox()
+            return ole.InvokeTypes(ole.GetIDsOfNames("GetBoundingBox"), 0,
+                pythoncom.DISPATCH_METHOD, (pythoncom.VT_VOID, 0),
+                ((pythoncom.VT_BYREF | pythoncom.VT_VARIANT, 2),
+                 (pythoncom.VT_BYREF | pythoncom.VT_VARIANT, 2)))
+        a, b = retry_read(bounds)
+        horizontal = abs(math.cos(math.radians(rotation))) >= abs(math.sin(math.radians(rotation)))
+        rx, ry = (box[2]-box[0])/(b[0]-a[0]), (box[3]-box[1])/(b[1]-a[1])
+        height_ratio = ry if horizontal else rx
+        width_ratio = rx if horizontal else ry
+        set_property(entity, "Height", prop(entity, "Height")*height_ratio)
+        set_property(entity, "ScaleFactor", prop(entity, "ScaleFactor")*width_ratio/height_ratio)
+        a, _ = retry_read(bounds)
+        invoke_mutator(entity, "Move", to_variant_point(0, 0, 0),
+                       to_variant_point(box[0]-a[0], box[1]-a[1], 0))
 
     def draw_mtext(self, position: Point, text: str, width: float = 100.0, height: float = 2.5, layer: str | None = None) -> int:
         """多行富文本。width 是文本框宽度（超出会自动换行），height 是字高。"""

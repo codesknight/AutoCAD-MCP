@@ -1,0 +1,133 @@
+[
+  {
+    "name": "draw_polyline",
+    "description": "画多段线，points为[x,y,z]列表，返回ObjectID。width为非负原生ConstantWidth，默认0。\n        原生查询提供顶点、OCS法向/高程、闭合、宽度和bulge；bbox不能代替顶点验证。\n        ",
+    "inputSchema": {
+      "properties": {
+        "points": {
+          "items": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "title": "Points",
+          "type": "array"
+        },
+        "closed": {
+          "default": false,
+          "title": "Closed",
+          "type": "boolean"
+        },
+        "layer": {
+          "default": "",
+          "title": "Layer",
+          "type": "string"
+        },
+        "width": {
+          "default": 0,
+          "title": "Width",
+          "type": "number"
+        }
+      },
+      "required": [
+        "points"
+      ],
+      "title": "draw_polylineArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "draw_polylineOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "draw_text",
+    "description": "在指定位置插入文字（rotation为度），返回ObjectID。width_factor为正字宽系数；\n        可选fit_box=[xmin,ymin,xmax,ymax]拟合本次新文字的原生XY范围，仅支持90度整数倍旋转。\n        默认参数保留既有行为，不修改旧实体。\n        ",
+    "inputSchema": {
+      "properties": {
+        "position_x": {
+          "title": "Position X",
+          "type": "number"
+        },
+        "position_y": {
+          "title": "Position Y",
+          "type": "number"
+        },
+        "position_z": {
+          "title": "Position Z",
+          "type": "number"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "height": {
+          "title": "Height",
+          "type": "number"
+        },
+        "layer": {
+          "default": "",
+          "title": "Layer",
+          "type": "string"
+        },
+        "rotation": {
+          "default": 0,
+          "title": "Rotation",
+          "type": "number"
+        },
+        "width_factor": {
+          "default": 1,
+          "title": "Width Factor",
+          "type": "number"
+        },
+        "fit_box": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fit Box"
+        }
+      },
+      "required": [
+        "position_x",
+        "position_y",
+        "position_z",
+        "text",
+        "height"
+      ],
+      "title": "draw_textArguments",
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "draw_textOutput",
+      "type": "object"
+    }
+  }
+]

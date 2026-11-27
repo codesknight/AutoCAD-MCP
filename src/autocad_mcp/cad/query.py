@@ -63,6 +63,29 @@ def _entity_summary(entity) -> dict:
                 summary["attributes"] = {a.TagString: a.TextString for a in entity.GetAttributes()}
     except Exception:
         pass
+    # Additive native geometry evidence; a bounding box cannot verify vertices.
+    from autocad_mcp.cad.capture import prop, method
+    if summary["type"] in {"AcDb2dPolyline", "AcDbPolyline"}:
+        try:
+            summary["coordinates"] = list(prop(entity, "Coordinates"))
+            summary["coordinate_dimension"] = 3 if summary["type"] == "AcDb2dPolyline" else 2
+            summary["closed"] = bool(prop(entity, "Closed"))
+            summary["normal"] = list(prop(entity, "Normal"))
+            summary["elevation"] = float(prop(entity, "Elevation"))
+            summary["constant_width"] = float(prop(entity, "ConstantWidth"))
+            vertices=len(summary["coordinates"])//summary["coordinate_dimension"]
+            get_bulge=method(entity,"GetBulge")
+            summary["bulges"]=[float(get_bulge(i)) for i in range(vertices)]
+        except (AttributeError, pythoncom.com_error):
+            pass
+    if summary["type"] == "AcDbText":
+        for key, name in [("height", "Height"), ("scale_factor", "ScaleFactor"),
+                          ("rotation_radians", "Rotation"), ("insertion_point", "InsertionPoint")]:
+            try:
+                value = prop(entity, name)
+                summary[key] = list(value) if isinstance(value, tuple) else value
+            except (AttributeError, pythoncom.com_error):
+                pass
     return summary
 
 

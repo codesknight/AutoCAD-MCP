@@ -33,7 +33,17 @@ def test_actual_stdio_tool_discovery_matches_baseline(tmp_path):
     actual = json.loads(target.read_text(encoding="utf-8"))
     baseline={tool['name']:stable_schema(tool) for tool in TOOLS}
     discovered={tool['name']:stable_schema(tool) for tool in actual}
-    assert {name:discovered[name] for name in baseline} == baseline
+    additive=json.loads((FIXTURES/'mcp-source-index-tools-v1.json').read_text(encoding='utf-8'))
+    changed={tool['name']:stable_schema(tool) for tool in additive}
+    assert {name:discovered[name] for name in changed} == changed
+    assert {name:discovered[name] for name in baseline if name not in changed} == {
+        name:value for name,value in baseline.items() if name not in changed
+    }
+    for name in changed:
+        old,new=baseline[name]['inputSchema'],discovered[name]['inputSchema']
+        assert new.get('required',[]) == old.get('required',[])
+        assert all(new['properties'][key] == value for key,value in old['properties'].items())
+        assert not set(new.get('required',[])) & (set(new['properties'])-set(old['properties']))
     execution_names = {'get_document_binding','execute_observed_operation','get_execution_status'}
     assert set(discovered)-set(baseline)-execution_names == {
         'get_backend_status','get_job_status','execute_atomic_batch','query_entities_page',

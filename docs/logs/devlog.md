@@ -639,3 +639,7 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 2026-11-27协同Cader整图复验：Open ACK后Count包装器失效，document_snapshot改为复用原生DISPID只读访问和有界读重试；保持Open恰好一次、身份/集合守卫及历史屏障。307通过/34跳过，三个修改Python文件Ruff I/F通过；详见[快照验证](../validation/2026-11-27-com-document-snapshot.md)，真实新联合回归另记。
 
 - 真实新Cader原始复杂图任务完成146确认/0未知，保全141实体DWG；P1保存/只读重开及独立原生支持字段比较通过，Count错误未复现，无新file屏障。源图整体质量仍未通过，不能混为完整绘图验收；见快照报告追加联合证据。旧63份原图/屏障摘要不变。
+
+## 2026-11-28
+
+- 协同Cader REQ-053新增可选polyline原生宽度、文字新建bbox拟合及独立native顶点/OCS/bulge/文字尺度读回，polyline复用执行ACK。旧默认调用兼容，创建后失败不重试/删除。315 pytest通过、34真实CAD未启用跳过；独立实例用原始源图4实体native组件核查0差异，完整联合回归另记，详见[验证记录](../validation/2026-11-28-source-geometry.md)。用户已有web/脚本修改未纳入。
