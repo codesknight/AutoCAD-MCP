@@ -2,9 +2,8 @@
 from types import SimpleNamespace
 
 import pytest
-
 from autocad_mcp.cad.controller import CADController
-from autocad_mcp.cad.query import _entity_summary
+from autocad_mcp.cad.query import CADQuery, _entity_summary, _NativeSummaryReader
 
 
 @pytest.mark.parametrize("value", [-1, float("nan"), float("inf")])
@@ -48,3 +47,38 @@ def test_polyline_query_retains_ocs_instead_of_pretending_bbox_is_vertices():
     assert row["elevation"] == 2.
     assert row["constant_width"] == .25
     assert row["bulges"] == [0., .1]
+
+
+def test_native_metadata_cache_is_per_canonical_object_and_values_are_always_fresh():
+    class Native:
+        def __init__(self, offset):
+            self.token=object();self.offset=offset;self.lookups={};self.names={}
+            self.values=dict(ObjectID=7,ObjectName="AcDb2dPolyline",Layer="0",
+                Coordinates=(0.,0.,0.,2.,4.,0.),Closed=False,Normal=(0.,0.,1.),
+                Elevation=0.,ConstantWidth=.25)
+        def QueryInterface(self,_iid):return self.token
+        def GetIDsOfNames(self,name):
+            if name not in self.values and name not in {"GetBulge","GetBoundingBox"}:
+                raise AttributeError(name)
+            self.lookups[name]=self.lookups.get(name,0)+1
+            value=self.offset+list(self.values).index(name) if name in self.values else self.offset+50+(name=="GetBulge")
+            self.names[value]=name;return value
+        def Invoke(self,dispid,_lcid,_kind,_result,*args):
+            name=self.names[dispid]
+            return 0. if name=="GetBulge" else self.values[name]
+        def InvokeTypes(self,*_args):return ((0.,0.,0.),(2.,4.,0.))
+    readers={};first=Native(100)
+    one=_entity_summary(SimpleNamespace(_oleobj_=first),readers)
+    first.values["ConstantWidth"] = .75
+    two=_entity_summary(SimpleNamespace(_oleobj_=first),readers)
+    assert one["constant_width"]==.25 and two["constant_width"]==.75
+    assert first.lookups["ConstantWidth"]==1
+    second=Native(900)
+    assert _entity_summary(SimpleNamespace(_oleobj_=second),readers)["constant_width"]==.25
+    assert second.lookups["ConstantWidth"]==1  # Same ObjectID, DIFFERENT IUnknown.
+    with pytest.raises(ValueError,match="read-only"):
+        _NativeSummaryReader(first).call("Delete")
+    connection=SimpleNamespace(document=SimpleNamespace(Name="same.dwg"))
+    query=CADQuery(connection);query._readers()[7]="fixture"
+    connection.document=SimpleNamespace(Name="same.dwg")
+    assert query._readers()=={}  # Name equality never preserves identity/cache.

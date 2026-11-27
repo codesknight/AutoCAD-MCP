@@ -10,3 +10,8 @@
 实际验证：315 pytest通过，34项需要显式`--cad-integration`未启用而跳过。新负例覆盖非法参数先于Add、ACK后拟合失败不重放/删除、OCS/bulge保留及默认MCP调用兼容。Cader在已验证独立DispatchEx实例中，用原始大图的2路径与2文字完成真实原生顶点/宽度/bbox读回（4实体、0差异）并保存新的私有DWG；这是组件证据，不是完整Agent任务。第一次组件脚本因UTF-8读取失败，在新建空图后停止；核查同实例空图后继续，无CAD未知写入。
 
 完整原始图真实模型＋Cader＋MCP联合结果另行追加；旧图和历史unknown屏障不改写。原始记录保留在Cader私有`.cader/runs/source-worklist-20261127/`。用户已有web、脚本、设计和图纸数据未纳入本次提交。
+
+## 只读查询性能补修
+
+真实151实体查询约20秒，协同增加原生集合Count/Item遍历、只读Invoke/InvokeTypes及单对象生命周期的DISPID缓存；绑定canonical IUnknown并在文档身份变更时清空，不缓存属性值，不跨对象沿用类型图。同ObjectID/同名文档负例及写方法拒绝有测试。相同owned图对照旧版17.430秒、首次3.496秒、后续1.689秒，所有字段0差异，0CAD写入。316测试通过/34真实CAD未启用跳过。Microsoft保证仅是对象生命周期内DISPID稳定；AutoCAD的ITypeInfo.GetIDsOfNames实测未实现，未采用跨类型缓存。原始证据由Cader私有运行目录保留。
+

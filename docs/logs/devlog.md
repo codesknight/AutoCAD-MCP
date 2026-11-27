@@ -643,3 +643,6 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 ## 2026-11-28
 
 - 协同Cader REQ-053新增可选polyline原生宽度、文字新建bbox拟合及独立native顶点/OCS/bulge/文字尺度读回，polyline复用执行ACK。旧默认调用兼容，创建后失败不重试/删除。315 pytest通过、34真实CAD未启用跳过；独立实例用原始源图4实体native组件核查0差异，完整联合回归另记，详见[验证记录](../validation/2026-11-28-source-geometry.md)。用户已有web/脚本修改未纳入。
+
+- 大图查询性能补修：复用CADQuery，以原生Count/Item及只读Invoke避开每实体动态包装器，DISPID只按同一canonical对象生命周期缓存，数据值每次读，文档/对象身份变更隔离。真实151实体17.430→3.496/1.689秒、0字段差异；316通过/34跳过。详见source-geometry验证，旧图和unknown不动。
+
