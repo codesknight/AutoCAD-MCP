@@ -35,15 +35,21 @@ def register(mcp: FastMCP) -> None:
         return f"saved to {file_path}"
 
     @mcp.tool()
-    def export_current_view(file_path: str = "", request_id: str = "") -> CallToolResult:
+    def export_current_view(file_path: str = "", request_id: str = "",
+                            world_window: list[float] | None = None,
+                            min_long_edge: int = 0) -> CallToolResult:
         """把当前 AutoCAD 模型布局全图导出成 PNG；纸布局在修改前拒绝，不自动切换。
         不填 file_path 会生成临时路径。可选 request_id 关联打印状态恢复证据，
         不是重放授权。成功返回路径，关联调用附恢复回执；失败保留阶段及恢复证据。
+        world_window=[xmin,ymin,xmax,ymax]可指定WCS XY平面局部窗口（仅俯视、无扭转）；
+        min_long_edge=0沿用默认，512..4096选择真实PNG介质像素，不作插值放大。
         """
         try:
             controller = get_controller()
-            value = (controller.export_current_view(file_path or None, request_id=request_id)
-                     if request_id else controller.export_current_view(file_path or None))
+            options = ({"world_window": world_window, "min_long_edge": min_long_edge}
+                       if world_window is not None or min_long_edge else {})
+            value = (controller.export_current_view(file_path or None, request_id=request_id, **options)
+                     if request_id else controller.export_current_view(file_path or None, **options))
             payload = value if isinstance(value, dict) else {"result": value}
             return CallToolResult(content=[TextContent(type="text", text=payload["result"])],
                                   structuredContent=payload)

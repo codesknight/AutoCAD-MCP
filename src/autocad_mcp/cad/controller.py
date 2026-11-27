@@ -233,7 +233,8 @@ class CADController:
         invoke_mutator(self.connection.document, "SaveAs", file_path)
 
     def export_current_view(self, file_path: str | None = None, timeout: float = 30.0,
-                            request_id: str = "") -> str | dict:
+                            request_id: str = "", world_window: list[float] | None = None,
+                            min_long_edge: int = 0) -> str | dict:
         """Export the model layout once, restoring and verifying native plot state.
 
         A correlated caller receives the restoration receipt as plain data.
@@ -241,7 +242,8 @@ class CADController:
         """
         from autocad_mcp.cad.capture import export_view
         return export_view(self.connection, file_path, timeout,
-                           self._wait_for_stable_file, request_id)
+                           self._wait_for_stable_file, request_id,
+                           world_window=world_window, min_long_edge=min_long_edge)
 
     @staticmethod
     def _wait_for_stable_file(file_path: str, timeout: float) -> None:

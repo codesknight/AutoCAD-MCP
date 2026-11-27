@@ -247,3 +247,7 @@ Legacy successful calls retain the path text and structured `result`. Supplying 
 ## Native new-document safety (2026-11-23)
 
 COM attach no longer implicitly creates drawings. Explicit new_drawing resolves native Add metadata with bounded read-only readiness, invokes once, and binds only a uniquely new active document. Failures after invocation never retry creation. Optional request_id correlates native preflight/call/binding evidence; it is not idempotency or replay authority. MCP errors retain isError=true and native evidence. Legacy no-argument calls and successful document-name results remain compatible. This tool omits its former success-only outputSchema so error evidence is not misvalidated. Clients must validate full evidence and request identity; old errors cannot retrospectively prove no execution. Tests and limits: issue41 and docs/logs/devlog.md.
+
+### 原生局部截图（2026-11-27）
+
+COM的`export_current_view`可选`world_window=[xmin,ymin,xmax,ymax]`与`min_long_edge`，用于真实原生局部PNG及小字复核。提供`request_id`取得窗口/介质像素、打印前配置读回及状态恢复证据；只支持模型空间俯视、无扭转，不插值放大、不覆盖文件。旧全图调用兼容，未知请求不重放。接口与实际验证见[局部截图记录](docs/validation/2026-11-27-native-region-capture.md)。
