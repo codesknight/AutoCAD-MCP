@@ -69,8 +69,13 @@ class CADConnection:
         return identity
 
     def document_snapshot(self):
-        documents = self.app.Documents
-        rows = [documents.Item(i) for i in range(documents.Count)]
+        # Reuse the authoritative, bounded read helpers. A wrapper returned
+        # just after Open may have a stale Python Count/Item method map even
+        # though the native collection is ready. These are reads, not Open.
+        from autocad_mcp.cad.capture import method, prop, retry_read
+        documents = prop(self.app, "Documents")
+        rows = [retry_read(lambda i=i: method(documents, "Item")(i))
+                for i in range(prop(documents, "Count"))]
         identities = {self.document_id(doc) for doc in rows}
         self._identities = [(token, key) for token, key in self._identities if key in identities]
         self._owned_ids.intersection_update(identities)

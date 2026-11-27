@@ -635,3 +635,5 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 协同Cader REQ-052修复局部视觉：复用capture事务增加受控WCS窗口、真实PNG介质及请求关联回执，打印前读回窗口/介质设置；保持旧全图接口与unknown恢复约束。
 - 增加窗口/介质/非法参数/静默setter与恢复反例，实际stdio契约只更新截图工具。真实隔离AutoCAD实例导出2560×1440文字局部PNG，原文件及实体数不变；组件证据与完整Agent任务分开。最终命令、CI和限制见[验证记录](../validation/2026-11-27-native-region-capture.md)。
 - 用户已有web、脚本及图纸数据改动未纳入本次提交；未清除历史未知请求或擅自关闭既有文档。
+
+- 2026-11-27协同Cader整图复验：Open ACK后Count包装器失效，document_snapshot改为复用原生DISPID只读访问和有界读重试；保持Open恰好一次、身份/集合守卫及历史屏障。307通过/34跳过，三个修改Python文件Ruff I/F通过；详见[快照验证](../validation/2026-11-27-com-document-snapshot.md)，真实新联合回归另记。

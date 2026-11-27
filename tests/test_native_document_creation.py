@@ -3,14 +3,15 @@ import asyncio
 from types import SimpleNamespace
 
 import pytest
+from mcp.server.fastmcp import FastMCP
+from mcp.types import CallToolResult
+
 from autocad_mcp import state
 from autocad_mcp.cad import connection
 from autocad_mcp.cad.backends.com_backend import COMSession
 from autocad_mcp.cad.connection import CADConnection, CADNewDocumentError
 from autocad_mcp.config import Config
 from autocad_mcp.tools.document_tools import register
-from mcp.server.fastmcp import FastMCP
-from mcp.types import CallToolResult
 
 
 class Documents:
@@ -88,11 +89,17 @@ def test_native_dispid_path_bypasses_unresolved_dynamic_method_map(monkeypatch):
 
     def get_id(name):
         lookups.append(name)
-        if len(lookups) == 1:
+        if name == "Add" and lookups.count("Add") == 1:
             raise AttributeError("injected transient metadata failure")
-        return 42
+        return {"Add": 42, "Count": 7, "Item": 8}[name]
 
     def invoke(dispid, lcid, flags, result_wanted, *args):
+        if dispid == 7:
+            assert flags == connection.pythoncom.DISPATCH_PROPERTYGET
+            return len(documents.items)
+        if dispid == 8:
+            assert flags == connection.pythoncom.DISPATCH_METHOD
+            return documents.items[args[0]]
         assert (dispid, lcid, flags, result_wanted) == (42, 0, connection.pythoncom.DISPATCH_METHOD, True)
         return documents.create(*args)
 
@@ -100,7 +107,7 @@ def test_native_dispid_path_bypasses_unresolved_dynamic_method_map(monkeypatch):
     documents.fail_lookups = 100
     conn.connect()
     conn.new_document()
-    assert lookups == ["Add", "Add"]
+    assert [name for name in lookups if name == "Add"] == ["Add", "Add"]
     assert documents.lookups == 0
     assert documents.calls == 1
 
