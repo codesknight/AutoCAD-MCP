@@ -2,6 +2,7 @@
 (CAD-MCP) does not cover: it can only create entities, never read or modify
 existing ones.
 """
+
 import math
 
 import pythoncom
@@ -35,33 +36,56 @@ class _NativeSummaryReader:
     Never cache property values or reuse another object's wrapper/type map.
     GetIDsOfNames guarantees IDs for the object's lifetime (MS Automation).
     """
+
     def __init__(self, ole):
         self.ole, self.ids = ole, {}
 
     def dispid(self, name):
         if name not in self.ids:
             from autocad_mcp.cad.capture import retry_read
+
             self.ids[name] = retry_read(lambda: self.ole.GetIDsOfNames(name))
         return self.ids[name]
 
     def get(self, name):
         from autocad_mcp.cad.capture import retry_read, wrap
-        return retry_read(lambda: wrap(self.ole.Invoke(
-            self.dispid(name), 0, pythoncom.DISPATCH_PROPERTYGET, True)))
+
+        return retry_read(
+            lambda: wrap(
+                self.ole.Invoke(
+                    self.dispid(name), 0, pythoncom.DISPATCH_PROPERTYGET, True
+                )
+            )
+        )
 
     def call(self, name, *args):
         if name not in {"GetBulge", "GetAttributes"}:
             raise ValueError("Summary methods are read-only")
         from autocad_mcp.cad.capture import retry_read, wrap
-        return retry_read(lambda: wrap(self.ole.Invoke(
-            self.dispid(name), 0, pythoncom.DISPATCH_METHOD, True, *args)))
+
+        return retry_read(
+            lambda: wrap(
+                self.ole.Invoke(
+                    self.dispid(name), 0, pythoncom.DISPATCH_METHOD, True, *args
+                )
+            )
+        )
 
     def bounds(self):
         from autocad_mcp.cad.capture import retry_read
-        return retry_read(lambda: self.ole.InvokeTypes(
-            self.dispid("GetBoundingBox"), 0, pythoncom.DISPATCH_METHOD,
-            (pythoncom.VT_VOID, 0), ((pythoncom.VT_BYREF | pythoncom.VT_VARIANT, 2),
-                                   (pythoncom.VT_BYREF | pythoncom.VT_VARIANT, 2))))
+
+        return retry_read(
+            lambda: self.ole.InvokeTypes(
+                self.dispid("GetBoundingBox"),
+                0,
+                pythoncom.DISPATCH_METHOD,
+                (pythoncom.VT_VOID, 0),
+                (
+                    (pythoncom.VT_BYREF | pythoncom.VT_VARIANT, 2),
+                    (pythoncom.VT_BYREF | pythoncom.VT_VARIANT, 2),
+                ),
+            )
+        )
 
 
 def _entity_summary(entity, readers=None, raw_dispatch=False) -> dict:
@@ -70,16 +94,20 @@ def _entity_summary(entity, readers=None, raw_dispatch=False) -> dict:
     object_id = None
     if ole is not None:
         from autocad_mcp.cad.capture import retry_read
+
         token = ole.QueryInterface(pythoncom.IID_IUnknown)
         readers = readers if readers is not None else {}
-        object_id = retry_read(lambda:ole.Invoke(ole.GetIDsOfNames("ObjectID"),0,
-                                                pythoncom.DISPATCH_PROPERTYGET,True))
+        object_id = retry_read(
+            lambda: ole.Invoke(
+                ole.GetIDsOfNames("ObjectID"), 0, pythoncom.DISPATCH_PROPERTYGET, True
+            )
+        )
         cached = readers.get(object_id)
-        if cached is not None and CADConnection._same(cached[0],token):
+        if cached is not None and CADConnection._same(cached[0], token):
             reader = cached[1]
         else:
             reader = _NativeSummaryReader(ole)
-            readers[object_id] = (token,reader)
+            readers[object_id] = (token, reader)
     get = reader.get if reader else lambda name: getattr(entity, name)
     summary = {
         "object_id": object_id if reader else get("ObjectID"),
@@ -87,14 +115,24 @@ def _entity_summary(entity, readers=None, raw_dispatch=False) -> dict:
         "layer": get("Layer"),
     }
     try:
-        if summary["type"] in {"AcDb2dPolyline", "AcDbPolyline", "AcDbText", "AcDbMText"}:
+        if summary["type"] in {
+            "AcDb2dPolyline",
+            "AcDbPolyline",
+            "AcDbText",
+            "AcDbMText",
+        }:
             raise AttributeError("This native class exposes other geometry fields")
         summary["start_point"] = list(get("StartPoint"))
         summary["end_point"] = list(get("EndPoint"))
     except Exception:
         pass
     try:
-        if summary["type"] in {"AcDb2dPolyline", "AcDbPolyline", "AcDbText", "AcDbMText"}:
+        if summary["type"] in {
+            "AcDb2dPolyline",
+            "AcDbPolyline",
+            "AcDbText",
+            "AcDbMText",
+        }:
             raise AttributeError("This native class exposes other geometry fields")
         summary["center"] = list(get("Center"))
         summary["radius"] = get("Radius")
@@ -117,7 +155,9 @@ def _entity_summary(entity, readers=None, raw_dispatch=False) -> dict:
             summary["insertion_point"] = list(get("InsertionPoint"))
             summary["rotation"] = math.degrees(get("Rotation"))
             if get("HasAttributes"):
-                attrs = reader.call("GetAttributes") if reader else entity.GetAttributes()
+                attrs = (
+                    reader.call("GetAttributes") if reader else entity.GetAttributes()
+                )
                 summary["attributes"] = {a.TagString: a.TextString for a in attrs}
     except Exception:
         pass
@@ -125,19 +165,27 @@ def _entity_summary(entity, readers=None, raw_dispatch=False) -> dict:
     if summary["type"] in {"AcDb2dPolyline", "AcDbPolyline"}:
         try:
             summary["coordinates"] = list(get("Coordinates"))
-            summary["coordinate_dimension"] = 3 if summary["type"] == "AcDb2dPolyline" else 2
+            summary["coordinate_dimension"] = (
+                3 if summary["type"] == "AcDb2dPolyline" else 2
+            )
             summary["closed"] = bool(get("Closed"))
             summary["normal"] = list(get("Normal"))
             summary["elevation"] = float(get("Elevation"))
             summary["constant_width"] = float(get("ConstantWidth"))
-            vertices=len(summary["coordinates"])//summary["coordinate_dimension"]
-            get_bulge=(lambda i: reader.call("GetBulge",i)) if reader else entity.GetBulge
-            summary["bulges"]=[float(get_bulge(i)) for i in range(vertices)]
+            vertices = len(summary["coordinates"]) // summary["coordinate_dimension"]
+            get_bulge = (
+                (lambda i: reader.call("GetBulge", i)) if reader else entity.GetBulge
+            )
+            summary["bulges"] = [float(get_bulge(i)) for i in range(vertices)]
         except (AttributeError, pythoncom.com_error):
             pass
     if summary["type"] == "AcDbText":
-        for key, name in [("height", "Height"), ("scale_factor", "ScaleFactor"),
-                          ("rotation_radians", "Rotation"), ("insertion_point", "InsertionPoint")]:
+        for key, name in [
+            ("height", "Height"),
+            ("scale_factor", "ScaleFactor"),
+            ("rotation_radians", "Rotation"),
+            ("insertion_point", "InsertionPoint"),
+        ]:
             try:
                 value = get(name)
                 summary[key] = list(value) if isinstance(value, tuple) else value
@@ -154,32 +202,61 @@ class CADQuery:
 
     def _readers(self):
         current = CADConnection._native_identity(self.connection.document)
-        if self._summary_document is None or not CADConnection._same(current,self._summary_document):
+        if self._summary_document is None or not CADConnection._same(
+            current, self._summary_document
+        ):
             self._summary_document = current
             self._summary_readers.clear()
         return self._summary_readers
 
     def _summaries(self, collection, entity_type=None):
-        readers=self._readers()
-        ole=getattr(collection,"_oleobj_",None)
+        readers = self._readers()
+        ole = getattr(collection, "_oleobj_", None)
         if ole is None:
-            return [_entity_summary(e,readers) for e in collection
-                    if not entity_type or e.ObjectName==entity_type]
+            return [
+                _entity_summary(e, readers)
+                for e in collection
+                if not entity_type or e.ObjectName == entity_type
+            ]
         from autocad_mcp.cad.capture import prop, retry_read
+
         # Raw IDispatch iteration avoids per-entity dynamic wrapper/type-map
         # construction. Resolve collection metadata once; read every value fresh.
-        count=prop(collection,"Count")
-        item=retry_read(lambda:ole.GetIDsOfNames("Item"))
-        result=[]
+        count = prop(collection, "Count")
+        item = retry_read(lambda: ole.GetIDsOfNames("Item"))
+        result = []
         for i in range(count):
-            entity=retry_read(lambda i=i:ole.Invoke(item,0,pythoncom.DISPATCH_METHOD,True,i))
-            summary=_entity_summary(entity,readers,raw_dispatch=True)
-            if not entity_type or summary["type"]==entity_type:
+            entity = retry_read(
+                lambda i=i: ole.Invoke(item, 0, pythoncom.DISPATCH_METHOD, True, i)
+            )
+            summary = _entity_summary(entity, readers, raw_dispatch=True)
+            if not entity_type or summary["type"] == entity_type:
                 result.append(summary)
         return result
 
     def list_layers(self) -> list[str]:
-        return [layer.Name for layer in self.connection.document.Layers]
+        from autocad_mcp.cad.capture import prop, retry_read
+
+        layers = prop(self.connection.document, "Layers")
+        ole = getattr(layers, "_oleobj_", None)
+        if ole is None:
+            return [layer.Name for layer in layers]
+        # Dynamic collection wrappers can retain an exhausted/stale enumerator
+        # after Layers.Add. Fetch Count/Item/Name afresh, just as for ModelSpace;
+        # neither the enumerator nor property values are reusable observations.
+        count = prop(layers, "Count")
+        item = retry_read(lambda: ole.GetIDsOfNames("Item"))
+        result = []
+        for index in range(count):
+            layer = retry_read(
+                lambda index=index: ole.Invoke(
+                    item, 0, pythoncom.DISPATCH_METHOD, True, index
+                )
+            )
+            result.append(
+                _NativeSummaryReader(getattr(layer, "_oleobj_", layer)).get("Name")
+            )
+        return result
 
     def _model_space(self):
         # Fetch a fresh ModelSpace reference each time rather than reusing
@@ -195,17 +272,26 @@ class CADQuery:
         # 0.0045s，见 devlog #11）。
         try:
             from autocad_mcp.cad.capture import method, prop
-            entity = method(self.connection.document,"ObjectIdToObject")(object_id)
-            if getattr(entity,"_oleobj_",None) is not None or hasattr(entity,"Document"):
-                owner = prop(entity,"Document")
-                if self.connection.document_id(owner) != self.connection.document_id(self.connection.document):
-                    raise CADDocumentChangedError("Entity belongs to another document; no mutation dispatched")
+
+            entity = method(self.connection.document, "ObjectIdToObject")(object_id)
+            if getattr(entity, "_oleobj_", None) is not None or hasattr(
+                entity, "Document"
+            ):
+                owner = prop(entity, "Document")
+                if self.connection.document_id(owner) != self.connection.document_id(
+                    self.connection.document
+                ):
+                    raise CADDocumentChangedError(
+                        "Entity belongs to another document; no mutation dispatched"
+                    )
             return entity
         except pythoncom.com_error as exc:
             raise KeyError(f"未找到 ObjectID={object_id} 的实体") from exc
 
     def query_entities(self, entity_type: str | None = None) -> list[dict]:
-        dxf_filter = _ENTITY_TYPE_TO_DXF_FILTER.get(entity_type) if entity_type else None
+        dxf_filter = (
+            _ENTITY_TYPE_TO_DXF_FILTER.get(entity_type) if entity_type else None
+        )
         if dxf_filter:
             # 按类型过滤时，交给 AutoCAD 原生的 SelectionSet 类型过滤，避免 Python
             # 侧对每个不匹配的实体都要发一次 COM 调用查 ObjectName——大图纸场景实测
@@ -218,8 +304,12 @@ class CADQuery:
                 pass
             sel_set = document.SelectionSets.Add(sel_set_name)
             try:
-                filter_type = win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_I2, [0])
-                filter_data = win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_VARIANT, [dxf_filter])
+                filter_type = win32com.client.VARIANT(
+                    pythoncom.VT_ARRAY | pythoncom.VT_I2, [0]
+                )
+                filter_data = win32com.client.VARIANT(
+                    pythoncom.VT_ARRAY | pythoncom.VT_VARIANT, [dxf_filter]
+                )
                 # 和 query_entities_in_region 一样的规避：第一次 Select 偶发返回空集合。
                 sel_set.Select(5, None, None, filter_type, filter_data)
                 sel_set.Select(5, None, None, filter_type, filter_data)
@@ -227,10 +317,14 @@ class CADQuery:
             finally:
                 sel_set.Delete()
 
-        return self._summaries(self._model_space(),entity_type)
+        return self._summaries(self._model_space(), entity_type)
 
     def query_entities_in_region(
-        self, corner1: Point, corner2: Point, mode: str = "crossing", entity_type: str | None = None,
+        self,
+        corner1: Point,
+        corner2: Point,
+        mode: str = "crossing",
+        entity_type: str | None = None,
     ) -> list[dict]:
         """按矩形区域查询实体，用 AutoCAD 的 SelectionSet.Select 实现（O(1) 交给
         AutoCAD 内部空间索引，不是自己算包围盒相交），复杂图纸场景比全表扫描的
@@ -255,19 +349,23 @@ class CADQuery:
             # 错误返回空集合（不管 mode、不管区域里实际有没有实体），同一个 set 上
             # 紧接着再 Select 一次就总是对的——这是 COM 层某种一次性的初始化时序问题，
             # 不是坐标或参数错误。这里丢弃第一次调用的结果，只用第二次的，规避掉。
-            sel_set.Select(mode_map[mode], to_variant_point(*corner1), to_variant_point(*corner2))
-            sel_set.Select(mode_map[mode], to_variant_point(*corner1), to_variant_point(*corner2))
+            sel_set.Select(
+                mode_map[mode], to_variant_point(*corner1), to_variant_point(*corner2)
+            )
+            sel_set.Select(
+                mode_map[mode], to_variant_point(*corner1), to_variant_point(*corner2)
+            )
             results = []
             for entity in sel_set:
                 if entity_type and entity.ObjectName != entity_type:
                     continue
-                results.append(_entity_summary(entity,self._readers()))
+                results.append(_entity_summary(entity, self._readers()))
             return results
         finally:
             sel_set.Delete()
 
     def get_entity(self, object_id: int) -> dict:
-        return _entity_summary(self._find_entity(object_id),self._readers())
+        return _entity_summary(self._find_entity(object_id), self._readers())
 
     def delete_entity(self, object_id: int) -> None:
         invoke_mutator(self._find_entity(object_id), "Delete")
@@ -275,7 +373,9 @@ class CADQuery:
     def move_entity(self, object_id: int, offset: Point) -> None:
         """把实体沿 offset 向量平移（不是移动到绝对坐标，是相对位移）。"""
         entity = self._find_entity(object_id)
-        invoke_mutator(entity, "Move", to_variant_point(0, 0, 0), to_variant_point(*offset))
+        invoke_mutator(
+            entity, "Move", to_variant_point(0, 0, 0), to_variant_point(*offset)
+        )
 
     def rotate_entity(self, object_id: int, base_point: Point, angle: float) -> None:
         """绕 base_point 旋转，angle 单位为度。"""
@@ -289,12 +389,16 @@ class CADQuery:
         copy.Move(to_variant_point(0, 0, 0), to_variant_point(*offset))
         return copy.ObjectID
 
-    def scale_entity(self, object_id: int, base_point: Point, scale_factor: float) -> None:
+    def scale_entity(
+        self, object_id: int, base_point: Point, scale_factor: float
+    ) -> None:
         """以 base_point 为基点等比缩放。"""
         entity = self._find_entity(object_id)
         entity.ScaleEntity(to_variant_point(*base_point), scale_factor)
 
-    def mirror_entity(self, object_id: int, point1: Point, point2: Point, erase_source: bool = False) -> int:
+    def mirror_entity(
+        self, object_id: int, point1: Point, point2: Point, erase_source: bool = False
+    ) -> int:
         """以 point1-point2 连线为镜像轴，返回镜像后新实体的 ObjectID。
         erase_source=True 时删除原实体（相当于"翻转"而不是"镜像复制一份"）。
         """
@@ -320,7 +424,9 @@ class CADQuery:
         raise KeyError(f"图块没有名为 {tag!r} 的属性标签")
 
     def bulk_get_block_attributes(
-        self, object_ids: list[int] | None = None, block_name: str | None = None,
+        self,
+        object_ids: list[int] | None = None,
+        block_name: str | None = None,
     ) -> dict[int, dict[str, str]]:
         """批量取多个图块引用的属性。object_ids 指定就只查这些 ObjectID；不指定则按
         block_name 过滤（block_name 也不指定就是图纸里所有带属性的图块引用）。
@@ -338,7 +444,9 @@ class CADQuery:
                 continue
             if not entity.HasAttributes:
                 continue
-            results[entity.ObjectID] = {a.TagString: a.TextString for a in entity.GetAttributes()}
+            results[entity.ObjectID] = {
+                a.TagString: a.TextString for a in entity.GetAttributes()
+            }
         return results
 
     def bulk_set_block_attributes(self, updates: list[dict]) -> list[dict]:
@@ -355,10 +463,19 @@ class CADQuery:
                 self.set_block_attribute(object_id, tag, value)
                 results.append({"object_id": object_id, "tag": tag, "status": "ok"})
             except Exception as e:
-                results.append({"object_id": object_id, "tag": tag, "status": "error", "error": str(e)})
+                results.append(
+                    {
+                        "object_id": object_id,
+                        "tag": tag,
+                        "status": "error",
+                        "error": str(e),
+                    }
+                )
         return results
 
-    def validate_block_attributes(self, required_tags: list[str], block_name: str | None = None) -> list[dict]:
+    def validate_block_attributes(
+        self, required_tags: list[str], block_name: str | None = None
+    ) -> list[dict]:
         """校核图块属性完整性：找出缺少某个必填 tag、或该 tag 值是空字符串的图块引用。
         block_name 不指定就检查图纸里所有图块引用。只返回有问题的条目
         [{"object_id", "block_name", "missing_tags", "empty_tags"}]，没问题的不出现在结果里。
@@ -375,10 +492,12 @@ class CADQuery:
             missing = [t for t in required_tags if t not in attrs]
             empty = [t for t in required_tags if t in attrs and not attrs[t]]
             if missing or empty:
-                problems.append({
-                    "object_id": entity.ObjectID,
-                    "block_name": entity.EffectiveName,
-                    "missing_tags": missing,
-                    "empty_tags": empty,
-                })
+                problems.append(
+                    {
+                        "object_id": entity.ObjectID,
+                        "block_name": entity.EffectiveName,
+                        "missing_tags": missing,
+                        "empty_tags": empty,
+                    }
+                )
         return problems

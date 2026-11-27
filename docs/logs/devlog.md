@@ -645,3 +645,10 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - 协同Cader REQ-053新增可选polyline原生宽度、文字新建bbox拟合及独立native顶点/OCS/bulge/文字尺度读回，polyline复用执行ACK。旧默认调用兼容，创建后失败不重试/删除。315 pytest通过、34真实CAD未启用跳过；独立实例用原始源图4实体native组件核查0差异，完整联合回归另记，详见[验证记录](../validation/2026-11-28-source-geometry.md)。用户已有web/脚本修改未纳入。
 
 - 大图查询性能补修：复用CADQuery，以原生Count/Item及只读Invoke避开每实体动态包装器，DISPID只按同一canonical对象生命周期缓存，数据值每次读，文档/对象身份变更隔离。真实151实体17.430→3.496/1.689秒、0字段差异；316通过/34跳过。详见source-geometry验证，旧图和unknown不动。
+
+
+## 2026-11-28
+
+- Cader原图attempt12一次出现图层创建ACK后首个依赖列表缺层，派发前拒绝而非unknown；已保留原始失败。COM list_layers复用原生Count/Item、每对象Name DISPID，替代可能陈旧的动态枚举；原因仍需完整新回归验证，不把猜测写成单因素根因。
+- 新增离线枚举/值刷新反例；317 tests通过/34真实CAD未启用跳过。真实owned空文档新增2层后10次新路径均准确，0模型/0图形实体，单独保存组件DWG；同组件旧路未复现间歇失败，结果原样保留。详见validation/2026-11-28-source-geometry.md。
+- 明确选项Ruff E4/E7/E9/F及触及文件format通过；宿主额外规则的旧兼容异常处理告警未冒称全部消除。用户现有web/脚本/图纸修改不纳入。原图完整联合回归及CI另记。
