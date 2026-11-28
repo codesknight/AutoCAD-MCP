@@ -1,6 +1,7 @@
 """Service-local execution facts. No native object, retry, or database revision."""
 import hashlib
 import json
+import os
 import re
 import time
 from contextvars import ContextVar
@@ -11,8 +12,9 @@ VERSION = "autocad-execution/1"
 SUPPORTED = frozenset({"new_document", "draw_line", "draw_circle", "draw_text", "draw_polyline",
                        "move_entity", "delete_entity", "save_drawing",
                        "get_entity", "query_entities", "export_current_view",
-                       "save_document_artifact","reopen_document_artifact","query_verification_entities"})
-READS = frozenset({"get_entity", "query_entities","query_verification_entities"})
+                       "save_document_artifact","reopen_document_artifact","query_verification_entities",
+                       "fork_checkpoint", "get_checkpoint_snapshot"})
+READS = frozenset({"get_entity", "query_entities","query_verification_entities", "get_checkpoint_snapshot"})
 _trace = ContextVar("cad_execution_trace", default=None)
 
 
@@ -151,6 +153,12 @@ def support_matrix(backend, native=None):
     http = backend == "http"
     revision = http and native.get("revision_mode") == "observed_database_events"
     return dict(contract="autocad-backend-evidence/1",
+        checkpoint_restore=dict(supported=not http,
+            configured=not http and bool(os.environ.get("AUTOCAD_MCP_CHECKPOINT_GRANTS")),
+            contract="autocad-checkpoint-fork/1" if not http else None,
+            authorization="local_operator_one_use_grant" if not http else None,
+            snapshot_contract="autocad-checkpoint-snapshot/1" if not http else None,
+            automatic_unknown_replay=False, model_quality_preserved=False),
         document_identity=dict(supported=True, scope="bridge_instance" if http else "python_com_session",
                                mechanism="native_document_lifecycle" if http else "canonical_iunknown_lifecycle",
                                python_reconnect_reuses_ids=http, cad_restart_reuses_ids=False,

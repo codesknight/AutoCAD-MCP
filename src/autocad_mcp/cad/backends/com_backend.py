@@ -137,8 +137,8 @@ class COMBackend:
                 raise ValueError("INSTANCE_MISMATCH")
             if operation not in SUPPORTED:
                 raise UnsupportedOperationError("Operation has no declared COM execution receipt")
-            if (operation == "new_document") != (document_id is None):
-                raise ValueError("DOCUMENT_ID_REQUIRED: new_document alone requires null input document")
+            if (operation in {"new_document", "fork_checkpoint"}) != (document_id is None):
+                raise ValueError("DOCUMENT_ID_REQUIRED: new_document/fork_checkpoint require null input document")
             from inspect import signature as inspect_signature
             signature = (inspect_signature(getattr(COMArtifacts,operation)).replace(
                 parameters=list(inspect_signature(getattr(COMArtifacts,operation)).parameters.values())[1:])
@@ -164,6 +164,9 @@ class COMBackend:
     def _execute_receipt(self, session, data):
         request_id, operation, args = data["request_id"], data["operation"], data["args"]
         connection = session.connection
+        if operation == "fork_checkpoint":
+            previous_binding = (connection.document, connection.model_space)
+            previous_owned = set(connection._owned_ids)
         self.journal.update(request_id, stage="preflight")
         try:
             with ExecutionTrace(self.journal, request_id):
@@ -171,7 +174,8 @@ class COMBackend:
                     session.files=COMArtifacts(connection)
                 if operation in FILE_OPERATIONS:
                     session.files.progress=None
-                if operation not in {"new_document","query_verification_entities"}:
+                    session.files.request_id=request_id
+                if operation not in {"new_document","query_verification_entities", "fork_checkpoint"}:
                     binding = connection.binding()
                     if binding["document_id"] != data["document_id"]:
                         raise ValueError("DOCUMENT_ID_MISMATCH")
@@ -206,7 +210,14 @@ class COMBackend:
                                     result_document_id=result_document,affected_entities=affected)
                 return dict(receipt=self.execution_status(self.instance_id, request_id), result=result)
         except Exception as error:
+            if operation == "fork_checkpoint":
+                # A failed verification/postflight never leaves a writable binding.
+                connection._owned_ids.intersection_update(previous_owned)
+                connection.document, connection.model_space = previous_binding
             record = self.execution_status(self.instance_id, request_id)
+            if operation == "fork_checkpoint" and record.get("file_result"):
+                self.journal.update(request_id, file_result={**record["file_result"],
+                    "managed":False, "binding_valid":False})
             stage = ("result_unknown" if record["native_invoked"] and not record["native_acknowledged"] else
                      "observation_failed" if record["native_acknowledged"] or record["observation"]=="pending" else "not_dispatched")
             self.journal.update(request_id,status="failed",stage=stage,observation="failed",

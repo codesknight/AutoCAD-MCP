@@ -652,3 +652,10 @@ cd D:\LiuYanhong\Projects\BISHE\data\Models
 - Cader原图attempt12一次出现图层创建ACK后首个依赖列表缺层，派发前拒绝而非unknown；已保留原始失败。COM list_layers复用原生Count/Item、每对象Name DISPID，替代可能陈旧的动态枚举；原因仍需完整新回归验证，不把猜测写成单因素根因。
 - 新增离线枚举/值刷新反例；317 tests通过/34真实CAD未启用跳过。真实owned空文档新增2层后10次新路径均准确，0模型/0图形实体，单独保存组件DWG；同组件旧路未复现间歇失败，结果原样保留。详见validation/2026-11-28-source-geometry.md。
 - 明确选项Ruff E4/E7/E9/F及触及文件format通过；宿主额外规则的旧兼容异常处理告警未冒称全部消除。用户现有web/脚本/图纸修改不纳入。原图完整联合回归及CI另记。
+
+### 受控检查点恢复候选（REQ-053 / BUG125）
+
+- 新增 fork_checkpoint/get_checkpoint_snapshot operation，复用47项工具、COM身份和journal；只接受本地审核目录的一次性授权，实际校验源/快照/执行证据hash、旧writer/CAD PID退出及审核方未决请求清单。share-read锁保护源，独占副本与持久claim防止跨Python重启重放；原生Open仅一次，严格Native/Handle全量映射后由生产路径登记owned，失败保留副本/claim/回执。
+- 全量342 passed/34 skipped，新增25项fixture/内存MCP/真实Windows锁与PID负例；触及Python I/F检查通过，旧44工具schema/成功结果兼容。只更新显式执行工具描述，不新增工具名，不修改Cader代码、旧屏障或用户Web/训练资料/图片。
+- 原始大图3014实体（2928二维多段线/86文字）只读Native读取通过；基于新采集完整快照的生产fork实机回归映射3014项、源文件不变、quality=false。原始只读遇忙与首轮Open ACK后观测失败保留，读操作有界重试不重放Open；自建624/30472/38128/24604全部正常退出，OS无acad残留。
+- 原attempt17冻结快照全部缺Handle及部分必需字段，因此不能把新观察的ObjectID映射当作旧账本恢复；未运行Cader真实模型续绘/最终独立验收，候选不合并为已完成恢复。版本化契约与协同缺口见design/checkpoint-fork.md、validation/2026-11-28-checkpoint-fork.md。
