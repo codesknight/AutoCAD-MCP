@@ -35,7 +35,9 @@ def register(mcp: FastMCP):
                                    arguments: dict, document_id: Identity | None = None) -> CallToolResult:
         """Explicit autocad-execution/1 COM entrypoint; inspect evidence_support first.
         Uses internal CAD argument names (start/end/position/object_id, not flattened MCP names).
-        new_document requires null document_id; other operations require the exact bound ID.
+        new_document/fork_checkpoint require null document_id; other operations require the exact ID.
+        fork_checkpoint consumes a locally reviewed one-use grant; get_checkpoint_snapshot exports
+        strict supported Native fields from a saved managed drawing. Inspect the checkpoint contract.
         Native mutators run once; ACK and later observation are separate. No atomic rollback,
         authoritative COM revision, automatic write replay or recovery after Python restart.
         HTTP clients use existing controlled document/batch/job APIs instead.

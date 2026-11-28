@@ -1,0 +1,154 @@
+{
+  "contract": "checkpoint-fork-validation/1",
+  "original_input_audit": {
+    "scope": "input_audit_only",
+    "source": {
+      "sha256": "640f55145281acb2f2a0d5e9f12f18f5662d331da39976c78358f03ecc493c19",
+      "byte_size": 630383
+    },
+    "frozen_file_sha256": "1911cb835888ade10bc1904ad070755b9ce96704118e3ee2113a40a6c8cab7ef",
+    "ledger_sha256": "c86b9bbaad7953dd2263df5a54c596f9adf4261fb8202e7bf3acd927a794429c",
+    "entity_count": 3014,
+    "types": {
+      "AcDb2dPolyline": 2928,
+      "AcDbText": 86
+    },
+    "missing_handles": 3014,
+    "original_ledger_reconciled": false,
+    "recovery_authorized": false,
+    "snapshot_contract_valid": false,
+    "rejection": "CHECKPOINT_SNAPSHOT_CONTRACT"
+  },
+  "tests": {
+    "passed": 342,
+    "skipped": 34
+  },
+  "trials": [
+    {
+      "existing_pids": [],
+      "passed": false,
+      "cleanup": true,
+      "scope": "Read-only native serializer probe; not historical mapping or recovery acceptance",
+      "owned_pid": 624,
+      "error": {
+        "type": "com_error",
+        "message": "(-2147418111, '被呼叫方拒绝接收呼叫。', None, None)"
+      },
+      "trial": "readonly-01"
+    },
+    {
+      "existing_pids": [],
+      "passed": true,
+      "cleanup": true,
+      "scope": "Read-only native serializer probe; not historical mapping or recovery acceptance",
+      "owned_pid": 30472,
+      "stage": "native_snapshot",
+      "entity_count": 3014,
+      "new_observation_sha256": "4420d77dd4152cf26fa8e4bf3040efb89c9035e95b310cb5a1211298fa087aeb",
+      "source_unchanged": true,
+      "trial": "readonly-02"
+    },
+    {
+      "passed": false,
+      "cleanup": true,
+      "scope": "3014 entity API regression against fresh readonly observation; NOT original ObjectID mapping or model resume acceptance",
+      "owned_pid": 38128,
+      "receipt_status": "failed",
+      "error": {
+        "type": "com_error",
+        "message": "(-2147418111, '被呼叫方拒绝接收呼叫。', None, None)",
+        "hresult": -2147418111,
+        "causes": []
+      },
+      "trial": "fork-01",
+      "receipt": {
+        "contract": "autocad-execution/1",
+        "instance_id": "30874d5d0ff546d5b7e3dd92f4618e9d",
+        "request_id": "native-fork-01",
+        "status": "failed",
+        "stage": "observation_failed",
+        "native_invoked": true,
+        "native_acknowledged": true,
+        "native_actions": [
+          {
+            "name": "checkpoint.reserve",
+            "acknowledged": true
+          },
+          {
+            "name": "checkpoint.mkdir",
+            "acknowledged": true
+          },
+          {
+            "name": "checkpoint.copy",
+            "acknowledged": true
+          },
+          {
+            "name": "Open",
+            "acknowledged": true
+          }
+        ],
+        "observation": "failed"
+      }
+    },
+    {
+      "passed": true,
+      "cleanup": true,
+      "scope": "3014 entity API regression against fresh readonly observation; NOT original ObjectID mapping or model resume acceptance",
+      "owned_pid": 24604,
+      "receipt_status": "succeeded",
+      "entity_count": 3014,
+      "mapping_sha256": "1ad8fe0d219c870409c1332cc9b08ed8fb2bba603df9acdf9e2362cda1be491e",
+      "source_unchanged": true,
+      "quality_accepted": false,
+      "trial": "fork-02",
+      "receipt": {
+        "contract": "autocad-execution/1",
+        "instance_id": "71c8c6ef941842c1a10fbcd0986ab3ec",
+        "request_id": "native-fork-01",
+        "status": "succeeded",
+        "stage": "completed",
+        "native_invoked": true,
+        "native_acknowledged": true,
+        "native_actions": [
+          {
+            "name": "checkpoint.reserve",
+            "acknowledged": true
+          },
+          {
+            "name": "checkpoint.mkdir",
+            "acknowledged": true
+          },
+          {
+            "name": "checkpoint.copy",
+            "acknowledged": true
+          },
+          {
+            "name": "Open",
+            "acknowledged": true
+          }
+        ],
+        "observation": "succeeded"
+      },
+      "verification": {
+        "document_id": "8a9cf0ad7e2f4ca5a45857a2cae7342c",
+        "snapshot_sha256": "4420d77dd4152cf26fa8e4bf3040efb89c9035e95b310cb5a1211298fa087aeb",
+        "mapping_sha256": "1ad8fe0d219c870409c1332cc9b08ed8fb2bba603df9acdf9e2362cda1be491e",
+        "mapping_complete": true,
+        "quality_accepted": false,
+        "managed": true,
+        "read_only": false
+      },
+      "unique_old_ids": 3014,
+      "unique_new_ids": 3014
+    }
+  ],
+  "historical_object_id_mapping_verified": false,
+  "cader_model_resume_verified": false,
+  "original_evidence_preserved": true,
+  "owned_test_pids_confirmed_absent": [
+    624,
+    30472,
+    38128,
+    24604
+  ]
+}

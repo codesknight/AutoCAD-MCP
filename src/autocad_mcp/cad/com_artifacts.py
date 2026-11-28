@@ -19,6 +19,8 @@ OPERATIONS = frozenset(
         "save_document_artifact",
         "reopen_document_artifact",
         "query_verification_entities",
+        "fork_checkpoint",
+        "get_checkpoint_snapshot",
     }
 )
 
@@ -95,6 +97,25 @@ class COMArtifacts:
         self.roots = {}
         self.verifications = {}
         self.progress = None
+        self.request_id = None
+
+    def fork_checkpoint(self, grant_id: str):
+        from .checkpoint import fork
+        return fork(self, grant_id)
+
+    def get_checkpoint_snapshot(self):
+        from .checkpoint import digest, snapshot
+        binding = self.connection.binding()
+        if not binding["managed"] or not prop(self.connection.document, "Saved"):
+            raise ValueError("CHECKPOINT_SAVED_MANAGED_DOCUMENT_REQUIRED")
+        path = prop(self.connection.document, "FullName")
+        source = fingerprint(path)
+        frozen = snapshot(self.connection.document)
+        if (snapshot(self.connection.document) != frozen or not prop(self.connection.document, "Saved")
+                or fingerprint(path) != source or prop(self.connection.document, "FullName") != path):
+            raise ValueError("CHECKPOINT_CHANGED_DURING_OBSERVATION")
+        return dict(binding=binding, snapshot=frozen, snapshot_sha256=digest(frozen),
+                    source=dict(path=path, **source))
 
     def save_document_artifact(self, output_directory: str, file_name: str):
         binding = self.connection.binding()
